@@ -18,6 +18,7 @@ namespace ValorChronicle.Battle.Combat.Integration
         private readonly MatchEventCharacterCombatExecutor
             matchCharacterExecutor;
         private readonly PreMatchQueueCombatExecutor preMatchQueueExecutor;
+        private readonly PostBossCombatExecutor postBossExecutor;
         private readonly IBossCombatActionProvider bossActionProvider;
         private readonly CombatActionIdSequence actionIds;
         private readonly BattleTurnEndProcessor turnEndProcessor;
@@ -39,6 +40,8 @@ namespace ValorChronicle.Battle.Combat.Integration
         private ActiveAbilityCombatExecutionSession
             currentActiveCombatSession;
         private CombatActionExecutionSession currentBossCombatSession;
+        private PostBossCombatExecutor.PostBossCombatExecutionSession
+            currentPostBossCombatSession;
         private BossActionPlan currentBossActionPlan;
         private int currentBossCombatTurn;
 
@@ -49,6 +52,8 @@ namespace ValorChronicle.Battle.Combat.Integration
             PreMatchQueueCombatActionStepApplied;
         public event Action<CombatActionExecutionStepResult>
             BossCombatActionStepApplied;
+        public event Action<PostBossCombatExecutionStepResult>
+            PostBossCombatActionStepApplied;
         public event Action<ActiveCombatActionExecutionStepResult>
             ActiveCombatActionStepApplied;
         public event Action<BattleFinalResult> ResultFinalized;
@@ -164,7 +169,9 @@ namespace ValorChronicle.Battle.Combat.Integration
             BattleResultBalance resultBalance,
             IBattleBoardElementConversionSink boardElementConversionSink = null,
             IReadOnlyList<PreMatchQueueActionProviderBinding>
-                preMatchQueueBindings = null)
+                preMatchQueueBindings = null,
+            IReadOnlyList<PostBossActionProviderBinding>
+                postBossBindings = null)
         {
             this.coordinator = coordinator
                 ?? throw new ArgumentNullException(nameof(coordinator));
@@ -214,6 +221,13 @@ namespace ValorChronicle.Battle.Combat.Integration
                 actionIds,
                 preMatchQueueBindings
                     ?? Array.Empty<PreMatchQueueActionProviderBinding>());
+            postBossExecutor = new PostBossCombatExecutor(
+                party,
+                boss,
+                executor,
+                actionIds,
+                postBossBindings
+                    ?? Array.Empty<PostBossActionProviderBinding>());
             activeExecutor = new ActiveAbilityCombatExecutor(
                 coordinator,
                 party,
@@ -239,6 +253,8 @@ namespace ValorChronicle.Battle.Combat.Integration
             turnEndProcessor.ProcessedTurnCount;
         public bool HasPendingBossBoardMutation =>
             hasPendingBossBoardMutation;
+        public bool IsPostBossCombatInProgress =>
+            currentPostBossCombatSession != null;
         public BattleBoardMutationCompletion
             LastBossBoardMutationCompletion { get; private set; }
         public CombatActionExecutionResult LastMatchExecutionResult
@@ -587,7 +603,21 @@ namespace ValorChronicle.Battle.Combat.Integration
                 }
             }
 
-            return TryCompleteBossActionCombat();
+            bool completed = TryCompleteBossActionCombat();
+            while (completed && IsPostBossCombatInProgress)
+            {
+                while (TryGetNextPostBossCombatAction(out _, out _))
+                {
+                    if (!TryApplyNextPostBossCombatAction(out _))
+                    {
+                        return false;
+                    }
+                }
+
+                completed = TryCompletePostBossCombatProvider();
+            }
+
+            return completed;
         }
 
         public bool TryBeginBossActionCombat(int currentTurn)
@@ -596,7 +626,8 @@ namespace ValorChronicle.Battle.Combat.Integration
                 || coordinator.Context.Phase != BattlePhase.BossActing
                 || coordinator.Context.CurrentTurn != currentTurn
                 || hasPendingBossBoardMutation
-                || currentBossCombatSession != null)
+                || currentBossCombatSession != null
+                || currentPostBossCombatSession != null)
             {
                 return false;
             }
@@ -685,7 +716,82 @@ namespace ValorChronicle.Battle.Combat.Integration
                     plan.BoardCommand);
             }
 
-            return CompleteBossAction();
+            return BeginPostBossCombat(completedTurn);
+        }
+
+        public bool TryGetNextPostBossCombatAction(
+            out CharacterBattleState character,
+            out CombatAction action)
+        {
+            character = null;
+            action = null;
+            return IsCurrentPostBossCombatValid()
+                && currentPostBossCombatSession.TryGetNextAction(
+                    out character,
+                    out action);
+        }
+
+        public bool TryApplyNextPostBossCombatAction(
+            out PostBossCombatExecutionStepResult stepResult)
+        {
+            stepResult = null;
+            if (!IsCurrentPostBossCombatValid()
+                || !currentPostBossCombatSession.TryExecuteNext(
+                    out stepResult))
+            {
+                return false;
+            }
+
+            damageScoreCollector.CollectAppliedAction(
+                stepResult.ActionStep.Result);
+            PostBossCombatActionStepApplied?.Invoke(stepResult);
+            return true;
+        }
+
+        public bool TryCompletePostBossCombatProvider()
+        {
+            if (!IsCurrentPostBossCombatValid()
+                || !currentPostBossCombatSession
+                    .TryCompleteCurrentProvider(
+                        out CombatActionExecutionResult result))
+            {
+                return false;
+            }
+
+            ValidateExecutedActionIds(result);
+            NotifyCombatActionsApplied(
+                result.CompletedActionCount > 0 ? result : null);
+
+            if (party.IsIncapacitated)
+            {
+                ClearCurrentPostBossCombat();
+                return coordinator.NotifyPartyIncapacitated();
+            }
+
+            if (boss.IsDefeated)
+            {
+                ClearCurrentPostBossCombat();
+                return coordinator.NotifyBossDefeated();
+            }
+
+            if (currentPostBossCombatSession.IsCompleted)
+            {
+                ClearCurrentPostBossCombat();
+                return CompleteBossActionAfterPostBoss();
+            }
+
+            return true;
+        }
+
+        public bool CancelPostBossCombat()
+        {
+            if (currentPostBossCombatSession == null)
+            {
+                return false;
+            }
+
+            ClearCurrentPostBossCombat();
+            return true;
         }
 
         public bool CancelBossActionCombat()
@@ -806,7 +912,7 @@ namespace ValorChronicle.Battle.Combat.Integration
 
             try
             {
-                if (!CompleteBossAction())
+                if (!BeginPostBossCombat(completedTurn))
                 {
                     throw new InvalidOperationException(
                         "The completed boss Board mutation could not finish "
@@ -840,7 +946,45 @@ namespace ValorChronicle.Battle.Combat.Integration
             currentBossCombatTurn = 0;
         }
 
-        private bool CompleteBossAction()
+        private bool BeginPostBossCombat(int completedTurn)
+        {
+            if (coordinator.Context.Result != BattleResultKind.None
+                || coordinator.Context.Phase != BattlePhase.BossActing
+                || coordinator.Context.CurrentTurn != completedTurn
+                || currentPostBossCombatSession != null)
+            {
+                return false;
+            }
+
+            if (!postBossExecutor.HasProviders)
+            {
+                return CompleteBossActionWithoutPostBoss();
+            }
+
+            CommitBossActionProvider();
+            currentPostBossCombatSession =
+                postBossExecutor.BeginExecution(completedTurn);
+            if (!currentPostBossCombatSession.IsCompleted)
+            {
+                return true;
+            }
+
+            ClearCurrentPostBossCombat();
+            return CompleteBossActionAfterPostBoss();
+        }
+
+        private void ClearCurrentPostBossCombat()
+        {
+            currentPostBossCombatSession = null;
+        }
+
+        private bool CompleteBossActionAfterPostBoss()
+        {
+            turnEndProcessor.ProcessTurnEnd();
+            return coordinator.CompleteBossAction();
+        }
+
+        private bool CompleteBossActionWithoutPostBoss()
         {
             turnEndProcessor.ProcessTurnEnd();
             CommitBossActionProvider();
@@ -942,6 +1086,14 @@ namespace ValorChronicle.Battle.Combat.Integration
                 && coordinator.Context.Result == BattleResultKind.None
                 && coordinator.Context.Phase == BattlePhase.BossActing
                 && coordinator.Context.CurrentTurn == currentBossCombatTurn
+                && !hasPendingBossBoardMutation;
+        }
+
+        private bool IsCurrentPostBossCombatValid()
+        {
+            return currentPostBossCombatSession != null
+                && coordinator.Context.Result == BattleResultKind.None
+                && coordinator.Context.Phase == BattlePhase.BossActing
                 && !hasPendingBossBoardMutation;
         }
 

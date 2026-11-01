@@ -76,8 +76,13 @@ namespace ValorChronicle.Tests.EditMode.Characters.Beatrice
             Assert.That(gacha.CharacterPoolIds.Take(
                     ExistingCharacterIds.Length),
                 Is.EqualTo(ExistingCharacterIds));
-            Assert.That(gacha.CharacterPoolIds.Last(),
+            Assert.That(gacha.CharacterPoolIds.Count,
+                Is.GreaterThan(ExistingCharacterIds.Length));
+            Assert.That(gacha.CharacterPoolIds[
+                    ExistingCharacterIds.Length],
                 Is.EqualTo(BeatriceBloodstoneRules.CharacterId));
+            Assert.That(gacha.CharacterPoolIds.Distinct().Count(),
+                Is.EqualTo(gacha.CharacterPoolIds.Count));
 
             Assert.That(exchange, Is.Not.Null);
             Assert.That(exchange.CharacterExchangeCost, Is.EqualTo(60L));
@@ -87,8 +92,13 @@ namespace ValorChronicle.Tests.EditMode.Characters.Beatrice
             Assert.That(exchange.CharacterIds.Take(
                     ExistingCharacterIds.Length),
                 Is.EqualTo(ExistingCharacterIds));
-            Assert.That(exchange.CharacterIds.Last(),
+            Assert.That(exchange.CharacterIds.Count,
+                Is.GreaterThan(ExistingCharacterIds.Length));
+            Assert.That(exchange.CharacterIds[
+                    ExistingCharacterIds.Length],
                 Is.EqualTo(BeatriceBloodstoneRules.CharacterId));
+            Assert.That(exchange.CharacterIds.Distinct().Count(),
+                Is.EqualTo(exchange.CharacterIds.Count));
         }
 
         [Test]

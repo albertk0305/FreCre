@@ -11,10 +11,12 @@ namespace ValorChronicle.Battle.Combat.Attacks
         Additional = 1 << 2,
         Chase = 1 << 3,
         DamageOverTime = 1 << 4,
+        Passive = 1 << 5,
         All = Match
             | Active
             | Additional
             | Chase
             | DamageOverTime
+            | Passive
     }
 }

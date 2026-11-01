@@ -1506,6 +1506,166 @@ namespace ValorChronicle.Battle.Flow.Presentation
                             isExecutingFlowStep = false;
                         }
                     }
+
+                    while (completed
+                        && combatBridge.HasPendingBossBoardMutation)
+                    {
+                        if (IsPaused)
+                        {
+                            yield return WaitWhilePaused();
+                        }
+                        if (!IsFlowProgressionCurrent(
+                            version,
+                            BattlePhase.BossActing))
+                        {
+                            yield break;
+                        }
+
+                        yield return null;
+                    }
+
+                    while (completed
+                        && combatBridge.IsPostBossCombatInProgress
+                        && IsFlowProgressionCurrent(
+                            version,
+                            BattlePhase.BossActing))
+                    {
+                        if (IsPaused)
+                        {
+                            yield return WaitWhilePaused();
+                        }
+                        if (!IsFlowProgressionCurrent(
+                            version,
+                            BattlePhase.BossActing))
+                        {
+                            yield break;
+                        }
+
+                        if (combatBridge.TryGetNextPostBossCombatAction(
+                            out CharacterBattleState actingCharacter,
+                            out CombatAction nextPostBossAction))
+                        {
+                            if (nextPostBossAction
+                                is DamageAction damageAction)
+                            {
+                                var request =
+                                    new ActiveDamageProjectileRequest(
+                                        actingCharacter.PartySlotIndex,
+                                        actingCharacter.CharacterId,
+                                        damageAction.ContextRequest
+                                            .AttackElement);
+                                bool presentationCompleted = false;
+                                ActiveDamageProjectileCompletion completion =
+                                    ActiveDamageProjectileCompletion
+                                        .Cancelled;
+                                IActiveDamageProjectilePresenter presenter =
+                                    activeProjectilePresenterOverride
+                                    ?? combatPresentationController;
+                                bool presentationStarted = false;
+                                if (presenter != null)
+                                {
+                                    try
+                                    {
+                                        presentationStarted =
+                                            presenter.TryPresent(
+                                                request,
+                                                result =>
+                                                {
+                                                    completion = result;
+                                                    presentationCompleted =
+                                                        true;
+                                                });
+                                    }
+                                    catch (Exception exception)
+                                    {
+                                        GameLogger.Exception(
+                                            exception,
+                                            this);
+                                        GameLogger.Warning(
+                                            "[BattleFlow] Post-boss damage "
+                                                + "projectile failed to "
+                                                + "start; applying "
+                                                + "immediately.",
+                                            this);
+                                    }
+                                }
+                                else
+                                {
+                                    GameLogger.Warning(
+                                        "[BattleFlow] Post-boss damage "
+                                            + "projectile presenter is "
+                                            + "unavailable; applying "
+                                            + "immediately.",
+                                        this);
+                                }
+
+                                if (presentationStarted)
+                                {
+                                    while (!presentationCompleted)
+                                    {
+                                        if (!IsFlowProgressionCurrent(
+                                            version,
+                                            BattlePhase.BossActing))
+                                        {
+                                            presenter.CancelActive();
+                                            yield break;
+                                        }
+
+                                        yield return null;
+                                    }
+
+                                    if (completion !=
+                                        ActiveDamageProjectileCompletion
+                                            .Arrived)
+                                    {
+                                        GameLogger.Error(
+                                            "[BattleFlow] Post-boss damage "
+                                                + "projectile was "
+                                                + "interrupted before "
+                                                + "combat application.",
+                                            this);
+                                        AbortBattle();
+                                        yield break;
+                                    }
+                                }
+                            }
+
+                            if (IsPaused)
+                            {
+                                yield return WaitWhilePaused();
+                            }
+                            if (!IsFlowProgressionCurrent(
+                                version,
+                                BattlePhase.BossActing))
+                            {
+                                yield break;
+                            }
+
+                            isExecutingFlowStep = true;
+                            try
+                            {
+                                completed = combatBridge
+                                    .TryApplyNextPostBossCombatAction(out _);
+                            }
+                            finally
+                            {
+                                isExecutingFlowStep = false;
+                            }
+
+                            continue;
+                        }
+
+                        isExecutingFlowStep = true;
+                        try
+                        {
+                            completed = combatBridge
+                                .TryCompletePostBossCombatProvider();
+                        }
+                        finally
+                        {
+                            isExecutingFlowStep = false;
+                        }
+                    }
                 }
 
                 if (!completed)
@@ -1590,6 +1750,7 @@ namespace ValorChronicle.Battle.Flow.Presentation
             combatBridge?.CancelMatchEventCombat();
             combatBridge?.CancelActiveCombat();
             combatBridge?.CancelBossActionCombat();
+            combatBridge?.CancelPostBossCombat();
             Coroutine activeFlowCoroutine = flowCoroutine;
             Coroutine activeCombatCoroutine =
                 activePresentationCoroutine;

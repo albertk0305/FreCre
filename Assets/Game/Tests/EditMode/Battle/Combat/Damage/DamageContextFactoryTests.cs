@@ -200,10 +200,126 @@ namespace ValorChronicle.Tests.EditMode.Battle.Combat.Damage
             Assert.That(result.FinalDamage, Is.EqualTo(4066L));
         }
 
+        [Test]
+        public void PassiveDamageUsesCommonModifiersAndRequestPolicies()
+        {
+            var attacker = new CharacterBattleState(
+                "attacker",
+                0,
+                ElementType.Dark,
+                100,
+                100d);
+            var party = new PartyBattleState(new[] { attacker });
+            var boss = new BossBattleState(
+                "boss",
+                ElementType.Light,
+                100000,
+                100d);
+            attacker.Effects.ApplyEffect(Effect(
+                1,
+                "attack",
+                EffectModifierType.AttackIncrease,
+                0.10d));
+            attacker.Effects.ApplyEffect(new EffectInstance(
+                2,
+                "dark_damage",
+                "source",
+                EffectCategory.Buff,
+                EffectModifierType.ElementDamageIncrease,
+                0.20d,
+                2,
+                2,
+                elementFilter: ElementType.Dark));
+            attacker.Effects.ApplyEffect(new EffectInstance(
+                3,
+                "passive_damage",
+                "source",
+                EffectCategory.Buff,
+                EffectModifierType.AttackTypeDamageIncrease,
+                0.30d,
+                2,
+                3,
+                attackTypeMask: AttackTypeMask.Passive));
+            attacker.Effects.ApplyEffect(Effect(
+                4,
+                "dealt_damage",
+                EffectModifierType.DealtDamageIncrease,
+                0.40d));
+            attacker.Effects.ApplyEffect(Effect(
+                5,
+                "critical_damage",
+                EffectModifierType.CriticalDamageIncrease,
+                0.10d));
+            boss.Effects.ApplyEffect(Effect(
+                6,
+                "taken_damage",
+                EffectModifierType.TargetTakenDamageIncrease,
+                0.25d));
+            boss.Effects.ApplyEffect(Effect(
+                7,
+                "taken_damage_reduction",
+                EffectModifierType.TargetTakenDamageReduction,
+                0.05d));
+            var factory = new DamageContextFactory(
+                new SequenceRandomSource());
+
+            DamageContext enabled = factory.Build(
+                new DamageContextBuildRequest(
+                    attacker,
+                    party,
+                    boss,
+                    ElementType.Dark,
+                    AttackType.Passive,
+                    AttackTag.None,
+                    2d,
+                    true,
+                    2,
+                    true,
+                    baseCriticalChance: 1d));
+            DamageContext disabled = factory.Build(
+                new DamageContextBuildRequest(
+                    attacker,
+                    party,
+                    boss,
+                    ElementType.Dark,
+                    AttackType.Passive,
+                    AttackTag.None,
+                    2d,
+                    false,
+                    0,
+                    false,
+                    baseCriticalChance: 1d));
+            DamageResult enabledResult = DamageCalculator.Calculate(enabled);
+            DamageResult disabledResult = DamageCalculator.Calculate(disabled);
+
+            Assert.That(enabledResult.FinalAttack,
+                Is.EqualTo(110d).Within(0.000000001d));
+            Assert.That(enabledResult.ComboMultiplier,
+                Is.EqualTo(1.05d).Within(0.000000001d));
+            Assert.That(enabledResult.CriticalMultiplier,
+                Is.EqualTo(1.60d).Within(0.000000001d));
+            Assert.That(enabledResult.ElementDamageMultiplier,
+                Is.EqualTo(1.20d).Within(0.000000001d));
+            Assert.That(enabledResult.AttackTypeDamageMultiplier,
+                Is.EqualTo(1.30d).Within(0.000000001d));
+            Assert.That(enabledResult.DealtDamageMultiplier,
+                Is.EqualTo(1.40d).Within(0.000000001d));
+            Assert.That(enabledResult.ElementAffinityMultiplier,
+                Is.EqualTo(1.30d).Within(0.000000001d));
+            Assert.That(enabledResult.TargetTakenDamageMultiplier,
+                Is.EqualTo(1.20d).Within(0.000000001d));
+            Assert.That(disabledResult.ComboMultiplier,
+                Is.EqualTo(1d).Within(0.000000001d));
+            Assert.That(disabledResult.CriticalMultiplier,
+                Is.EqualTo(1d).Within(0.000000001d));
+        }
+
         [TestCase(AttackType.Match)]
         [TestCase(AttackType.Active)]
         [TestCase(AttackType.Additional)]
         [TestCase(AttackType.Chase)]
+        [TestCase(AttackType.DamageOverTime)]
+        [TestCase(AttackType.Passive)]
         public void PermanentAttackRateAddsWithRuntimeBuffForEveryAttackType(
             AttackType attackType)
         {

@@ -6,6 +6,7 @@ namespace ValorChronicle.Battle.Combat.Attacks
         Active,
         Additional,
         Chase,
-        DamageOverTime
+        DamageOverTime,
+        Passive
     }
 }

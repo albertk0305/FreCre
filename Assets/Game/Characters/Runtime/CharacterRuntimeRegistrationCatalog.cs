@@ -8,6 +8,7 @@ using ValorChronicle.Characters.Beatrice;
 using ValorChronicle.Characters.Brina;
 using ValorChronicle.Characters.Fiora;
 using ValorChronicle.Characters.Koharu;
+using ValorChronicle.Characters.Lilith;
 using ValorChronicle.Characters.Marea;
 using ValorChronicle.Characters.Miyuki;
 using ValorChronicle.Characters.Naira;
@@ -117,7 +118,12 @@ namespace ValorChronicle.Characters.Runtime
                         BeatriceBloodstoneRules.CharacterId,
                         () => new BeatriceBloodstoneBuildModifier(),
                         () => new BeatriceBloodstoneCombatProviderRegistrar(),
-                        () => new BeatriceBloodstoneLookupDescriptionProvider())
+                        () => new BeatriceBloodstoneLookupDescriptionProvider()),
+                    new CharacterRuntimeRegistration(
+                        LilithRules.CharacterId,
+                        () => new LilithBuildModifier(),
+                        () => new LilithCombatProviderRegistrar(),
+                        () => new LilithLookupDescriptionProvider())
                 });
         }
 

@@ -51,6 +51,7 @@ namespace ValorChronicle.Tests.EditMode.Characters.BaekHyeon
         [TestCase(AttackType.Match)]
         [TestCase(AttackType.Active)]
         [TestCase(AttackType.DamageOverTime)]
+        [TestCase(AttackType.Passive)]
         public void OtherAttackTypesDoNotConsumeMarks(AttackType attackType)
         {
             using (var battle = new MarkConsumptionBattle())
@@ -267,6 +268,9 @@ namespace ValorChronicle.Tests.EditMode.Characters.BaekHyeon
                         break;
                     case AttackType.DamageOverTime:
                         origin = ActionOrigin.DamageOverTime;
+                        break;
+                    case AttackType.Passive:
+                        origin = ActionOrigin.System;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(attackType));

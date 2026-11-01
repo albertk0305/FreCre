@@ -12,6 +12,7 @@ using ValorChronicle.Characters.Beatrice;
 using ValorChronicle.Characters.Brina;
 using ValorChronicle.Characters.Fiora;
 using ValorChronicle.Characters.Koharu;
+using ValorChronicle.Characters.Lilith;
 using ValorChronicle.Characters.Marea;
 using ValorChronicle.Characters.Miyuki;
 using ValorChronicle.Characters.Naira;
@@ -49,7 +50,7 @@ namespace ValorChronicle.Tests.EditMode.Characters.Runtime
             CharacterRuntimeRegistrationCatalog catalog =
                 CharacterRuntimeRegistrationCatalog.CreateDefault();
 
-            Assert.That(catalog.Registrations.Count, Is.EqualTo(9));
+            Assert.That(catalog.Registrations.Count, Is.EqualTo(10));
             CharacterRuntimeRegistration registration = catalog
                 .Registrations
                 .Single(item => item.CharacterId
@@ -193,11 +194,26 @@ namespace ValorChronicle.Tests.EditMode.Characters.Runtime
             Assert.That(
                 beatrice.CreateLookupProvider(),
                 Is.TypeOf<BeatriceBloodstoneLookupDescriptionProvider>());
+            CharacterRuntimeRegistration lilith = catalog.Registrations
+                .Single(item => item.CharacterId
+                    == LilithRules.CharacterId);
+            Assert.That(
+                lilith.SupportedCombatConfigType,
+                Is.EqualTo(typeof(LilithCombatConfig)));
+            Assert.That(
+                lilith.CreateBuildModifier(),
+                Is.TypeOf<LilithBuildModifier>());
+            Assert.That(
+                lilith.CreateCombatRegistrar(),
+                Is.TypeOf<LilithCombatProviderRegistrar>());
+            Assert.That(
+                lilith.CreateLookupProvider(),
+                Is.TypeOf<LilithLookupDescriptionProvider>());
             Assert.That(
                 catalog.Registrations.Select(item => item.CharacterId)
                     .Distinct()
                     .Count(),
-                Is.EqualTo(9));
+                Is.EqualTo(10));
         }
 
         [Test]

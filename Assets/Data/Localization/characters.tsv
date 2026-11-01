@@ -255,3 +255,30 @@ beatrice.awakening.5.name	Forbidden Feast	금단의 만찬
 beatrice.awakening.5.description	Crimson Feast's base coefficient changes from {base_before}% to {base_after}% ATK, and its maximum coefficient from shared party HP lost changes from {lost_hp_bonus_before}% to {lost_hp_bonus_after}% ATK. Lifesteal rates remain unchanged.	붉은 만찬의 기본 계수가 공격력의 {base_before}%에서 {base_after}%로, 잃은 파티 공용 HP 비율에 따른 최대 추가 계수가 {lost_hp_bonus_before}%에서 {lost_hp_bonus_after}%로 변경됩니다. 흡혈률은 변하지 않습니다.
 beatrice.awakening.6.name	Eternal Eclipse	영원한 일식
 beatrice.awakening.6.description	Crimson Eclipse's base coefficient changes from {base_before}% to {base_after}% ATK, and its maximum coefficient from shared party HP lost changes from {lost_hp_bonus_before}% to {lost_hp_bonus_after}% ATK. Lifesteal rates and cooldown remain unchanged.	진홍의 일식의 기본 계수가 공격력의 {base_before}%에서 {base_after}%로, 잃은 파티 공용 HP 비율에 따른 최대 추가 계수가 {lost_hp_bonus_before}%에서 {lost_hp_bonus_after}%로 변경됩니다. 흡혈률과 재사용 대기시간은 변하지 않습니다.
+lilith	Lilith	릴리스
+lilith.skill.match3.name	Sweet Temptation	달콤한 유혹
+lilith.skill.match3.description	Deals {damage_coefficient}% ATK as Dark damage, then applies {contract_gain} Demonic Covenant stack to the boss after damage resolves.	공격력의 {damage_coefficient}%만큼 어둠속성 피해를 준 뒤, 피해 처리가 끝나면 보스에게 악마의 계약 {contract_gain}스택을 부여합니다.
+lilith.skill.match4.name	Seal of Ruin	파멸의 낙인
+lilith.skill.match4.description	Deals {damage_coefficient}% ATK as Dark damage, then applies {contract_gain} Demonic Covenant stacks to the boss after damage resolves.	공격력의 {damage_coefficient}%만큼 어둠속성 피해를 준 뒤, 피해 처리가 끝나면 보스에게 악마의 계약 {contract_gain}스택을 부여합니다.
+lilith.skill.match5.name	Fallen Blessing	타락한 축복
+lilith.skill.match5.description	Deals {damage_coefficient}% ATK as Dark damage, then applies {contract_gain} Demonic Covenant stacks to the boss and reduces damage taken by the party by {damage_reduction}% for {duration_turns} turns including the current turn. Reuse refreshes duration without stacking.	공격력의 {damage_coefficient}%만큼 어둠속성 피해를 준 뒤, 보스에게 악마의 계약 {contract_gain}스택을 부여하고 현재 턴을 포함해 {duration_turns}턴 동안 파티가 받는 피해를 {damage_reduction}% 감소시킵니다. 재발동 시 중첩하지 않고 지속 시간을 갱신합니다.
+lilith.skill.passive.name	Demonic Covenant	악마의 계약
+lilith.skill.passive.description	Demonic Covenant stacks up to {contract_max} on the boss. Each stack increases damage taken by the boss by {damage_increase_per_stack}%. After a boss action, each complete group of {consumption_unit} stacks is consumed to deal a separate Passive attack with {explosion_coefficient_per_unit}% ATK per group. Combo multiplier does not apply.	보스에게 악마의 계약을 최대 {contract_max}스택까지 부여합니다. 스택마다 보스가 받는 피해가 {damage_increase_per_stack}% 증가합니다. 보스 행동 후 {consumption_unit}스택 단위로 소비하여 단위마다 공격력의 {explosion_coefficient_per_unit}%만큼 별도의 Passive 피해를 줍니다. 콤보 배율은 적용되지 않습니다.
+lilith.skill.active.name	Soul Bargain	영혼의 거래
+lilith.skill.active.description	Consumes {current_hp_cost}% of current shared party HP while keeping at least {minimum_hp} HP, then applies {contract_gain} Demonic Covenant stacks to the boss. The skill remains usable when the actual HP cost is zero. Cooldown: {cooldown} turns.	현재 파티 공용 HP의 {current_hp_cost}%를 소비하되 최소 {minimum_hp} HP를 유지한 뒤, 보스에게 악마의 계약 {contract_gain}스택을 부여합니다. 실제 HP 소비량이 0이어도 사용할 수 있습니다. 재사용 대기시간: {cooldown}턴.
+lilith.effect.demonic_covenant.name	Demonic Covenant	악마의 계약
+lilith.effect.demonic_covenant.description	Stacks up to 12 on the boss without expiring naturally. Each stack increases damage taken, and complete groups of 4 are consumed for the covenant explosion after a boss action.	보스에게 최대 12스택까지 부여되며 자연적으로 만료되지 않습니다. 스택마다 받는 피해가 증가하고, 보스 행동 후 4스택 단위로 소비되어 계약 폭발을 일으킵니다.
+lilith.effect.fallen_blessing.name	Fallen Blessing	타락한 축복
+lilith.effect.fallen_blessing.description	Reduces damage taken by the party for 2 turns including the current turn. Reuse refreshes duration without stacking and does not reduce direct HP costs.	현재 턴을 포함해 2턴 동안 파티가 받는 피해를 감소시킵니다. 재발동 시 중첩하지 않고 지속 시간을 갱신하며 직접 HP 소비에는 적용되지 않습니다.
+lilith.awakening.1.name	Demonic Authority	악마의 권능
+lilith.awakening.1.description	ATK multiplier increases from {multiplier_before}% to {multiplier_after}%.	공격력 배율이 {multiplier_before}%에서 {multiplier_after}%로 증가합니다.
+lilith.awakening.2.name	Blood of the Demon Realm	마계의 혈통
+lilith.awakening.2.description	Max HP multiplier increases from {multiplier_before}% to {multiplier_after}%.	최대 HP 배율이 {multiplier_before}%에서 {multiplier_after}%로 증가합니다.
+lilith.awakening.3.name	Deepening Temptation	깊어지는 유혹
+lilith.awakening.3.description	Sweet Temptation changes from {match3_before}% to {match3_after}% ATK, and Seal of Ruin changes from {match4_before}% to {match4_after}% ATK.	달콤한 유혹의 계수가 공격력의 {match3_before}%에서 {match3_after}%로, 파멸의 낙인의 계수가 {match4_before}%에서 {match4_after}%로 변경됩니다.
+lilith.awakening.4.name	Grace of Corruption	타락의 은총
+lilith.awakening.4.description	Fallen Blessing's damage coefficient changes from {match5_before}% to {match5_after}% ATK, and its damage reduction changes from {damage_reduction_before}% to {damage_reduction_after}%.	타락한 축복의 피해 계수가 공격력의 {match5_before}%에서 {match5_after}%로, 받는 피해 감소율이 {damage_reduction_before}%에서 {damage_reduction_after}%로 변경됩니다.
+lilith.awakening.5.name	Cruel Collection	잔혹한 징수
+lilith.awakening.5.description	The covenant explosion coefficient per consumption unit changes from {explosion_before}% to {explosion_after}% ATK.	계약 폭발의 소비 단위당 피해 계수가 공격력의 {explosion_before}%에서 {explosion_after}%로 변경됩니다.
+lilith.awakening.6.name	Eternal Covenant	영겁의 계약
+lilith.awakening.6.description	Damage taken increase per Demonic Covenant stack changes from {damage_increase_before}% to {damage_increase_after}%.	악마의 계약 스택당 받는 피해 증가율이 {damage_increase_before}%에서 {damage_increase_after}%로 변경됩니다.

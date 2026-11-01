@@ -372,6 +372,8 @@ namespace ValorChronicle.Battle.Combat.Modifiers
                     return AttackTypeMask.Chase;
                 case AttackType.DamageOverTime:
                     return AttackTypeMask.DamageOverTime;
+                case AttackType.Passive:
+                    return AttackTypeMask.Passive;
                 default:
                     throw new ArgumentOutOfRangeException(
                         nameof(attackType),

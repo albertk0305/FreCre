@@ -24,6 +24,7 @@ MonoBehaviour:
   - character_sakuragi_koharu
   - character_baek_hyeon
   - character_beatrice_bloodstone
+  - character_lilith
   relicIds:
   - relic_victors_broken_sword
   - relic_world_tree_bark

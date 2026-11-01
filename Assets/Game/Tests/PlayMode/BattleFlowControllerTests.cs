@@ -1122,6 +1122,76 @@ namespace ValorChronicle.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator PostBossDamageWaitsForProjectileBeforeTurnEnd()
+        {
+            InitializeStarted(Array.Empty<int>());
+            var character = new CharacterBattleState(
+                "post_boss_hero",
+                0,
+                ElementType.Dark,
+                1000,
+                100d);
+            var party = new PartyBattleState(new[] { character });
+            var boss = new BossBattleState(
+                "boss",
+                ElementType.Dark,
+                1000,
+                0d);
+            BattleFlowCombatBridge bridge = AttachPostBossCombatBridge(
+                party,
+                boss,
+                new ControllerPostBossActionProvider(context =>
+                    new CombatAction[]
+                    {
+                        new DamageAction(
+                            context.ActionIds.Next(),
+                            ActionOrigin.System,
+                            new DamageContextBuildRequest(
+                                context.Character,
+                                context.Party,
+                                context.Boss,
+                                ElementType.Dark,
+                                AttackType.Passive,
+                                AttackTag.None,
+                                1d,
+                                false,
+                                0,
+                                false))
+                    }));
+            var presenter = new ControllableActiveProjectilePresenter();
+            SetField(
+                flowController,
+                "activeProjectilePresenterOverride",
+                presenter);
+            int postBossSteps = 0;
+            bridge.PostBossCombatActionStepApplied += step =>
+                postBossSteps++;
+
+            SendCompletedAction(
+                1,
+                CreateResolvedResult(CreateSingleMatchCascade()));
+            yield return WaitUntil(
+                () => presenter.Requests.Count == 1,
+                "Post-boss projectile did not start.");
+
+            Assert.That(boss.CurrentHp, Is.EqualTo(1000));
+            Assert.That(bridge.ProcessedTurnEndCount, Is.Zero);
+            Assert.That(flowController.Context.Phase,
+                Is.EqualTo(BattlePhase.BossActing));
+
+            presenter.Arrive();
+            yield return WaitUntil(
+                () => flowController.Context.CurrentTurn == 2,
+                "Post-boss completion did not advance the turn.");
+
+            Assert.That(boss.CurrentHp, Is.EqualTo(900));
+            Assert.That(postBossSteps, Is.EqualTo(1));
+            Assert.That(bridge.ProcessedTurnEndCount, Is.EqualTo(1));
+            Assert.That(flowController.Context.Phase,
+                Is.EqualTo(BattlePhase.PlayerInput));
+        }
+
+        [UnityTest]
         public IEnumerator PreAttackDelayKeepsQueueBeforeFirstDequeue()
         {
             const float delaySeconds = 0.05f;
@@ -3240,6 +3310,38 @@ namespace ValorChronicle.Tests.PlayMode
             return bridge;
         }
 
+        private BattleFlowCombatBridge AttachPostBossCombatBridge(
+            PartyBattleState party,
+            BossBattleState boss,
+            IPostBossActionProvider provider)
+        {
+            var actionIds = new CombatActionIdSequence();
+            var bridge = new BattleFlowCombatBridge(
+                flowController.Coordinator,
+                party,
+                boss,
+                new CombatActionExecutor(
+                    boss,
+                    party,
+                    new DamageContextFactory(new SeededRandomSource(1))),
+                new ControllerMatchActionProvider(),
+                new ControllerBossActionProvider(),
+                actionIds,
+                Array.Empty<ActiveAbilityBinding>(),
+                new ActiveAbilityActionProviderRegistry(),
+                boardMutationSink: null,
+                difficultyId: null,
+                resultBalance: null,
+                postBossBindings: new[]
+                {
+                    new PostBossActionProviderBinding(
+                        party.Characters[0],
+                        provider)
+                });
+            flowController.AttachCombatBridge(bridge);
+            return bridge;
+        }
+
         private BattleFlowCombatBridge AttachPreMatchQueueBridge(
             Func<PreMatchQueueActionContext,
                 IReadOnlyList<CombatAction>> createActions,
@@ -3743,6 +3845,27 @@ namespace ValorChronicle.Tests.PlayMode
             {
                 CallCount++;
                 return Array.Empty<CombatAction>();
+            }
+        }
+
+        private sealed class ControllerPostBossActionProvider
+            : IPostBossActionProvider
+        {
+            private readonly Func<PostBossActionContext,
+                IReadOnlyList<CombatAction>> createActions;
+
+            public ControllerPostBossActionProvider(
+                Func<PostBossActionContext,
+                    IReadOnlyList<CombatAction>> createActions)
+            {
+                this.createActions = createActions
+                    ?? throw new ArgumentNullException(nameof(createActions));
+            }
+
+            public IReadOnlyList<CombatAction> CreateRootActions(
+                PostBossActionContext context)
+            {
+                return createActions(context);
             }
         }
 

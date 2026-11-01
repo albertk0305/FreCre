@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using ValorChronicle.Battle.Combat.Actions;
+using ValorChronicle.Battle.Combat.Attacks;
+using ValorChronicle.Battle.Combat.Damage;
+using ValorChronicle.Data.Definitions;
 
 namespace ValorChronicle.Tests.EditMode.Battle.Combat.Actions
 {
@@ -97,6 +100,40 @@ namespace ValorChronicle.Tests.EditMode.Battle.Combat.Actions
             AssertActionOrder(result, 1, 10);
             Assert.That(result.ActionResults[1].Action.CanTriggerFollowUp,
                 Is.False);
+        }
+
+        [Test]
+        public void Execute_SystemPassiveDamageCannotTriggerAttackFollowUp()
+        {
+            var battle = new CombatTriggerTestBattle();
+            bool canTriggerAttackFollowUp = true;
+            var rule = new DelegateCombatTriggerRule(context =>
+            {
+                canTriggerAttackFollowUp =
+                    context.CanTriggerAttackFollowUp;
+                return Array.Empty<CombatAction>();
+            });
+            var passive = new DamageAction(
+                1,
+                ActionOrigin.System,
+                new DamageContextBuildRequest(
+                    battle.Character,
+                    battle.Party,
+                    battle.Boss,
+                    ElementType.Dark,
+                    AttackType.Passive,
+                    AttackTag.None,
+                    1d,
+                    false,
+                    0,
+                    false));
+
+            CombatActionExecutionResult result = battle.Executor(rule).Execute(
+                new CombatActionQueue(new[] { passive }));
+
+            AssertActionOrder(result, 1);
+            Assert.That(passive.CanTriggerFollowUp, Is.False);
+            Assert.That(canTriggerAttackFollowUp, Is.False);
         }
 
         [Test]

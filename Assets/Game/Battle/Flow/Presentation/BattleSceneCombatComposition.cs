@@ -30,6 +30,8 @@ namespace ValorChronicle.Battle.Flow.Presentation
             combatStatusSources;
         private readonly IReadOnlyList<PreMatchQueueActionProviderBinding>
             preMatchQueueBindings;
+        private readonly IReadOnlyList<PostBossActionProviderBinding>
+            postBossBindings;
         private readonly IReadOnlyList<
             ShieldConditionalBossEffectSynchronizer>
             shieldConditionalBossEffectSynchronizers;
@@ -212,6 +214,8 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 new List<ShieldConditionalBossEffectDefinition>();
             var preMatchBindings =
                 new List<PreMatchQueueActionProviderBinding>();
+            var collectedPostBossBindings =
+                new List<PostBossActionProviderBinding>();
             var statusSourceKeys = new HashSet<string>(
                 StringComparer.Ordinal);
             var shieldConditionalBossEffectIds = new HashSet<string>(
@@ -434,6 +438,34 @@ namespace ValorChronicle.Battle.Flow.Presentation
                             provider));
                 }
 
+                IReadOnlyList<IPostBossActionProvider>
+                    registeredPostBossProviders =
+                        registration.PostBossActionProviders
+                        ?? throw new InvalidOperationException(
+                            $"The registrar for '{character.CharacterId}' "
+                                + "returned a null post-boss provider "
+                                + "collection.");
+                if (registeredPostBossProviders.Count > 1)
+                {
+                    throw new InvalidOperationException(
+                        $"The registrar for '{character.CharacterId}' "
+                            + "registered more than one post-boss "
+                            + "provider.");
+                }
+
+                if (registeredPostBossProviders.Count == 1)
+                {
+                    collectedPostBossBindings.Add(
+                        new PostBossActionProviderBinding(
+                            character,
+                            registeredPostBossProviders[0]
+                                ?? throw new InvalidOperationException(
+                                    $"The registrar for "
+                                        + $"'{character.CharacterId}' "
+                                        + "returned a null post-boss "
+                                        + "provider.")));
+                }
+
                 if (!registration.HasActiveAbility)
                 {
                     continue;
@@ -542,6 +574,8 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 statusSources.ToArray());
             preMatchQueueBindings = Array.AsReadOnly(
                 preMatchBindings.ToArray());
+            postBossBindings = Array.AsReadOnly(
+                collectedPostBossBindings.ToArray());
             var conditionalSynchronizers = new List<
                 ShieldConditionalBossEffectSynchronizer>(
                 shieldConditionalBossEffects.Count);
@@ -651,7 +685,8 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 boardMutationSink,
                 DifficultyId,
                 ResultBalance,
-                preMatchQueueBindings: preMatchQueueBindings);
+                preMatchQueueBindings: preMatchQueueBindings,
+                postBossBindings: postBossBindings);
             if (ResultPersistenceService != null)
             {
                 ResultPersistenceCoordinator =

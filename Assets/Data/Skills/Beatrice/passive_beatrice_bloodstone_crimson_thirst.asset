@@ -15,5 +15,5 @@ MonoBehaviour:
   id: passive_beatrice_bloodstone_crimson_thirst
   displayNameKey: beatrice.skill.passive.name
   descriptionKey: beatrice.skill.passive.description
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 0367a0990a2faa347948dd8007a2c8f1, type: 3}
   skillKind: 2

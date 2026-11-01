@@ -287,6 +287,37 @@ namespace ValorChronicle.Tests.EditMode.Bosses.Kragmor
                 KragmorDefenseState.CoreCompression);
         }
 
+        [Test]
+        public void EarthCollapsePostBossDamageUsesCommittedCoreExposure()
+        {
+            var postBossProvider = new RecordingCoreExposurePostBossProvider();
+            BattleHarness battle = CreateBattle(
+                partyHp: 100000,
+                includeExternalEffect: false,
+                postBossProvider: postBossProvider);
+            DamageActionResult postBossDamage = null;
+            battle.Bridge.PostBossCombatActionStepApplied += step =>
+            {
+                if (step.ActionStep.Result is DamageActionResult damage)
+                {
+                    postBossDamage = damage;
+                }
+            };
+
+            ResolveBossAction(battle, expectedTurn: 1);
+            ResolveBossAction(battle, expectedTurn: 2);
+            ResolveBossAction(battle, expectedTurn: 3);
+            ResolveBossAction(battle, expectedTurn: 4);
+
+            Assert.That(postBossProvider.CallCount, Is.EqualTo(4));
+            Assert.That(postBossDamage, Is.Not.Null);
+            Assert.That(postBossDamage.DamageResult
+                    .TargetTakenDamageMultiplier,
+                Is.EqualTo(1.30d).Within(0.000000001d));
+            Assert.That(battle.Runtime.CurrentDefenseState,
+                Is.EqualTo(KragmorDefenseState.CoreExposure));
+        }
+
         private const string ExternalEffectId =
             "effect_test_external_vulnerability";
 
@@ -318,7 +349,8 @@ namespace ValorChronicle.Tests.EditMode.Bosses.Kragmor
         private static BattleHarness CreateBattle(
             long partyHp,
             bool includeExternalEffect,
-            IBattleBoardMutationSink boardMutationSink = null)
+            IBattleBoardMutationSink boardMutationSink = null,
+            IPostBossActionProvider postBossProvider = null)
         {
             CharacterBattleState character = Character(partyHp);
             var party = new PartyBattleState(new[] { character });
@@ -346,6 +378,15 @@ namespace ValorChronicle.Tests.EditMode.Bosses.Kragmor
                 }));
             var coordinator = new BattleFlowCoordinator(turnLimit: 10);
             var provider = new KragmorBossCombatActionProvider(runtime);
+            IReadOnlyList<PostBossActionProviderBinding> postBossBindings =
+                postBossProvider == null
+                    ? Array.Empty<PostBossActionProviderBinding>()
+                    : new[]
+                    {
+                        new PostBossActionProviderBinding(
+                            character,
+                            postBossProvider)
+                    };
             var bridge = new BattleFlowCombatBridge(
                 coordinator,
                 party,
@@ -354,8 +395,13 @@ namespace ValorChronicle.Tests.EditMode.Bosses.Kragmor
                 new EmptyMatchEventActionProvider(),
                 provider,
                 actionIds,
+                Array.Empty<ActiveAbilityBinding>(),
+                new ActiveAbilityActionProviderRegistry(),
                 boardMutationSink
-                    ?? new ImmediateSuccessfulBoardMutationSink());
+                    ?? new ImmediateSuccessfulBoardMutationSink(),
+                difficultyId: null,
+                resultBalance: null,
+                postBossBindings: postBossBindings);
             coordinator.StartBattle();
             return new BattleHarness(
                 coordinator,
@@ -428,6 +474,41 @@ namespace ValorChronicle.Tests.EditMode.Bosses.Kragmor
                 ElementType.Fire,
                 maxHp,
                 attack: 100d);
+        }
+
+        private sealed class RecordingCoreExposurePostBossProvider
+            : IPostBossActionProvider
+        {
+            public int CallCount { get; private set; }
+
+            public IReadOnlyList<CombatAction> CreateRootActions(
+                PostBossActionContext context)
+            {
+                CallCount++;
+                if (context.Boss.Effects.FindByEffectId(
+                        KragmorRules.CoreExposureEffectId).Count == 0)
+                {
+                    return Array.Empty<CombatAction>();
+                }
+
+                return new CombatAction[]
+                {
+                    new DamageAction(
+                        context.ActionIds.Next(),
+                        ActionOrigin.System,
+                        new DamageContextBuildRequest(
+                            context.Character,
+                            context.Party,
+                            context.Boss,
+                            context.Character.Element,
+                            AttackType.Passive,
+                            AttackTag.None,
+                            1d,
+                            false,
+                            0,
+                            false))
+                };
+            }
         }
 
         private static BossBattleState Boss()

@@ -88,6 +88,9 @@ namespace ValorChronicle.Characters.BaekHyeon
                 case AttackType.DamageOverTime:
                     attackTypeMask = AttackTypeMask.DamageOverTime;
                     break;
+                case AttackType.Passive:
+                    attackTypeMask = AttackTypeMask.Passive;
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(
                         nameof(attackType),
