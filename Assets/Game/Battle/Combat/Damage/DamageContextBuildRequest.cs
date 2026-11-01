@@ -8,6 +8,9 @@ namespace ValorChronicle.Battle.Combat.Damage
     public delegate double DamageSkillCoefficientResolver(
         DamageContextBuildRequest request);
 
+    public delegate double DamageDealtDamageIncreaseRateResolver(
+        DamageContextBuildRequest request);
+
     public sealed class DamageContextBuildRequest
     {
         public const double DefaultBaseCriticalChance = 0d;
@@ -15,6 +18,8 @@ namespace ValorChronicle.Battle.Combat.Damage
 
         private readonly DamageSkillCoefficientResolver
             skillCoefficientResolver;
+        private readonly DamageDealtDamageIncreaseRateResolver
+            dealtDamageIncreaseRateResolver;
 
         public DamageContextBuildRequest(
             CharacterBattleState attacker,
@@ -32,7 +37,9 @@ namespace ValorChronicle.Battle.Combat.Damage
                 DefaultBaseCriticalDamageMultiplier,
             double actionLocalDealtDamageIncreaseRate = 0d,
             double actionLocalAttackTypeDamageIncreaseRate = 0d,
-            DamageSkillCoefficientResolver skillCoefficientResolver = null)
+            DamageSkillCoefficientResolver skillCoefficientResolver = null,
+            DamageDealtDamageIncreaseRateResolver
+                dealtDamageIncreaseRateResolver = null)
         {
             Attacker = attacker
                 ?? throw new ArgumentNullException(nameof(attacker));
@@ -75,6 +82,8 @@ namespace ValorChronicle.Battle.Combat.Damage
             AttackTags = attackTags;
             SkillCoefficient = skillCoefficient;
             this.skillCoefficientResolver = skillCoefficientResolver;
+            this.dealtDamageIncreaseRateResolver =
+                dealtDamageIncreaseRateResolver;
             AppliesCombo = appliesCombo;
             FinalComboCount = finalComboCount;
             CanCritical = canCritical;
@@ -106,6 +115,17 @@ namespace ValorChronicle.Battle.Combat.Damage
                 ? skillCoefficientResolver(this)
                 : SkillCoefficient;
             ValidateNonNegative(resolved, "Resolved skill coefficient");
+            return resolved;
+        }
+
+        internal double ResolveDealtDamageIncreaseRate()
+        {
+            double resolved = dealtDamageIncreaseRateResolver != null
+                ? dealtDamageIncreaseRateResolver(this)
+                : 0d;
+            ValidateNonNegative(
+                resolved,
+                "Resolved dealt damage increase rate");
             return resolved;
         }
 

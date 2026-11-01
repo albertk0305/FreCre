@@ -1466,6 +1466,113 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
         }
 
         [Test]
+        public void CombatStatusWithoutBadgeVisibilityKeepsNumericBadge()
+        {
+            InvokePrivate(hudController, "OnEnable");
+            BattleSceneCombatComposition composition =
+                CreateGenericStatusComposition(
+                    supportsBadgeVisibility: false,
+                    out TestStatusRegistrar registrar);
+            ConnectComposition(composition);
+            registrar.Source.CurrentCount = 3;
+            registrar.Source.IsVisible = true;
+            Assert.That(flowController.Coordinator.StartBattle(), Is.True);
+            InvokePrivate(hudController, "Start");
+
+            BattleStatusIconView status =
+                characterSlots[0].GetStatusSlot(0);
+            Assert.That(status.Root.activeSelf, Is.True);
+            Assert.That(status.IconImage.sprite,
+                Is.SameAs(genericStatusSprite));
+            Assert.That(status.ValueText.gameObject.activeSelf, Is.True);
+            Assert.That(status.ValueText.text, Is.EqualTo("3"));
+        }
+
+        [Test]
+        public void OptionalCombatStatusControlsBadgeIndependentlyOfIcon()
+        {
+            InvokePrivate(hudController, "OnEnable");
+            BattleSceneCombatComposition composition =
+                CreateGenericStatusComposition(
+                    supportsBadgeVisibility: true,
+                    out TestStatusRegistrar registrar);
+            ConnectComposition(composition);
+            var source = registrar.Source as OptionalBadgeStatusSource;
+            Assert.That(source, Is.Not.Null);
+            source.CurrentCount = 7;
+            source.IsVisible = true;
+            source.IsBadgeVisible = false;
+            Assert.That(flowController.Coordinator.StartBattle(), Is.True);
+            InvokePrivate(hudController, "Start");
+
+            BattleStatusIconView status =
+                characterSlots[0].GetStatusSlot(0);
+            Assert.That(status.Root.activeSelf, Is.True);
+            Assert.That(status.IconImage.sprite,
+                Is.SameAs(genericStatusSprite));
+            Assert.That(status.ValueText.gameObject.activeSelf, Is.False);
+            Assert.That(status.ValueText.text, Is.Empty);
+
+            source.IsBadgeVisible = true;
+            hudController.RefreshInitialSnapshot();
+            Assert.That(status.Root.activeSelf, Is.True);
+            Assert.That(status.ValueText.gameObject.activeSelf, Is.True);
+            Assert.That(status.ValueText.text, Is.EqualTo("7"));
+
+            source.IsVisible = false;
+            hudController.RefreshInitialSnapshot();
+            Assert.That(status.Root.activeSelf, Is.False);
+
+            source.IsVisible = true;
+            source.IsBadgeVisible = false;
+            hudController.RefreshInitialSnapshot();
+            Assert.That(status.Root.activeSelf, Is.True);
+            Assert.That(status.ValueText.gameObject.activeSelf, Is.False);
+        }
+
+        [Test]
+        public void BadgeFreeStatusKeepsEffectOrderAndReservedSlotPriority()
+        {
+            InvokePrivate(hudController, "OnEnable");
+            BattleSceneCombatComposition composition =
+                CreateGenericStatusComposition(
+                    supportsBadgeVisibility: true,
+                    out TestStatusRegistrar registrar);
+            ConnectComposition(composition);
+            var source = registrar.Source as OptionalBadgeStatusSource;
+            source.CurrentCount = 9;
+            source.IsVisible = true;
+            source.IsBadgeVisible = false;
+            CharacterBattleState character = composition.Party.Characters[0];
+            for (int index = 0; index < 4; index++)
+            {
+                character.Effects.ApplyEffect(CreateEffect(
+                    540 + index,
+                    $"effect_status_priority_{index}",
+                    remainingTurns: index + 1,
+                    EffectStackPolicy.SeparateInstance));
+            }
+
+            Assert.That(flowController.Coordinator.StartBattle(), Is.True);
+            InvokePrivate(hudController, "Start");
+
+            BattleCharacterSlotView slot = characterSlots[0];
+            Assert.That(character.Effects.Count, Is.EqualTo(4));
+            Assert.That(slot.GetStatusSlot(0).ValueText.text,
+                Is.EqualTo("1"));
+            Assert.That(slot.GetStatusSlot(1).ValueText.text,
+                Is.EqualTo("2"));
+            Assert.That(slot.GetStatusSlot(2).ValueText.text,
+                Is.EqualTo("3"));
+            Assert.That(slot.GetStatusSlot(3).Root.activeSelf, Is.True);
+            Assert.That(slot.GetStatusSlot(3).IconImage.sprite,
+                Is.SameAs(genericStatusSprite));
+            Assert.That(
+                slot.GetStatusSlot(3).ValueText.gameObject.activeSelf,
+                Is.False);
+        }
+
+        [Test]
         public void ActualFioraActiveImmediatelyRefreshesBlessingAndCharges()
         {
             InvokePrivate(hudController, "OnEnable");
@@ -2835,6 +2942,77 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
                 BattleResultBalanceDefaults.Create());
         }
 
+        private BattleSceneCombatComposition CreateGenericStatusComposition(
+            bool supportsBadgeVisibility,
+            out TestStatusRegistrar registrar)
+        {
+            BossDefinition bossDefinition =
+                ScriptableObject.CreateInstance<BossDefinition>();
+            createdObjects.Add(bossDefinition);
+            SetField(bossDefinition, "id", KragmorRules.BossId);
+            SetField(bossDefinition, "element", ElementType.Fire);
+            SetField(bossDefinition, "turnLimit", 25);
+            var difficulty = new BossDifficultyStats(
+                "difficulty_normal",
+                66000,
+                100d);
+            SetField(
+                bossDefinition,
+                "difficultyStats",
+                new[] { difficulty });
+            KragmorCombatConfig kragmorConfig = KragmorTestConfig.Create();
+            createdObjects.Add(kragmorConfig);
+            KragmorTestConfig.Assign(bossDefinition, kragmorConfig);
+
+            var config = ScriptableObject.CreateInstance<TestStatusConfig>();
+            createdObjects.Add(config);
+            CharacterDefinition characterDefinition =
+                ScriptableObject.CreateInstance<CharacterDefinition>();
+            createdObjects.Add(characterDefinition);
+            SetField(
+                characterDefinition,
+                "id",
+                TestStatusRegistrar.TestCharacterId);
+            SetField(characterDefinition, "element", ElementType.Fire);
+            SetField(characterDefinition, "level1Hp", 1000);
+            SetField(characterDefinition, "level1Attack", 100);
+            SetField(characterDefinition, "level100Hp", 5000);
+            SetField(characterDefinition, "level100Attack", 800);
+            SetField(characterDefinition, "combatConfig", config);
+            registrar = new TestStatusRegistrar(supportsBadgeVisibility);
+
+            return new BattleSceneCombatComposition(
+                new[]
+                {
+                    new BattlePartyMemberInput(
+                        characterDefinition.Id,
+                        partySlotIndex: 0,
+                        level: 1,
+                        awakening: 0,
+                        characterDefinition)
+                },
+                new CharacterCombatProviderRegistrarCatalog(
+                    new ICharacterCombatProviderRegistrar[] { registrar }),
+                bossDefinition,
+                kragmorConfig,
+                difficulty,
+                new SeededRandomSource(1),
+                BattleResultBalanceDefaults.Create());
+        }
+
+        private void ConnectComposition(
+            BattleSceneCombatComposition composition)
+        {
+            SetProperty(
+                combatBootstrap,
+                "CombatComposition",
+                composition);
+            flowController.Initialize(
+                composition.FlowSetup,
+                coordinator => composition.CreateBridge(coordinator));
+            bridge = composition.Bridge;
+        }
+
         private CharacterDefinition CreateFioraDefinition(
             FioraAmberwingCombatConfig config)
         {
@@ -3936,6 +4114,84 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
             }
 
             property.SetValue(target, value);
+        }
+
+        private class MutableTestStatusSource
+            : ICharacterCombatStatusSource
+        {
+            public MutableTestStatusSource(CharacterBattleState owner)
+            {
+                Owner = owner ?? throw new ArgumentNullException(
+                    nameof(owner));
+            }
+
+            public CharacterBattleState Owner { get; }
+            public string StatusId => "status_test_badge_visibility";
+            public string CharacterId => Owner.CharacterId;
+            public int PartySlotIndex => Owner.PartySlotIndex;
+            public int CurrentCount { get; set; }
+            public bool IsVisible { get; set; }
+        }
+
+        private sealed class OptionalBadgeStatusSource
+            : MutableTestStatusSource,
+                ICharacterCombatStatusBadgeVisibility
+        {
+            public OptionalBadgeStatusSource(CharacterBattleState owner)
+                : base(owner)
+            {
+            }
+
+            public bool IsBadgeVisible { get; set; }
+        }
+
+        private sealed class TestStatusRegistrar
+            : ICharacterCombatProviderRegistrar
+        {
+            public const string TestCharacterId =
+                "character_status_badge_test";
+
+            private readonly bool supportsBadgeVisibility;
+
+            public TestStatusRegistrar(bool supportsBadgeVisibility)
+            {
+                this.supportsBadgeVisibility = supportsBadgeVisibility;
+            }
+
+            public string CharacterId => TestCharacterId;
+            public Type SupportedCombatConfigType =>
+                typeof(TestStatusConfig);
+            public MutableTestStatusSource Source { get; private set; }
+
+            public CharacterCombatProviderRegistrationResult Register(
+                BattlePartyMemberInput member,
+                CharacterBattleState character,
+                BossBattleState boss,
+                CombatActionIdSequence actionIds,
+                MatchEventActionProviderRegistry matchProviders,
+                ActiveAbilityActionProviderRegistry activeProviders)
+            {
+                matchProviders.Register(
+                    character.CharacterId,
+                    new EmptyMatchProvider());
+                Source = supportsBadgeVisibility
+                    ? new OptionalBadgeStatusSource(character)
+                    : new MutableTestStatusSource(character);
+                return CharacterCombatProviderRegistrationResult
+                    .WithoutActiveAbility(
+                        Array.Empty<ICombatTriggerRule>(),
+                        Array.Empty<CombatResourceRequirement>(),
+                        new ICharacterCombatStatusSource[] { Source });
+            }
+        }
+
+        private sealed class TestStatusConfig : CombatConfigDefinition
+        {
+            public override bool TryValidate(out string errorMessage)
+            {
+                errorMessage = string.Empty;
+                return true;
+            }
         }
 
         private sealed class EmptyMatchProvider

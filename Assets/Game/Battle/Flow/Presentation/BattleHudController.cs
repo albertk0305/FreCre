@@ -1238,11 +1238,19 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 slot.GetStatusSlot(renderedCount)?.Render(
                     ResolveCombatStatusIcon(source.StatusId),
                     source.CurrentCount,
-                    badgeVisible: true);
+                    ResolveCombatStatusBadgeVisibility(source));
                 renderedCount++;
             }
 
             return renderedCount;
+        }
+
+        private static bool ResolveCombatStatusBadgeVisibility(
+            ICharacterCombatStatusSource source)
+        {
+            return !(source is ICharacterCombatStatusBadgeVisibility
+                    visibility)
+                || visibility.IsBadgeVisible;
         }
 
         private static bool IsVisibleCombatStatus(

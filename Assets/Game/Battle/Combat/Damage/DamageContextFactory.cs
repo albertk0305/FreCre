@@ -22,6 +22,8 @@ namespace ValorChronicle.Battle.Combat.Damage
             }
 
             double skillCoefficient = request.ResolveSkillCoefficient();
+            double dynamicDealtDamageIncreaseRate =
+                request.ResolveDealtDamageIncreaseRate();
             AllyDamageModifierSnapshot modifiers =
                 CombatModifierCollector.CollectAllyDamage(
                     request.Attacker,
@@ -46,9 +48,13 @@ namespace ValorChronicle.Battle.Combat.Damage
                 request.BaseCriticalDamageMultiplier,
                 modifiers.CriticalDamageIncreaseRateSum,
                 "Final critical damage multiplier");
+            double actionDealtDamageIncreaseRate = AddFinite(
+                request.ActionLocalDealtDamageIncreaseRate,
+                dynamicDealtDamageIncreaseRate,
+                "Action dealt damage increase rate");
             double dealtDamageIncreaseRateSum = AddFinite(
                 modifiers.DealtDamageIncreaseRateSum,
-                request.ActionLocalDealtDamageIncreaseRate,
+                actionDealtDamageIncreaseRate,
                 "Dealt damage increase rate sum");
             double attackTypeDamageIncreaseRateSum = AddFinite(
                 modifiers.AttackTypeDamageIncreaseRateSum,

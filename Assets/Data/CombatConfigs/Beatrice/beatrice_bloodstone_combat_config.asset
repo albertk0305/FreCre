@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45b192ab31db44059baa81af4b07b1cf, type: 3}
+  m_Name: beatrice_bloodstone_combat_config
+  m_EditorClassIdentifier: ValorChronicle.Game::ValorChronicle.Characters.Beatrice.BeatriceBloodstoneCombatConfig
+  passiveMaxDealtDamageIncreaseRate: 0.2
+  awakening3PassiveMaxDealtDamageIncreaseRate: 0.24
+  match3HpCostRate: 0.03
+  match4HpCostRate: 0.06
+  lowHpThresholdRate: 0.5
+  match3BaseCoefficient: 0.9
+  match3LowHpBonusCoefficient: 0.2
+  match4BaseCoefficient: 1.5
+  match4LowHpBonusCoefficient: 0.8
+  match5BaseCoefficient: 2.7
+  match5LostHpBonusCoefficient: 2
+  activeBaseCoefficient: 3.5
+  activeLostHpBonusCoefficient: 2
+  match5BaseLifestealRate: 0.1
+  match5LostHpLifestealRate: 0.2
+  activeBaseLifestealRate: 0.15
+  activeLostHpLifestealRate: 0.2
+  activeCooldownTurns: 8
+  awakening4Match3BaseCoefficient: 1
+  awakening4Match3LowHpBonusCoefficient: 0.22
+  awakening4Match4BaseCoefficient: 1.65
+  awakening4Match4LowHpBonusCoefficient: 0.88
+  awakening5Match5BaseCoefficient: 3
+  awakening5Match5LostHpBonusCoefficient: 2.2
+  awakening6ActiveBaseCoefficient: 4
+  awakening6ActiveLostHpBonusCoefficient: 2.4

@@ -8,6 +8,7 @@ using ValorChronicle.Battle.Combat.Integration;
 using ValorChronicle.Battle.Combat.State;
 using ValorChronicle.Characters.Build;
 using ValorChronicle.Characters.BaekHyeon;
+using ValorChronicle.Characters.Beatrice;
 using ValorChronicle.Characters.Brina;
 using ValorChronicle.Characters.Fiora;
 using ValorChronicle.Characters.Koharu;
@@ -48,7 +49,7 @@ namespace ValorChronicle.Tests.EditMode.Characters.Runtime
             CharacterRuntimeRegistrationCatalog catalog =
                 CharacterRuntimeRegistrationCatalog.CreateDefault();
 
-            Assert.That(catalog.Registrations.Count, Is.EqualTo(8));
+            Assert.That(catalog.Registrations.Count, Is.EqualTo(9));
             CharacterRuntimeRegistration registration = catalog
                 .Registrations
                 .Single(item => item.CharacterId
@@ -177,11 +178,26 @@ namespace ValorChronicle.Tests.EditMode.Characters.Runtime
             Assert.That(
                 baekHyeon.CreateLookupProvider(),
                 Is.TypeOf<BaekHyeonLookupDescriptionProvider>());
+            CharacterRuntimeRegistration beatrice = catalog.Registrations
+                .Single(item => item.CharacterId
+                    == BeatriceBloodstoneRules.CharacterId);
+            Assert.That(
+                beatrice.SupportedCombatConfigType,
+                Is.EqualTo(typeof(BeatriceBloodstoneCombatConfig)));
+            Assert.That(
+                beatrice.CreateBuildModifier(),
+                Is.TypeOf<BeatriceBloodstoneBuildModifier>());
+            Assert.That(
+                beatrice.CreateCombatRegistrar(),
+                Is.TypeOf<BeatriceBloodstoneCombatProviderRegistrar>());
+            Assert.That(
+                beatrice.CreateLookupProvider(),
+                Is.TypeOf<BeatriceBloodstoneLookupDescriptionProvider>());
             Assert.That(
                 catalog.Registrations.Select(item => item.CharacterId)
                     .Distinct()
                     .Count(),
-                Is.EqualTo(8));
+                Is.EqualTo(9));
         }
 
         [Test]

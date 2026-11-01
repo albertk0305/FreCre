@@ -93,6 +93,24 @@ namespace ValorChronicle.Battle.Combat.State
             return appliedDamage;
         }
 
+        internal long ApplyHpCost(long requestedCost)
+        {
+            if (requestedCost < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(requestedCost));
+            }
+
+            long maximumApplicableCost = CurrentHp > 1
+                ? CurrentHp - 1
+                : 0;
+            long appliedCost = Math.Min(
+                requestedCost,
+                maximumApplicableCost);
+            CurrentHp -= appliedCost;
+            return appliedCost;
+        }
+
         internal long ApplyHpHealing(long healing)
         {
             if (healing < 0)

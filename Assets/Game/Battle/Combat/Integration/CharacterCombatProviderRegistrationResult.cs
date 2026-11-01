@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using ValorChronicle.Battle.Combat.Actions;
 using ValorChronicle.Battle.Combat.Effects;
+using ValorChronicle.Battle.Combat.State;
 
 namespace ValorChronicle.Battle.Combat.Integration
 {
@@ -13,6 +14,16 @@ namespace ValorChronicle.Battle.Combat.Integration
         int PartySlotIndex { get; }
         int CurrentCount { get; }
         bool IsVisible { get; }
+    }
+
+    public interface ICharacterCombatStatusBadgeVisibility
+    {
+        bool IsBadgeVisible { get; }
+    }
+
+    public interface IPartyBattleStateCombatStatusSource
+    {
+        void BindPartyBattleState(PartyBattleState party);
     }
 
     public sealed class CharacterCombatProviderRegistrationResult

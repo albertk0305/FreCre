@@ -108,6 +108,11 @@ namespace ValorChronicle.Battle.Combat.Actions
                 return ExecuteBossDamage(bossDamageAction, executionOrder);
             }
 
+            if (action is PartyHpCostAction hpCostAction)
+            {
+                return ExecutePartyHpCost(hpCostAction, executionOrder);
+            }
+
             if (action is HealAction healAction)
             {
                 return ExecuteHealing(healAction, executionOrder);
@@ -199,6 +204,22 @@ namespace ValorChronicle.Battle.Combat.Actions
                 executionOrder,
                 context,
                 damageResult,
+                applicationResult);
+        }
+
+        private PartyHpCostActionResult ExecutePartyHpCost(
+            PartyHpCostAction action,
+            int executionOrder)
+        {
+            ValidatePartyReference(action.TargetParty);
+            PartyHpCostApplicationResult applicationResult =
+                PartyHpCostApplier.Apply(
+                    party,
+                    action.ReferenceMaxHp,
+                    action.CostRate);
+            return new PartyHpCostActionResult(
+                action,
+                executionOrder,
                 applicationResult);
         }
 

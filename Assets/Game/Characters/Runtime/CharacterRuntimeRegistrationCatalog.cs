@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using ValorChronicle.Battle.Combat.Integration;
 using ValorChronicle.Characters.Build;
 using ValorChronicle.Characters.BaekHyeon;
+using ValorChronicle.Characters.Beatrice;
 using ValorChronicle.Characters.Brina;
 using ValorChronicle.Characters.Fiora;
 using ValorChronicle.Characters.Koharu;
@@ -111,7 +112,12 @@ namespace ValorChronicle.Characters.Runtime
                         BaekHyeonRules.CharacterId,
                         () => new BaekHyeonBuildModifier(),
                         () => new BaekHyeonCombatProviderRegistrar(),
-                        () => new BaekHyeonLookupDescriptionProvider())
+                        () => new BaekHyeonLookupDescriptionProvider()),
+                    new CharacterRuntimeRegistration(
+                        BeatriceBloodstoneRules.CharacterId,
+                        () => new BeatriceBloodstoneBuildModifier(),
+                        () => new BeatriceBloodstoneCombatProviderRegistrar(),
+                        () => new BeatriceBloodstoneLookupDescriptionProvider())
                 });
         }
 

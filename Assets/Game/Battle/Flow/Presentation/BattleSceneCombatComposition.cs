@@ -317,6 +317,12 @@ namespace ValorChronicle.Battle.Flow.Presentation
                                 + "an ID.");
                     }
 
+                    if (source is IPartyBattleStateCombatStatusSource
+                        partyStateSource)
+                    {
+                        partyStateSource.BindPartyBattleState(Party);
+                    }
+
                     string sourceKey = source.PartySlotIndex.ToString(
                             System.Globalization.CultureInfo.InvariantCulture)
                         + "\u001f"

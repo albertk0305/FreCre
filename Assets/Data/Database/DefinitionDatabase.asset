@@ -21,6 +21,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: a6498c31b33147738923b4b993c970bf, type: 2}
   - {fileID: 11400000, guid: c0020000000000000000000000000001, type: 2}
   - {fileID: 11400000, guid: 7f0b9cf2a8d14a33a29d9e9d4a1e1103, type: 2}
+  - {fileID: 11400000, guid: a893231bd67540e6bbb6973491c49bbc, type: 2}
   bosses:
   - {fileID: 11400000, guid: c9740748b1c32254788603fedb0a224b, type: 2}
   skills:
@@ -69,6 +70,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 7f0b9cf2a8d14a33a29d9e9d4a1e1107, type: 2}
   - {fileID: 11400000, guid: 7f0b9cf2a8d14a33a29d9e9d4a1e1108, type: 2}
   - {fileID: 11400000, guid: 7f0b9cf2a8d14a33a29d9e9d4a1e1109, type: 2}
+  - {fileID: 11400000, guid: 3bb78494c85c4ba3a7a78e713381c65e, type: 2}
+  - {fileID: 11400000, guid: e1a55a078e1d46b082e466f3c494bb60, type: 2}
+  - {fileID: 11400000, guid: 0ff9cb480bd44223b28849f02183df44, type: 2}
+  - {fileID: 11400000, guid: 1e45c56fafd34001adf05f04fcd1f25d, type: 2}
+  - {fileID: 11400000, guid: 4a3d1d0818954b779ce921568d4fe6fe, type: 2}
   effects:
   - {fileID: 11400000, guid: 575d814cdc84482cb91219cdea43fb56, type: 2}
   - {fileID: 11400000, guid: d67e292ae6ba40e7b51fc9a9a54dca91, type: 2}
