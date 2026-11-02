@@ -10,7 +10,6 @@ using ValorChronicle.Battle.Combat.Actions;
 using ValorChronicle.Battle.Combat.Effects;
 using ValorChronicle.Battle.Combat.Integration;
 using ValorChronicle.Battle.Combat.State;
-using ValorChronicle.Bosses.Kragmor;
 using ValorChronicle.Core.Bootstrap;
 using ValorChronicle.Core.Logging;
 using ValorChronicle.Data.Database;
@@ -366,6 +365,7 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 ?? BattleResultKind.None);
             if (resultHudFrozen)
             {
+                SetSlotsVisible(bossIntentSlots, false);
                 RefreshCombatState();
                 RefreshActiveAvailability();
                 return;
@@ -597,6 +597,7 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 || IsPendingTurnLimitResult(phase, context))
             {
                 resultHudFrozen = true;
+                SetSlotsVisible(bossIntentSlots, false);
                 RefreshCombatState();
                 RefreshActiveAvailability();
                 return;
@@ -642,6 +643,7 @@ namespace ValorChronicle.Battle.Flow.Presentation
             if (IsNormalTerminalResult(result))
             {
                 resultHudFrozen = true;
+                SetSlotsVisible(bossIntentSlots, false);
                 RefreshCombatState();
                 RefreshActiveAvailability();
                 RefreshStatusSnapshot();
@@ -816,7 +818,7 @@ namespace ValorChronicle.Battle.Flow.Presentation
             int slotCount = bossIntentSlots?.Length ?? 0;
             BattleSceneCombatComposition composition =
                 battleSceneCombatBootstrap?.CombatComposition;
-            IKragmorBossIntentSource source =
+            IBossIntentSource source =
                 battleSceneCombatBootstrap?.BossIntentSource;
             if (slotCount == 0
                 || battleFlowController?.Context == null
@@ -830,18 +832,45 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 return;
             }
 
-            IReadOnlyList<KragmorBossIntentPreview> forecast =
-                source.GetIntentForecast(slotCount);
-            int renderedCount = Math.Min(forecast.Count, slotCount);
+            RenderBossIntentForecast(source, slotCount);
+        }
+
+        private void RenderBossIntentForecast(
+            IBossIntentSource source,
+            int slotCount)
+        {
+            int renderSlotCount = Math.Min(
+                Math.Max(0, slotCount),
+                bossIntentSlots?.Length ?? 0);
+            if (source == null || renderSlotCount == 0)
+            {
+                SetSlotsVisible(bossIntentSlots, false);
+                return;
+            }
+
+            IReadOnlyList<BossIntentPreview> forecast =
+                source.GetIntentForecast(renderSlotCount)
+                ?? Array.Empty<BossIntentPreview>();
+            int renderedCount = Math.Min(
+                forecast.Count,
+                renderSlotCount);
             for (int index = 0; index < renderedCount; index++)
             {
-                KragmorBossIntentPreview preview = forecast[index];
+                BossIntentPreview preview = forecast[index];
+                if (preview == null)
+                {
+                    bossIntentSlots[index]?.SetVisible(false);
+                    continue;
+                }
+
                 bossIntentSlots[index]?.Render(
-                    ResolveIntentIcon(preview.Intent.SkillId),
+                    ResolveIntentIcon(preview.SkillId),
                     preview.TurnsUntilAction);
             }
 
-            for (int index = renderedCount; index < slotCount; index++)
+            for (int index = renderedCount;
+                index < renderSlotCount;
+                index++)
             {
                 bossIntentSlots[index]?.SetVisible(false);
             }

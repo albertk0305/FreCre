@@ -5,7 +5,6 @@ using ValorChronicle.Battle.Board.Presentation;
 using ValorChronicle.Battle.Combat.Integration;
 using ValorChronicle.Battle.Combat.State;
 using ValorChronicle.Battle.Entry;
-using ValorChronicle.Bosses.Kragmor;
 using ValorChronicle.Characters.Runtime;
 using ValorChronicle.Core.Bootstrap;
 using ValorChronicle.Core.Logging;
@@ -32,7 +31,7 @@ namespace ValorChronicle.Battle.Flow.Presentation
 
         public bool HasInitializedFlow { get; private set; }
         public bool HasInitializedCombat => CombatComposition?.Bridge != null;
-        public IKragmorBossIntentSource BossIntentSource =>
+        public IBossIntentSource BossIntentSource =>
             CombatComposition?.BossIntentSource;
         public IBossVisualStateSource BossVisualStateSource =>
             CombatComposition?.BossVisualStateSource;
@@ -240,9 +239,7 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 composition = new BattleSceneCombatComposition(
                     partyResolution.Members,
                     characterRegistrars,
-                    encounter.Boss,
-                    encounter.KragmorConfig,
-                    encounter.Difficulty,
+                    encounter,
                     bootstrapper.RandomSource,
                     selectedResultBalance.CreateBalance(),
                     saveService);

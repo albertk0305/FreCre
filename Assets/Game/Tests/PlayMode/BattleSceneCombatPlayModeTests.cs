@@ -604,8 +604,9 @@ namespace ValorChronicle.Tests.PlayMode
             Assert.That(combat.Boss.Attack, Is.EqualTo(850d));
             Assert.That(combatBootstrap.BossIntentSource,
                 Is.SameAs(combat.BossIntentSource));
-            Assert.That(combat.BossIntentSource.NextIntent.ActionKind,
-                Is.EqualTo(KragmorActionKind.ColossusIronFist));
+            Assert.That(
+                combat.BossIntentSource.GetIntentForecast(1)[0].SkillId,
+                Is.EqualTo(KragmorRules.ColossusIronFistSkillId));
             Assert.That(combat.Boss.Resources.Get(
                     WaterElementResource.Id).MaxAmount,
                 Is.EqualTo(5));

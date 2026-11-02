@@ -1,8 +1,8 @@
 using System;
-using System.Globalization;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using ValorChronicle.Bosses.Kragmor;
+using ValorChronicle.Battle.Combat.Integration;
 using ValorChronicle.Core.Logging;
 
 namespace ValorChronicle.Battle.Flow.Presentation
@@ -19,6 +19,7 @@ namespace ValorChronicle.Battle.Flow.Presentation
         private Button abortBattleButton;
         private BattleFlowCoordinator subscribedCoordinator;
         private BattleSceneCombatBootstrap combatBootstrap;
+        private IBossIntentSource observedIntentSource;
         public string StatusText { get; private set; } = string.Empty;
         public string BossIntentText { get; private set; } = string.Empty;
         public bool EndBattleButtonsInteractable { get; private set; }
@@ -59,6 +60,28 @@ namespace ValorChronicle.Battle.Flow.Presentation
             if (panelRoot != null)
             {
                 panelRoot.SetActive(false);
+            }
+        }
+
+        private void Update()
+        {
+            if (subscribedCoordinator == null)
+            {
+                SubscribeToFlow();
+                if (subscribedCoordinator != null)
+                {
+                    RefreshState();
+                }
+            }
+
+            IBossIntentSource currentIntentSource =
+                ResolveBossIntentSource();
+            if (!ReferenceEquals(
+                    currentIntentSource,
+                    observedIntentSource))
+            {
+                observedIntentSource = currentIntentSource;
+                RefreshState();
             }
         }
 
@@ -104,12 +127,14 @@ namespace ValorChronicle.Battle.Flow.Presentation
         {
             if (subscribedCoordinator == null)
             {
+                observedIntentSource = null;
                 return;
             }
 
             subscribedCoordinator.PhaseChanged -= HandlePhaseChanged;
             subscribedCoordinator.ResultReached -= HandleResultReached;
             subscribedCoordinator = null;
+            observedIntentSource = null;
         }
 
         private void HandlePhaseChanged(BattlePhase phase)
@@ -132,7 +157,10 @@ namespace ValorChronicle.Battle.Flow.Presentation
             BattlePhase phase = context?.Phase ?? BattlePhase.NotStarted;
             BattleResultKind result =
                 context?.Result ?? BattleResultKind.None;
-            BossIntentText = FormatBossIntent(ResolveBossIntent());
+            BossIntentText = FormatBossIntent(
+                result == BattleResultKind.None
+                    ? ResolveBossIntent()
+                    : null);
 
             StatusText =
                 $"Turn: {currentTurn} / {turnLimit}\n" +
@@ -158,30 +186,41 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 EndBattleButtonsInteractable);
         }
 
-        private KragmorBossIntent ResolveBossIntent()
+        private BossIntentPreview ResolveBossIntent()
+        {
+            IBossIntentSource source = ResolveBossIntentSource();
+            observedIntentSource = source;
+            if (source == null)
+            {
+                return null;
+            }
+
+            IReadOnlyList<BossIntentPreview> forecast =
+                source.GetIntentForecast(1);
+            return forecast != null && forecast.Count > 0
+                ? forecast[0]
+                : null;
+        }
+
+        private IBossIntentSource ResolveBossIntentSource()
         {
             if (combatBootstrap == null)
             {
                 combatBootstrap = GetComponent<BattleSceneCombatBootstrap>();
             }
 
-            return combatBootstrap?.BossIntentSource?.NextIntent;
+            return combatBootstrap?.BossIntentSource;
         }
 
-        private static string FormatBossIntent(KragmorBossIntent intent)
+        private static string FormatBossIntent(BossIntentPreview intent)
         {
             if (intent == null)
             {
                 return "Boss Intent: Unavailable";
             }
 
-            return $"Boss Intent: {intent.ActionKind} | "
-                + $"Direct: {intent.HasDirectDamage.ToString().ToLowerInvariant()} | "
-                + $"Heavy: {intent.IsHeavy.ToString().ToLowerInvariant()} | "
-                + "Coefficient: "
-                + intent.DamageCoefficient.ToString(
-                    "0.00",
-                    CultureInfo.InvariantCulture);
+            return $"Boss Intent: {intent.SkillId} | "
+                + $"Turns Until Action: {intent.TurnsUntilAction}";
         }
 
         private void BuildPanelIfNeeded()

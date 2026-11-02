@@ -1390,9 +1390,10 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
             config = KragmorTestConfig.Create();
             createdObjects.Add(config);
             var serialized = new SerializedObject(boss);
-            serialized.FindProperty("id").stringValue = "test_boss";
+            serialized.FindProperty("id").stringValue =
+                KragmorRules.BossId;
             serialized.FindProperty("element").enumValueIndex =
-                (int)ElementType.Grass;
+                (int)ElementType.Fire;
             serialized.FindProperty("turnLimit").intValue = 25;
             serialized.FindProperty("combatConfig").objectReferenceValue =
                 config;

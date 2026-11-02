@@ -109,6 +109,39 @@ namespace ValorChronicle.Tests.EditMode.Bosses.Kragmor
         }
 
         [Test]
+        public void CommonForecastProjectsTypedForecastWithoutAdvancingPattern()
+        {
+            var runtime = new KragmorBattleRuntimeState(
+                KragmorTestConfig.Create());
+            var provider = new KragmorBossCombatActionProvider(runtime);
+            var source = (IBossIntentSource)provider;
+
+            IReadOnlyList<BossIntentPreview> forecast =
+                source.GetIntentForecast(8);
+
+            Assert.That(runtime.PatternIndex, Is.Zero);
+            Assert.That(
+                forecast.Select(item => item.SkillId),
+                Is.EqualTo(new[]
+                {
+                    KragmorRules.ColossusIronFistSkillId,
+                    KragmorRules.RockshardEruptionSkillId,
+                    KragmorRules.CoreCompressionSkillId,
+                    KragmorRules.EarthCollapseSkillId,
+                    KragmorRules.ColossusIronFistSkillId,
+                    KragmorRules.RockshardEruptionSkillId,
+                    KragmorRules.CoreCompressionSkillId,
+                    KragmorRules.EarthCollapseSkillId
+                }));
+            Assert.That(
+                forecast.Select(item => item.TurnsUntilAction),
+                Is.EqualTo(Enumerable.Range(1, 8)));
+            Assert.That(source.GetIntentForecast(0), Is.Empty);
+            Assert.That(source.GetIntentForecast(-1), Is.Empty);
+            Assert.That(runtime.PatternIndex, Is.Zero);
+        }
+
+        [Test]
         public void ForecastQueryIsSideEffectFreeAndHandlesNonPositiveCount()
         {
             var runtime = new KragmorBattleRuntimeState(KragmorTestConfig.Create());

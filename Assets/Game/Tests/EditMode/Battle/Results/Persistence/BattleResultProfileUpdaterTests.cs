@@ -183,6 +183,53 @@ namespace ValorChronicle.Tests.EditMode.Battle.Results.Persistence
         }
 
         [Test]
+        public void Apply_SeparatesRecordsRewardsAndScoresByBossId()
+        {
+            ProfileSaveData profile = Profile();
+            BattleFinalResult firstBoss = Result(
+                BattleResultKind.Defeat,
+                BattleDifficultyIds.Challenge,
+                score: 80000L,
+                finishedTurn: 10,
+                bossId: "boss_test");
+            BattleFinalResult secondBoss = Result(
+                BattleResultKind.Defeat,
+                BattleDifficultyIds.Challenge,
+                score: 20000L,
+                finishedTurn: 10,
+                bossId: "second_boss");
+
+            Apply(profile, firstBoss);
+            Apply(profile, secondBoss);
+
+            Assert.That(profile.BossRecords, Has.Count.EqualTo(2));
+            BossRecordSaveData firstRecord = profile.BossRecords.Single(
+                record => record.BossId == "boss_test");
+            BossRecordSaveData secondRecord = profile.BossRecords.Single(
+                record => record.BossId == "second_boss");
+            Assert.That(firstRecord.DifficultyId,
+                Is.EqualTo(BattleDifficultyIds.Challenge));
+            Assert.That(secondRecord.DifficultyId,
+                Is.EqualTo(BattleDifficultyIds.Challenge));
+            Assert.That(firstRecord.HighScore, Is.EqualTo(80000L));
+            Assert.That(secondRecord.HighScore, Is.EqualTo(20000L));
+            Assert.That(firstRecord.HighestGradeId,
+                Is.EqualTo(BattleGradeIds.S));
+            Assert.That(secondRecord.HighestGradeId,
+                Is.EqualTo(BattleGradeIds.C));
+            Assert.That(firstRecord.ClaimedFirstRewardGradeIds,
+                Is.EqualTo(new[]
+                {
+                    BattleGradeIds.C,
+                    BattleGradeIds.B,
+                    BattleGradeIds.A,
+                    BattleGradeIds.S
+                }));
+            Assert.That(secondRecord.ClaimedFirstRewardGradeIds,
+                Is.EqualTo(new[] { BattleGradeIds.C }));
+        }
+
+        [Test]
         public void Apply_DuplicateBossDifficultyRecordsFailExplicitly()
         {
             ProfileSaveData profile = Profile(Record());
@@ -401,12 +448,13 @@ namespace ValorChronicle.Tests.EditMode.Battle.Results.Persistence
             BattleResultKind endReason,
             string difficultyId,
             long score,
-            int finishedTurn)
+            int finishedTurn,
+            string bossId = "boss_test")
         {
             return BattleResultFinalizer.Create(
                 new BattleFinalizationInput(
                     endReason,
-                    "boss_test",
+                    bossId,
                     difficultyId,
                     bossMaxHp: 100000L,
                     turnLimit: 25,

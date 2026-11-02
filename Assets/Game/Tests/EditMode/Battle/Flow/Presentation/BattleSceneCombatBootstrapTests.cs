@@ -275,8 +275,9 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
             Assert.That(combatBootstrap.BossIntentSource,
                 Is.SameAs(composition.BossIntentSource));
             Assert.That(
-                combatBootstrap.BossIntentSource.NextIntent.ActionKind,
-                Is.EqualTo(KragmorActionKind.ColossusIronFist));
+                combatBootstrap.BossIntentSource
+                    .GetIntentForecast(1)[0].SkillId,
+                Is.EqualTo(KragmorRules.ColossusIronFistSkillId));
             Assert.That(composition.BossActionProvider.RuntimeState,
                 Is.SameAs(composition.KragmorRuntimeState));
             Assert.That(composition.KragmorRuntimeState.PatternIndex, Is.Zero);
@@ -300,7 +301,7 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
             Assert.That(composition.ResultBalance.RemainingTurnBonusRate,
                 Is.EqualTo(0.30m));
             Assert.That(
-                composition.KragmorConfig,
+                composition.BossDefinition.CombatConfig,
                 Is.SameAs(bossDefinition.CombatConfig));
             Assert.That(composition.ActiveBindings[0].CharacterId,
                 Is.EqualTo(mareaDefinition.Id));
@@ -466,7 +467,7 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
                 Is.EqualTo(expectedMaxHp));
             Assert.That(composition.Boss.Attack,
                 Is.EqualTo(expectedAttack));
-            Assert.That(composition.KragmorConfig,
+            Assert.That(composition.BossDefinition.CombatConfig,
                 Is.SameAs(bossDefinition.CombatConfig));
             Assert.That(battleEntryService.HasPendingRequest, Is.False);
             Assert.That(flowController.Coordinator.StartBattle(), Is.True);

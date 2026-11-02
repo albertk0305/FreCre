@@ -413,7 +413,7 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
         [TestCase(BattleResultKind.Victory)]
         [TestCase(BattleResultKind.Defeat)]
         [TestCase(BattleResultKind.TurnLimitReached)]
-        public void NormalResultPreservesLastRenderedHudWhileInputsStayLocked(
+        public void NormalResultHidesIntentWhilePreservingOtherHud(
             BattleResultKind result)
         {
             InvokePrivate(hudController, "OnEnable");
@@ -453,9 +453,7 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
             }
 
             Assert.That(flowController.Context.Result, Is.EqualTo(result));
-            Assert.That(bossIntentSlots[0].Root.activeSelf, Is.True);
-            Assert.That(bossIntentSlots[0].RemainingTurnText.text,
-                Is.EqualTo("2"));
+            AssertAllBossIntentSlotsHiddenAndCleared();
             Assert.That(matchEventSlots[0].Root.activeSelf, Is.True);
             Assert.That(matchEventSlots[0].BlockCountText.text,
                 Is.EqualTo("3"));
@@ -470,7 +468,7 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
 
             InvokePrivate(hudController, "OnDisable");
             InvokePrivate(hudController, "OnEnable");
-            Assert.That(bossIntentSlots[0].Root.activeSelf, Is.True);
+            AssertAllBossIntentSlotsHiddenAndCleared();
             Assert.That(matchEventSlots[0].Root.activeSelf, Is.True);
             Assert.That(hudController.ComboText.text, Is.EqualTo("Combo 7"));
             Assert.That(occupiedSlot.ActiveButton.interactable, Is.False);
@@ -489,7 +487,7 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
 
             Assert.That(flowController.Coordinator.AbortBattle(), Is.True);
 
-            Assert.That(bossIntentSlots[0].Root.activeSelf, Is.False);
+            AssertAllBossIntentSlotsHiddenAndCleared();
             AssertAllMatchSlotsHidden();
             Assert.That(occupiedSlot.ActiveButton.interactable, Is.False);
             Assert.That(boardController.IsExternalInputEnabled, Is.False);
@@ -497,7 +495,7 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
         }
 
         [Test]
-        public void VictoryPreservesIntentAndPendingQueuePresentation()
+        public void VictoryHidesIntentAndPreservesPendingQueuePresentation()
         {
             InvokePrivate(hudController, "OnEnable");
             BattleSceneCombatComposition composition =
@@ -520,7 +518,7 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
 
             Assert.That(flowController.Context.Result,
                 Is.EqualTo(BattleResultKind.Victory));
-            Assert.That(bossIntentSlots[0].Root.activeSelf, Is.True);
+            AssertAllBossIntentSlotsHiddenAndCleared();
             Assert.That(matchEventSlots[0].Root.activeSelf, Is.True);
             Assert.That(flowController.Coordinator.PendingMatchEventCount,
                 Is.Zero);
@@ -2383,6 +2381,58 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
         }
 
         [Test]
+        public void CommonIntentSourceRendersNonKragmorSkillAndClearsStaleData()
+        {
+            const string fakeSkillId = "test_boss_action";
+            SkillDefinition fakeSkill = CreateSkillDefinition(
+                fakeSkillId,
+                darkSprite);
+            var skills = new List<SkillDefinition>(
+                presentationDatabase.Skills)
+            {
+                fakeSkill
+            };
+            SetField(presentationDatabase, "skills", skills.ToArray());
+            presentationDatabase.Initialize();
+            InvokePrivate(hudController, "Awake");
+            var source = new FixedBossIntentSource(
+                new BossIntentPreview(2, fakeSkillId),
+                new BossIntentPreview(3, "missing_boss_action"));
+
+            typeof(BattleHudController).GetMethod(
+                    "RenderBossIntentForecast",
+                    BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(
+                    hudController,
+                    new object[] { source, bossIntentSlots.Length });
+
+            Assert.That(bossIntentSlots[0].Root.activeSelf, Is.True);
+            Assert.That(bossIntentSlots[0].ActionImage.sprite,
+                Is.SameAs(darkSprite));
+            Assert.That(bossIntentSlots[0].RemainingTurnText.text,
+                Is.EqualTo("2"));
+            Assert.That(bossIntentSlots[1].Root.activeSelf, Is.True);
+            Assert.That(bossIntentSlots[1].ActionImage.sprite,
+                Is.SameAs(genericIntentSprite));
+            Assert.That(bossIntentSlots[1].RemainingTurnText.text,
+                Is.EqualTo("3"));
+            Assert.That(bossIntentSlots[2].Root.activeSelf, Is.False);
+
+            typeof(BattleHudController).GetMethod(
+                    "RenderBossIntentForecast",
+                    BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(
+                    hudController,
+                    new object[]
+                    {
+                        new FixedBossIntentSource(),
+                        bossIntentSlots.Length
+                    });
+
+            AssertAllBossIntentSlotsHiddenAndCleared();
+        }
+
+        [Test]
         public void MissingIntentSourceKeepsAllForecastSlotsHidden()
         {
             InvokePrivate(hudController, "OnEnable");
@@ -2390,12 +2440,7 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
             Assert.That(flowController.Coordinator.StartBattle(), Is.True);
             InvokePrivate(hudController, "Start");
 
-            for (int index = 0; index < bossIntentSlots.Length; index++)
-            {
-                Assert.That(bossIntentSlots[index].Root.activeSelf, Is.False);
-                Assert.That(bossIntentSlots[index].RemainingTurnText.text,
-                    Is.Empty);
-            }
+            AssertAllBossIntentSlotsHiddenAndCleared();
         }
 
         [Test]
@@ -3292,6 +3337,22 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
                 Assert.That(matchEventSlots[index].Root.activeSelf, Is.False);
                 Assert.That(matchEventSlots[index].BlockCountText.text,
                     Is.Empty);
+            }
+        }
+
+        private void AssertAllBossIntentSlotsHiddenAndCleared()
+        {
+            for (int index = 0; index < bossIntentSlots.Length; index++)
+            {
+                Assert.That(
+                    bossIntentSlots[index].Root.activeSelf,
+                    Is.False);
+                Assert.That(
+                    bossIntentSlots[index].RemainingTurnText.text,
+                    Is.Empty);
+                Assert.That(
+                    bossIntentSlots[index].ActionImage.sprite,
+                    Is.SameAs(genericIntentSprite));
             }
         }
 
@@ -4211,6 +4272,31 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
                 BossCombatActionContext context)
             {
                 return Array.Empty<CombatAction>();
+            }
+        }
+
+        private sealed class FixedBossIntentSource : IBossIntentSource
+        {
+            private readonly IReadOnlyList<BossIntentPreview> forecast;
+
+            public FixedBossIntentSource(
+                params BossIntentPreview[] forecast)
+            {
+                this.forecast = forecast
+                    ?? Array.Empty<BossIntentPreview>();
+            }
+
+            public IReadOnlyList<BossIntentPreview> GetIntentForecast(
+                int count)
+            {
+                int resultCount = Math.Min(count, forecast.Count);
+                var result = new BossIntentPreview[resultCount];
+                for (int index = 0; index < resultCount; index++)
+                {
+                    result[index] = forecast[index];
+                }
+
+                return result;
             }
         }
 

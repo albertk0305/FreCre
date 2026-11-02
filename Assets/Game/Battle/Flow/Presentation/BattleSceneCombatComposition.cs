@@ -6,6 +6,7 @@ using ValorChronicle.Battle.Combat.Damage;
 using ValorChronicle.Battle.Combat.Effects;
 using ValorChronicle.Battle.Combat.Integration;
 using ValorChronicle.Battle.Combat.State;
+using ValorChronicle.Battle.Entry;
 using ValorChronicle.Battle.Results;
 using ValorChronicle.Battle.Results.Persistence;
 using ValorChronicle.Bosses.Kragmor;
@@ -51,9 +52,10 @@ namespace ValorChronicle.Battle.Flow.Presentation
             : this(
                 partyMembers,
                 characterRegistrars,
-                bossDefinition,
-                kragmorConfig,
-                bossDifficultyStats,
+                CreateKragmorCompatibilityEncounter(
+                    bossDefinition,
+                    kragmorConfig,
+                    bossDifficultyStats),
                 randomSource,
                 resultBalance,
                 saveService: null)
@@ -66,6 +68,42 @@ namespace ValorChronicle.Battle.Flow.Presentation
             BossDefinition bossDefinition,
             KragmorCombatConfig kragmorConfig,
             BossDifficultyStats bossDifficultyStats,
+            IRandomSource randomSource,
+            BattleResultBalance resultBalance,
+            SaveService saveService)
+            : this(
+                partyMembers,
+                characterRegistrars,
+                CreateKragmorCompatibilityEncounter(
+                    bossDefinition,
+                    kragmorConfig,
+                    bossDifficultyStats),
+                randomSource,
+                resultBalance,
+                saveService)
+        {
+        }
+
+        public BattleSceneCombatComposition(
+            IReadOnlyList<BattlePartyMemberInput> partyMembers,
+            CharacterCombatProviderRegistrarCatalog characterRegistrars,
+            BattleEncounterDefinition encounter,
+            IRandomSource randomSource,
+            BattleResultBalance resultBalance)
+            : this(
+                partyMembers,
+                characterRegistrars,
+                encounter,
+                randomSource,
+                resultBalance,
+                saveService: null)
+        {
+        }
+
+        public BattleSceneCombatComposition(
+            IReadOnlyList<BattlePartyMemberInput> partyMembers,
+            CharacterCombatProviderRegistrarCatalog characterRegistrars,
+            BattleEncounterDefinition encounter,
             IRandomSource randomSource,
             BattleResultBalance resultBalance,
             SaveService saveService)
@@ -89,38 +127,13 @@ namespace ValorChronicle.Battle.Flow.Presentation
                     nameof(characterRegistrars));
             }
 
-            if (bossDefinition == null)
+            if (encounter == null)
             {
-                throw new ArgumentNullException(nameof(bossDefinition));
+                throw new ArgumentNullException(nameof(encounter));
             }
 
-            if (kragmorConfig == null)
-            {
-                throw new ArgumentNullException(nameof(kragmorConfig));
-            }
-
-            if (!ReferenceEquals(
-                bossDefinition.CombatConfig,
-                kragmorConfig))
-            {
-                throw new ArgumentException(
-                    "Kragmor config must be the config referenced by the "
-                        + "BossDefinition.",
-                    nameof(kragmorConfig));
-            }
-
-            if (!kragmorConfig.TryValidate(out string kragmorConfigError))
-            {
-                throw new ArgumentException(
-                    kragmorConfigError,
-                    nameof(kragmorConfig));
-            }
-
-            if (bossDifficultyStats == null)
-            {
-                throw new ArgumentNullException(
-                    nameof(bossDifficultyStats));
-            }
+            BossDefinition bossDefinition = encounter.Boss;
+            BossDifficultyStats bossDifficultyStats = encounter.Difficulty;
 
             if (randomSource == null)
             {
@@ -166,6 +179,7 @@ namespace ValorChronicle.Battle.Flow.Presentation
             }
 
             Party = new PartyBattleState(characterStates);
+            BossDefinition = bossDefinition;
             Boss = new BossBattleState(
                 bossDefinition.Id,
                 bossDefinition.Element,
@@ -175,18 +189,15 @@ namespace ValorChronicle.Battle.Flow.Presentation
             ResultBalance = resultBalance;
 
             ActionIds = new CombatActionIdSequence();
-            KragmorConfig = kragmorConfig;
-            KragmorRuntimeState = new KragmorBattleRuntimeState(
-                kragmorConfig);
-            KragmorDefenseEffectFactory.InitializeBattle(
+            BossRuntime = encounter.RuntimeFactory.Create(
+                bossDefinition,
                 Boss,
-                KragmorRuntimeState,
-                ActionIds);
+                ActionIds) ?? throw new InvalidOperationException(
+                    $"Boss runtime factory for '{bossDefinition.Id}' "
+                        + "returned null.");
 
             MatchProviders = new MatchEventActionProviderRegistry();
             ActiveProviders = new ActiveAbilityActionProviderRegistry();
-            BossActionProvider = new KragmorBossCombatActionProvider(
-                KragmorRuntimeState);
 
             var membersBySlot = new Dictionary<int, BattlePartyMemberInput>(
                 partyMembers.Count);
@@ -620,7 +631,12 @@ namespace ValorChronicle.Battle.Flow.Presentation
         public BattleFlowSetup FlowSetup { get; }
         public string DifficultyId { get; }
         public BattleResultBalance ResultBalance { get; }
-        public KragmorCombatConfig KragmorConfig { get; }
+        public BossDefinition BossDefinition { get; }
+        public BossCombatRuntime BossRuntime { get; }
+        public IBossCombatActionProvider CombatActionProvider =>
+            BossRuntime.ActionProvider;
+        public IBossIntentSource BossIntentSource =>
+            BossRuntime.IntentSource;
         public PartyBattleState Party { get; }
         public BossBattleState Boss { get; }
         public CombatActionIdSequence ActionIds { get; }
@@ -628,12 +644,15 @@ namespace ValorChronicle.Battle.Flow.Presentation
         public CombatActionExecutor Executor { get; }
         public MatchEventActionProviderRegistry MatchProviders { get; }
         public ActiveAbilityActionProviderRegistry ActiveProviders { get; }
-        public KragmorBattleRuntimeState KragmorRuntimeState { get; }
-        public KragmorBossCombatActionProvider BossActionProvider { get; }
-        public IKragmorBossIntentSource BossIntentSource =>
-            BossActionProvider;
+
+        // Temporary Kragmor diagnostics retained for detailed regression
+        // tests. Runtime composition and presentation use common contracts.
+        public KragmorBattleRuntimeState KragmorRuntimeState =>
+            BossActionProvider?.RuntimeState;
+        public KragmorBossCombatActionProvider BossActionProvider =>
+            BossRuntime.ActionProvider as KragmorBossCombatActionProvider;
         public IBossVisualStateSource BossVisualStateSource =>
-            KragmorRuntimeState;
+            BossRuntime.VisualStateSource;
         public IReadOnlyList<ActiveAbilityBinding> ActiveBindings =>
             activeBindings;
         public IReadOnlyList<ICharacterCombatStatusSource>
@@ -678,7 +697,7 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 Boss,
                 Executor,
                 MatchProviders,
-                BossActionProvider,
+                CombatActionProvider,
                 ActionIds,
                 activeBindings,
                 ActiveProviders,
@@ -700,6 +719,50 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 HandleBattleResultReached;
 
             return Bridge;
+        }
+
+        private static BattleEncounterDefinition
+            CreateKragmorCompatibilityEncounter(
+                BossDefinition bossDefinition,
+                KragmorCombatConfig kragmorConfig,
+                BossDifficultyStats bossDifficultyStats)
+        {
+            if (bossDefinition == null)
+            {
+                throw new ArgumentNullException(nameof(bossDefinition));
+            }
+
+            if (kragmorConfig == null)
+            {
+                throw new ArgumentNullException(nameof(kragmorConfig));
+            }
+
+            if (!ReferenceEquals(
+                bossDefinition.CombatConfig,
+                kragmorConfig))
+            {
+                throw new ArgumentException(
+                    "Kragmor config must be the config referenced by the "
+                        + "BossDefinition.",
+                    nameof(kragmorConfig));
+            }
+
+            BossCombatRuntimeFactoryCatalog runtimeFactories =
+                BossCombatRuntimeFactoryCatalog.CreateDefault();
+            if (!runtimeFactories.TryGetFactory(
+                    bossDefinition.Id,
+                    out IBossCombatRuntimeFactory runtimeFactory))
+            {
+                throw new ArgumentException(
+                    $"Boss '{bossDefinition.Id}' has no registered runtime "
+                        + "Factory.",
+                    nameof(bossDefinition));
+            }
+
+            return new BattleEncounterDefinition(
+                bossDefinition,
+                bossDifficultyStats,
+                runtimeFactory);
         }
 
         private void BindActiveAbilityCooldownReductionHandles(

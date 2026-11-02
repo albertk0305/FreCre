@@ -42,6 +42,11 @@ namespace ValorChronicle.Battle.Flow.Presentation
             {
                 remainingTurnText.text = string.Empty;
             }
+
+            if (!visible && actionImage != null)
+            {
+                actionImage.sprite = defaultActionSprite;
+            }
         }
 
         public void Render(Sprite actionSprite, int turnsUntilAction)

@@ -4,10 +4,10 @@ using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.UI;
+using ValorChronicle.Battle.Combat.Integration;
 using ValorChronicle.Battle.Board.Presentation;
 using ValorChronicle.Battle.Flow;
 using ValorChronicle.Battle.Flow.Presentation;
-using ValorChronicle.Bosses.Kragmor;
 
 namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
 {
@@ -121,7 +121,7 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
         }
 
         [Test]
-        public void StartRetriesSubscriptionAfterFlowInitialization()
+        public void UpdateRetriesSubscriptionAfterFlowInitialization()
         {
             InvokePrivate(debugPanel, "Awake");
             InvokePrivate(debugPanel, "OnEnable");
@@ -134,7 +134,7 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
             SetField(boardController, "initialBoardReadyPublished", true);
             InitializeFlow();
             InvokePrivate(flowController, "OnEnable");
-            InvokePrivate(debugPanel, "Start");
+            InvokePrivate(debugPanel, "Update");
 
             Assert.That(
                 GetField<BattleFlowCoordinator>(
@@ -149,7 +149,7 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
         }
 
         [Test]
-        public void FormatShowsReadonlyBossIntentDetails()
+        public void FormatShowsCommonBossIntentDetails()
         {
             MethodInfo formatBossIntent = typeof(BattleFlowDebugPanel)
                 .GetMethod(
@@ -160,14 +160,14 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
                 null,
                 new object[]
                 {
-                    new KragmorBattleRuntimeState(
-                        KragmorTestConfig.Create())
-                        .GetIntentForecast(4)[3].Intent
+                    new BossIntentPreview(
+                        4,
+                        "test_boss_action")
                 });
 
             Assert.That(formatted, Is.EqualTo(
-                "Boss Intent: EarthCollapse | Direct: true | "
-                    + "Heavy: true | Coefficient: 2.40"));
+                "Boss Intent: test_boss_action | "
+                    + "Turns Until Action: 4"));
         }
 
         private void InitializeFlow()

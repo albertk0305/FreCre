@@ -15,6 +15,7 @@ namespace ValorChronicle.Bosses.Kragmor
         : IBossCombatActionProvider,
             IBossCombatActionPlanProvider,
             IBossCombatActionCompletionHandler,
+            IBossIntentSource,
             IKragmorBossIntentSource
     {
         private readonly KragmorBattleRuntimeState runtimeState;
@@ -37,6 +38,28 @@ namespace ValorChronicle.Bosses.Kragmor
             int count)
         {
             return runtimeState.GetIntentForecast(count);
+        }
+
+        IReadOnlyList<BossIntentPreview>
+            IBossIntentSource.GetIntentForecast(int count)
+        {
+            IReadOnlyList<KragmorBossIntentPreview> kragmorForecast =
+                GetIntentForecast(count);
+            if (kragmorForecast.Count == 0)
+            {
+                return Array.Empty<BossIntentPreview>();
+            }
+
+            var forecast = new BossIntentPreview[kragmorForecast.Count];
+            for (int index = 0; index < forecast.Length; index++)
+            {
+                KragmorBossIntentPreview preview = kragmorForecast[index];
+                forecast[index] = new BossIntentPreview(
+                    preview.TurnsUntilAction,
+                    preview.Intent.SkillId);
+            }
+
+            return Array.AsReadOnly(forecast);
         }
 
         public IReadOnlyList<CombatAction> CreateRootActions(

@@ -1,6 +1,6 @@
 using System;
+using ValorChronicle.Battle.Combat.Integration;
 using ValorChronicle.Battle.Results;
-using ValorChronicle.Bosses.Kragmor;
 using ValorChronicle.Data.Database;
 using ValorChronicle.Data.Definitions;
 
@@ -13,30 +13,40 @@ namespace ValorChronicle.Battle.Entry
             BossDefinition boss,
             out string error)
         {
+            return IsSupportedBoss(
+                boss,
+                BossCombatRuntimeFactoryCatalog.CreateDefault(),
+                out error);
+        }
+
+        public static bool IsSupportedBoss(
+            BossDefinition boss,
+            BossCombatRuntimeFactoryCatalog runtimeFactories,
+            out string error)
+        {
             if (boss == null)
             {
                 error = "BossDefinition is missing.";
                 return false;
             }
 
-            if (!string.Equals(
-                boss.Id,
-                KragmorRules.BossId,
-                StringComparison.Ordinal))
+            if (runtimeFactories == null)
             {
-                error = $"Boss '{boss.Id}' has no implemented battle composition.";
+                error = "A Boss runtime Factory catalog is required.";
                 return false;
             }
 
-            if (!(boss.CombatConfig is KragmorCombatConfig kragmorConfig))
+            if (!runtimeFactories.TryGetFactory(
+                    boss.Id,
+                    out IBossCombatRuntimeFactory runtimeFactory))
             {
-                error = "Kragmor requires a KragmorCombatConfig.";
+                error = $"Boss '{boss.Id}' has no implemented battle "
+                    + "composition.";
                 return false;
             }
 
-            if (!kragmorConfig.TryValidate(out string configError))
+            if (!runtimeFactory.TryValidate(boss, out error))
             {
-                error = $"Kragmor combat config is invalid. {configError}";
                 return false;
             }
 
@@ -47,6 +57,21 @@ namespace ValorChronicle.Battle.Entry
         public static bool TryCreate(
             DefinitionDatabase database,
             BattleEntryRequest request,
+            out BattleEncounterDefinition encounter,
+            out string error)
+        {
+            return TryCreate(
+                database,
+                request,
+                BossCombatRuntimeFactoryCatalog.CreateDefault(),
+                out encounter,
+                out error);
+        }
+
+        public static bool TryCreate(
+            DefinitionDatabase database,
+            BattleEntryRequest request,
+            BossCombatRuntimeFactoryCatalog runtimeFactories,
             out BattleEncounterDefinition encounter,
             out string error)
         {
@@ -77,7 +102,22 @@ namespace ValorChronicle.Battle.Entry
                 return false;
             }
 
-            if (!IsSupportedBoss(boss, out error))
+            if (runtimeFactories == null)
+            {
+                error = "A Boss runtime Factory catalog is required.";
+                return false;
+            }
+
+            if (!runtimeFactories.TryGetFactory(
+                    boss.Id,
+                    out IBossCombatRuntimeFactory runtimeFactory))
+            {
+                error = $"Boss '{boss.Id}' has no implemented battle "
+                    + "composition.";
+                return false;
+            }
+
+            if (!runtimeFactory.TryValidate(boss, out error))
             {
                 return false;
             }
@@ -94,7 +134,7 @@ namespace ValorChronicle.Battle.Entry
             encounter = new BattleEncounterDefinition(
                 boss,
                 difficulty,
-                (KragmorCombatConfig)boss.CombatConfig);
+                runtimeFactory);
             error = string.Empty;
             return true;
         }
