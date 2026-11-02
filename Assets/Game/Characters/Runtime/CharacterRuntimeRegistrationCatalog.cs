@@ -14,6 +14,7 @@ using ValorChronicle.Characters.Miyuki;
 using ValorChronicle.Characters.Naira;
 using ValorChronicle.Characters.Presentation;
 using ValorChronicle.Characters.Serena;
+using ValorChronicle.Characters.Shizuku;
 using ValorChronicle.Data.Database;
 using ValorChronicle.Localization;
 
@@ -123,7 +124,12 @@ namespace ValorChronicle.Characters.Runtime
                         LilithRules.CharacterId,
                         () => new LilithBuildModifier(),
                         () => new LilithCombatProviderRegistrar(),
-                        () => new LilithLookupDescriptionProvider())
+                        () => new LilithLookupDescriptionProvider()),
+                    new CharacterRuntimeRegistration(
+                        KarasumaShizukuRules.CharacterId,
+                        () => new KarasumaShizukuBuildModifier(),
+                        () => new KarasumaShizukuCombatProviderRegistrar(),
+                        () => new KarasumaShizukuLookupDescriptionProvider())
                 });
         }
 

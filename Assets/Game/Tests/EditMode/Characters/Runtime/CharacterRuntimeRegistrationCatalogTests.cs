@@ -19,6 +19,7 @@ using ValorChronicle.Characters.Naira;
 using ValorChronicle.Characters.Presentation;
 using ValorChronicle.Characters.Runtime;
 using ValorChronicle.Characters.Serena;
+using ValorChronicle.Characters.Shizuku;
 using ValorChronicle.Data.Database;
 using ValorChronicle.Data.Definitions;
 using ValorChronicle.Localization;
@@ -50,7 +51,7 @@ namespace ValorChronicle.Tests.EditMode.Characters.Runtime
             CharacterRuntimeRegistrationCatalog catalog =
                 CharacterRuntimeRegistrationCatalog.CreateDefault();
 
-            Assert.That(catalog.Registrations.Count, Is.EqualTo(10));
+            Assert.That(catalog.Registrations.Count, Is.EqualTo(11));
             CharacterRuntimeRegistration registration = catalog
                 .Registrations
                 .Single(item => item.CharacterId
@@ -209,11 +210,26 @@ namespace ValorChronicle.Tests.EditMode.Characters.Runtime
             Assert.That(
                 lilith.CreateLookupProvider(),
                 Is.TypeOf<LilithLookupDescriptionProvider>());
+            CharacterRuntimeRegistration shizuku = catalog.Registrations
+                .Single(item => item.CharacterId
+                    == KarasumaShizukuRules.CharacterId);
+            Assert.That(
+                shizuku.SupportedCombatConfigType,
+                Is.EqualTo(typeof(KarasumaShizukuCombatConfig)));
+            Assert.That(
+                shizuku.CreateBuildModifier(),
+                Is.TypeOf<KarasumaShizukuBuildModifier>());
+            Assert.That(
+                shizuku.CreateCombatRegistrar(),
+                Is.TypeOf<KarasumaShizukuCombatProviderRegistrar>());
+            Assert.That(
+                shizuku.CreateLookupProvider(),
+                Is.TypeOf<KarasumaShizukuLookupDescriptionProvider>());
             Assert.That(
                 catalog.Registrations.Select(item => item.CharacterId)
                     .Distinct()
                     .Count(),
-                Is.EqualTo(10));
+                Is.EqualTo(11));
         }
 
         [Test]

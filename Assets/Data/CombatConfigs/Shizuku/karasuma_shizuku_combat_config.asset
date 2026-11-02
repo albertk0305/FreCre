@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee092b54152a445f95d4d785287c53a9, type: 3}
+  m_Name: karasuma_shizuku_combat_config
+  m_EditorClassIdentifier: ValorChronicle.Game::ValorChronicle.Characters.Shizuku.KarasumaShizukuCombatConfig
+  match3DamageCoefficient: 0.4
+  match4DamageCoefficient: 0.7
+  match5DamageCoefficient: 1.1
+  match3AttackIncreaseRate: 0.05
+  match4AttackIncreaseRate: 0.08
+  match5AttackIncreaseRate: 0.12
+  attackBuffDurationTurns: 2
+  passiveDarkDamageIncreaseRate: 0.08
+  awakening3PassiveDarkDamageIncreaseRate: 0.1
+  awakening4Match3DamageCoefficient: 0.45
+  awakening4Match4DamageCoefficient: 0.75
+  awakening4Match3AttackIncreaseRate: 0.06
+  awakening4Match4AttackIncreaseRate: 0.09
+  awakening5Match5DamageCoefficient: 1.2
+  awakening5Match5AttackIncreaseRate: 0.13
+  activeCooldownTurns: 8
+  activeBlockConversionCount: 4
+  awakening6ActiveBlockConversionCount: 5
+

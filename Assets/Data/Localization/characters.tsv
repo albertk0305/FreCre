@@ -282,3 +282,30 @@ lilith.awakening.5.name	Cruel Collection	잔혹한 징수
 lilith.awakening.5.description	The covenant explosion coefficient per consumption unit changes from {explosion_before}% to {explosion_after}% ATK.	계약 폭발의 소비 단위당 피해 계수가 공격력의 {explosion_before}%에서 {explosion_after}%로 변경됩니다.
 lilith.awakening.6.name	Eternal Covenant	영겁의 계약
 lilith.awakening.6.description	Damage taken increase per Demonic Covenant stack changes from {damage_increase_before}% to {damage_increase_after}%.	악마의 계약 스택당 받는 피해 증가율이 {damage_increase_before}%에서 {damage_increase_after}%로 변경됩니다.
+shizuku	Karasuma Shizuku	카라스마 시즈쿠
+shizuku.skill.passive.name	Blessing of Shadows	암영의 가호
+shizuku.skill.passive.description	Increases the party's Dark damage by {damage_increase}% until battle ends. Duplicate copies of this passive do not stack.	전투 종료까지 파티의 어둠속성 피해를 {damage_increase}% 증가시킵니다. 동일 패시브는 중복 적용되지 않습니다.
+shizuku.skill.match3.name	Shadow Shuriken	암영 수리검
+shizuku.skill.match3.description	Deals {coefficient}% ATK as Dark damage, then increases party ATK by {attack_increase}% for {duration} turns including the current turn. Only Shizuku's strongest ATK buff remains, while ATK buffs from other characters stack additively.	공격력의 {coefficient}%만큼 어둠속성 피해를 준 뒤, 현재 턴을 포함해 {duration}턴 동안 파티 공격력을 {attack_increase}% 증가시킵니다. 시즈쿠의 공격력 버프 중 가장 강한 효과만 유지되며 다른 캐릭터의 공격력 증가와는 합산됩니다.
+shizuku.skill.match4.name	Shadow Barrage	그림자 연참
+shizuku.skill.match4.description	Deals {coefficient}% ATK as Dark damage, then increases party ATK by {attack_increase}% for {duration} turns including the current turn. Only Shizuku's strongest ATK buff remains, while ATK buffs from other characters stack additively.	공격력의 {coefficient}%만큼 어둠속성 피해를 준 뒤, 현재 턴을 포함해 {duration}턴 동안 파티 공격력을 {attack_increase}% 증가시킵니다. 시즈쿠의 공격력 버프 중 가장 강한 효과만 유지되며 다른 캐릭터의 공격력 증가와는 합산됩니다.
+shizuku.skill.match5.name	Moonlit Onslaught	월하난무
+shizuku.skill.match5.description	Deals {coefficient}% ATK as Dark damage, then increases party ATK by {attack_increase}% for {duration} turns including the current turn. Only Shizuku's strongest ATK buff remains, while ATK buffs from other characters stack additively.	공격력의 {coefficient}%만큼 어둠속성 피해를 준 뒤, 현재 턴을 포함해 {duration}턴 동안 파티 공격력을 {attack_increase}% 증가시킵니다. 시즈쿠의 공격력 버프 중 가장 강한 효과만 유지되며 다른 캐릭터의 공격력 증가와는 합산됩니다.
+shizuku.skill.active.name	Shadow Transmutation	인법·암영치환
+shizuku.skill.active.description	Converts {block_count} random non-Dark Normal blocks into Dark blocks while preserving at least one valid swap. The skill fails without changing the board or starting cooldown if no valid conversion exists. Cooldown: {cooldown} turns.	무작위 비어둠속성 일반 블록 {block_count}개를 어둠 블록으로 변환하면서 최소 하나의 유효 교환을 보장합니다. 유효한 변환이 없으면 보드를 변경하거나 재사용 대기시간을 시작하지 않고 실패합니다. 재사용 대기시간: {cooldown}턴.
+shizuku.awakening.1.name	Shadow Discipline	암영수련
+shizuku.awakening.1.description	ATK multiplier increases from {multiplier_before}% to {multiplier_after}%.	공격력 배율이 {multiplier_before}%에서 {multiplier_after}%로 증가합니다.
+shizuku.awakening.2.name	Silent Endurance	고요한 인내
+shizuku.awakening.2.description	Max HP multiplier increases from {multiplier_before}% to {multiplier_after}%.	최대 HP 배율이 {multiplier_before}%에서 {multiplier_after}%로 증가합니다.
+shizuku.awakening.3.name	Deepened Blessing	깊어진 가호
+shizuku.awakening.3.description	Blessing of Shadows' Dark damage increase changes from {passive_before}% to {passive_after}%.	암영의 가호의 어둠속성 피해 증가량이 {passive_before}%에서 {passive_after}%로 변경됩니다.
+shizuku.awakening.4.name	Mastery of Shadow Arts	암영술 숙련
+shizuku.awakening.4.description	Shadow Shuriken changes from {match3_damage_before}% to {match3_damage_after}% ATK and its ATK increase changes from {match3_buff_before}% to {match3_buff_after}%. Shadow Barrage changes from {match4_damage_before}% to {match4_damage_after}% ATK and its ATK increase changes from {match4_buff_before}% to {match4_buff_after}%.	암영 수리검의 계수가 공격력의 {match3_damage_before}%에서 {match3_damage_after}%로, 공격력 증가량이 {match3_buff_before}%에서 {match3_buff_after}%로 변경됩니다. 그림자 연참의 계수가 공격력의 {match4_damage_before}%에서 {match4_damage_after}%로, 공격력 증가량이 {match4_buff_before}%에서 {match4_buff_after}%로 변경됩니다.
+shizuku.awakening.5.name	Moonlit Mastery	월하의 극의
+shizuku.awakening.5.description	Moonlit Onslaught changes from {damage_before}% to {damage_after}% ATK, and its ATK increase changes from {buff_before}% to {buff_after}%.	월하난무의 계수가 공격력의 {damage_before}%에서 {damage_after}%로, 공격력 증가량이 {buff_before}%에서 {buff_after}%로 변경됩니다.
+shizuku.awakening.6.name	Perfect Transmutation	완전한 치환
+shizuku.awakening.6.description	Shadow Transmutation's converted block count changes from {blocks_before} to {blocks_after}.	인법·암영치환의 변환 블록 수가 {blocks_before}개에서 {blocks_after}개로 변경됩니다.
+effect.shizuku.blessing_of_shadows.name	Blessing of Shadows	암영의 가호
+effect.shizuku.blessing_of_shadows.description	The party's Dark damage increase is active until battle ends. Duplicate copies of the same passive do not stack.	전투 종료까지 파티의 어둠속성 피해 증가가 적용 중입니다. 동일 패시브는 중복 적용되지 않습니다.
+effect.shizuku.attack_increase.name	Shadow ATK Increase	암영 공격력 증가
+effect.shizuku.attack_increase.description	Shizuku's strongest party ATK increase is active for 2 turns including the turn it was applied. Weaker versions do not replace it.	적용된 턴을 포함해 2턴 동안 시즈쿠의 가장 강한 파티 공격력 증가가 적용 중입니다. 더 약한 효과로 교체되지 않습니다.
