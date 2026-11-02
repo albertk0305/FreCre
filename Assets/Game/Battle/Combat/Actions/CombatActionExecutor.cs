@@ -216,7 +216,8 @@ namespace ValorChronicle.Battle.Combat.Actions
                 PartyHpCostApplier.Apply(
                     party,
                     action.ReferenceMaxHp,
-                    action.CostRate);
+                    action.CostRate,
+                    action.RoundingMode);
             return new PartyHpCostActionResult(
                 action,
                 executionOrder,

@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6bff9b5289564ce193f7942eb80bcbae, type: 3}
+  m_Name: luciel_combat_config
+  m_EditorClassIdentifier: ValorChronicle.Game::ValorChronicle.Characters.Luciel.LucielCombatConfig
+  passiveDamageReductionRate: 0.05
+  awakening5PassiveDamageReductionRate: 0.06
+  match3ShieldMaxHpRate: 0.06
+  awakening3Match3ShieldMaxHpRate: 0.07
+  match4ShieldMaxHpRate: 0.11
+  awakening3Match4ShieldMaxHpRate: 0.12
+  match5ShieldMaxHpRate: 0.18
+  awakening4Match5ShieldMaxHpRate: 0.2
+  match5PartyDealtDamageIncreaseRate: 0.12
+  awakening4Match5PartyDealtDamageIncreaseRate: 0.14
+  match5BuffDurationTurns: 3
+  match5BuffStackPolicy: 0
+  activeCurrentPartyHpCostRate: 0.05
+  activeHpCostRoundingMode: 1
+  activeShieldMaxHpRate: 0.45
+  awakening6ActiveShieldMaxHpRate: 0.52
+  activeCooldownTurns: 8
+  awakening2ShieldAmountIncreaseRate: 0.05
+  matchShieldUsesComboMultiplier: 1
+  activeShieldUsesComboMultiplier: 0
+

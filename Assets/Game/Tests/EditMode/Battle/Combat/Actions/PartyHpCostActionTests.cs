@@ -17,6 +17,26 @@ namespace ValorChronicle.Tests.EditMode.Battle.Combat.Actions
 {
     public sealed class PartyHpCostActionTests
     {
+        [Test]
+        public void Action_DefaultsToFloorRounding()
+        {
+            CreateBattle(
+                1000,
+                out _,
+                out PartyBattleState party,
+                out _);
+
+            var action = new PartyHpCostAction(
+                1,
+                ActionOrigin.System,
+                party,
+                101,
+                0.05d);
+
+            Assert.That(action.RoundingMode,
+                Is.EqualTo(PartyHpCostRoundingMode.Floor));
+        }
+
         [TestCase(0.03d, 3L)]
         [TestCase(0.06d, 6L)]
         public void Execute_CalculatesCostFromExplicitMaxHpWithFloor(
@@ -40,6 +60,142 @@ namespace ValorChronicle.Tests.EditMode.Battle.Combat.Actions
             Assert.That(result.HpBefore, Is.EqualTo(1000L));
             Assert.That(result.HpAfter, Is.EqualTo(1000L - expectedCost));
             Assert.That(party.CurrentHp, Is.EqualTo(result.HpAfter));
+        }
+
+        [TestCase(10000L, 500L, 500L, 9500L)]
+        [TestCase(1001L, 51L, 51L, 950L)]
+        [TestCase(101L, 6L, 6L, 95L)]
+        [TestCase(20L, 1L, 1L, 19L)]
+        [TestCase(2L, 1L, 1L, 1L)]
+        [TestCase(1L, 1L, 0L, 1L)]
+        public void Execute_CeilingRoundsCurrentHpCostAndKeepsAtLeastOne(
+            long currentHp,
+            long expectedRequestedCost,
+            long expectedAppliedCost,
+            long expectedHpAfter)
+        {
+            CreateBattle(
+                currentHp,
+                out _,
+                out PartyBattleState party,
+                out BossBattleState boss);
+
+            PartyHpCostActionResult result = ExecuteCost(
+                party,
+                boss,
+                currentHp,
+                0.05d,
+                PartyHpCostRoundingMode.Ceiling);
+
+            Assert.That(result.RequestedHpCost,
+                Is.EqualTo(expectedRequestedCost));
+            Assert.That(result.AppliedHpCost,
+                Is.EqualTo(expectedAppliedCost));
+            Assert.That(result.HpBefore, Is.EqualTo(currentHp));
+            Assert.That(result.HpAfter, Is.EqualTo(expectedHpAfter));
+            Assert.That(party.CurrentHp, Is.EqualTo(expectedHpAfter));
+        }
+
+        [Test]
+        public void Execute_ActionPassesCeilingModeToApplier()
+        {
+            CreateBattle(
+                1000,
+                out _,
+                out PartyBattleState party,
+                out BossBattleState boss);
+            PartyHpCostAction action = Cost(
+                1,
+                party,
+                101,
+                0.05d,
+                PartyHpCostRoundingMode.Ceiling);
+
+            CombatActionExecutionResult execution =
+                Executor(party, boss).Execute(
+                    new CombatActionQueue(
+                        new CombatAction[] { action }));
+            var result = (PartyHpCostActionResult)
+                execution.ActionResults[0];
+
+            Assert.That(action.RoundingMode,
+                Is.EqualTo(PartyHpCostRoundingMode.Ceiling));
+            Assert.That(result.RequestedHpCost, Is.EqualTo(6L));
+            Assert.That(result.AppliedHpCost, Is.EqualTo(6L));
+            Assert.That(result.HpAfter, Is.EqualTo(994L));
+        }
+
+        [Test]
+        public void Applier_OverflowingRawCostSaturatesRequestedCost()
+        {
+            CreateBattle(
+                1000,
+                out _,
+                out PartyBattleState party,
+                out _);
+
+            PartyHpCostApplicationResult result =
+                PartyHpCostApplier.Apply(
+                    party,
+                    long.MaxValue,
+                    double.MaxValue,
+                    PartyHpCostRoundingMode.Ceiling);
+
+            Assert.That(result.RequestedHpCost,
+                Is.EqualTo(long.MaxValue));
+            Assert.That(result.AppliedHpCost, Is.EqualTo(999L));
+            Assert.That(result.HpAfter, Is.EqualTo(1L));
+        }
+
+        [Test]
+        public void ActionAndApplier_RejectUndefinedRoundingMode()
+        {
+            CreateBattle(
+                1000,
+                out _,
+                out PartyBattleState party,
+                out _);
+            var invalid = (PartyHpCostRoundingMode)999;
+
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                new PartyHpCostAction(
+                    1,
+                    ActionOrigin.System,
+                    party,
+                    1000,
+                    0.05d,
+                    roundingMode: invalid));
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                PartyHpCostApplier.Apply(
+                    party,
+                    1000,
+                    0.05d,
+                    invalid));
+        }
+
+        [TestCase(double.NaN)]
+        [TestCase(double.PositiveInfinity)]
+        [TestCase(-0.01d)]
+        public void ActionAndApplier_RejectInvalidCostRate(double costRate)
+        {
+            CreateBattle(
+                1000,
+                out _,
+                out PartyBattleState party,
+                out _);
+
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                new PartyHpCostAction(
+                    1,
+                    ActionOrigin.System,
+                    party,
+                    1000,
+                    costRate));
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                PartyHpCostApplier.Apply(
+                    party,
+                    1000,
+                    costRate));
         }
 
         [Test]
@@ -324,12 +480,19 @@ namespace ValorChronicle.Tests.EditMode.Battle.Combat.Actions
             PartyBattleState party,
             BossBattleState boss,
             long referenceMaxHp,
-            double costRate)
+            double costRate,
+            PartyHpCostRoundingMode roundingMode =
+                PartyHpCostRoundingMode.Floor)
         {
             return (PartyHpCostActionResult)Executor(party, boss)
                 .Execute(new CombatActionQueue(new CombatAction[]
                 {
-                    Cost(1, party, referenceMaxHp, costRate)
+                    Cost(
+                        1,
+                        party,
+                        referenceMaxHp,
+                        costRate,
+                        roundingMode)
                 }))
                 .ActionResults[0];
         }
@@ -338,14 +501,17 @@ namespace ValorChronicle.Tests.EditMode.Battle.Combat.Actions
             long actionId,
             PartyBattleState party,
             long referenceMaxHp,
-            double costRate)
+            double costRate,
+            PartyHpCostRoundingMode roundingMode =
+                PartyHpCostRoundingMode.Floor)
         {
             return new PartyHpCostAction(
                 actionId,
                 ActionOrigin.System,
                 party,
                 referenceMaxHp,
-                costRate);
+                costRate,
+                roundingMode: roundingMode);
         }
 
         private static DamageAction Damage(

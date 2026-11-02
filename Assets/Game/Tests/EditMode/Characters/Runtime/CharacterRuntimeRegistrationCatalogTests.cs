@@ -13,6 +13,7 @@ using ValorChronicle.Characters.Brina;
 using ValorChronicle.Characters.Fiora;
 using ValorChronicle.Characters.Koharu;
 using ValorChronicle.Characters.Lilith;
+using ValorChronicle.Characters.Luciel;
 using ValorChronicle.Characters.Marea;
 using ValorChronicle.Characters.Miyuki;
 using ValorChronicle.Characters.Naira;
@@ -51,7 +52,7 @@ namespace ValorChronicle.Tests.EditMode.Characters.Runtime
             CharacterRuntimeRegistrationCatalog catalog =
                 CharacterRuntimeRegistrationCatalog.CreateDefault();
 
-            Assert.That(catalog.Registrations.Count, Is.EqualTo(11));
+            Assert.That(catalog.Registrations.Count, Is.EqualTo(12));
             CharacterRuntimeRegistration registration = catalog
                 .Registrations
                 .Single(item => item.CharacterId
@@ -225,11 +226,45 @@ namespace ValorChronicle.Tests.EditMode.Characters.Runtime
             Assert.That(
                 shizuku.CreateLookupProvider(),
                 Is.TypeOf<KarasumaShizukuLookupDescriptionProvider>());
+            CharacterRuntimeRegistration luciel = catalog.Registrations
+                .Single(item => item.CharacterId
+                    == LucielRules.CharacterId);
+            Assert.That(
+                luciel.SupportedCombatConfigType,
+                Is.EqualTo(typeof(LucielCombatConfig)));
+            Assert.That(
+                luciel.CreateBuildModifier(),
+                Is.TypeOf<LucielBuildModifier>());
+            Assert.That(
+                luciel.CreateCombatRegistrar(),
+                Is.TypeOf<LucielCombatProviderRegistrar>());
+            Assert.That(
+                luciel.CreateLookupProvider(),
+                Is.TypeOf<LucielLookupDescriptionProvider>());
             Assert.That(
                 catalog.Registrations.Select(item => item.CharacterId)
                     .Distinct()
                     .Count(),
-                Is.EqualTo(11));
+                Is.EqualTo(12));
+        }
+
+        [Test]
+        public void DefaultLucielFactoriesCreateIndependentInstances()
+        {
+            CharacterRuntimeRegistration registration =
+                CharacterRuntimeRegistrationCatalog.CreateDefault()
+                    .Registrations.Single(item => item.CharacterId
+                        == LucielRules.CharacterId);
+
+            Assert.That(
+                registration.CreateBuildModifier(),
+                Is.Not.SameAs(registration.CreateBuildModifier()));
+            Assert.That(
+                registration.CreateCombatRegistrar(),
+                Is.Not.SameAs(registration.CreateCombatRegistrar()));
+            Assert.That(
+                registration.CreateLookupProvider(),
+                Is.Not.SameAs(registration.CreateLookupProvider()));
         }
 
         [Test]

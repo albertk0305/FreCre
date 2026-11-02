@@ -12,7 +12,9 @@ namespace ValorChronicle.Battle.Combat.Actions
             long referenceMaxHp,
             double costRate,
             long? rootActionId = null,
-            long? sourceActionId = null)
+            long? sourceActionId = null,
+            PartyHpCostRoundingMode roundingMode =
+                PartyHpCostRoundingMode.Floor)
             : base(actionId, origin, rootActionId, sourceActionId)
         {
             TargetParty = targetParty
@@ -35,12 +37,24 @@ namespace ValorChronicle.Battle.Combat.Actions
                     "HP cost rate must be finite and non-negative.");
             }
 
+            if (!Enum.IsDefined(
+                    typeof(PartyHpCostRoundingMode),
+                    roundingMode))
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(roundingMode),
+                    roundingMode,
+                    "HP cost rounding mode must be defined.");
+            }
+
             ReferenceMaxHp = referenceMaxHp;
             CostRate = costRate;
+            RoundingMode = roundingMode;
         }
 
         public PartyBattleState TargetParty { get; }
         public long ReferenceMaxHp { get; }
         public double CostRate { get; }
+        public PartyHpCostRoundingMode RoundingMode { get; }
     }
 }

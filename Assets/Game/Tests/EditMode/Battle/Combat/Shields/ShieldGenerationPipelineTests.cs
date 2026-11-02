@@ -48,6 +48,124 @@ namespace ValorChronicle.Tests.EditMode.Battle.Combat.Shields
         }
 
         [Test]
+        public void Factory_DefaultActionLocalIncreasePreservesExistingResult()
+        {
+            CharacterBattleState source = Character(1000);
+            var party = new PartyBattleState(new[] { source });
+
+            var request = new ShieldGenerationContextBuildRequest(
+                source,
+                party,
+                0.25d,
+                false,
+                0);
+            ShieldGenerationContext context =
+                ShieldGenerationContextFactory.Build(request);
+            ShieldGenerationResult result =
+                ShieldGenerationCalculator.Calculate(context);
+
+            Assert.That(request.ActionLocalShieldAmountIncreaseRate,
+                Is.Zero);
+            Assert.That(context.ShieldAmountIncreaseRateSum, Is.Zero);
+            Assert.That(result.RawShieldAmount, Is.EqualTo(250d));
+            Assert.That(result.FinalShieldAmount, Is.EqualTo(250L));
+        }
+
+        [Test]
+        public void Factory_ActionLocalIncreaseAppliesOnlyToRequestedAction()
+        {
+            CharacterBattleState first = Character("first", 0, 1000);
+            CharacterBattleState second = Character("second", 1, 1000);
+            var party = new PartyBattleState(new[] { first, second });
+
+            ShieldGenerationContext enhanced =
+                ShieldGenerationContextFactory.Build(
+                    new ShieldGenerationContextBuildRequest(
+                        first,
+                        party,
+                        0.25d,
+                        false,
+                        0,
+                        actionLocalShieldAmountIncreaseRate: 0.05d));
+            ShieldGenerationContext unaffected =
+                ShieldGenerationContextFactory.Build(
+                    new ShieldGenerationContextBuildRequest(
+                        second,
+                        party,
+                        0.25d,
+                        false,
+                        0));
+
+            Assert.That(enhanced.ShieldAmountIncreaseRateSum,
+                Is.EqualTo(0.05d));
+            Assert.That(
+                ShieldGenerationCalculator.Calculate(enhanced)
+                    .FinalShieldAmount,
+                Is.EqualTo(262L));
+            Assert.That(unaffected.ShieldAmountIncreaseRateSum, Is.Zero);
+            Assert.That(
+                ShieldGenerationCalculator.Calculate(unaffected)
+                    .FinalShieldAmount,
+                Is.EqualTo(250L));
+        }
+
+        [Test]
+        public void Factory_AddsEffectAndActionLocalIncreaseBeforeCalculation()
+        {
+            CharacterBattleState source = Character(1001);
+            var party = new PartyBattleState(new[] { source });
+            source.Effects.ApplyEffect(Effect(
+                1,
+                EffectModifierType.ShieldAmountIncrease,
+                0.18d));
+
+            ShieldGenerationContext context =
+                ShieldGenerationContextFactory.Build(
+                    new ShieldGenerationContextBuildRequest(
+                        source,
+                        party,
+                        0.10d,
+                        true,
+                        3,
+                        actionLocalShieldAmountIncreaseRate: 0.05d));
+            ShieldGenerationResult result =
+                ShieldGenerationCalculator.Calculate(context);
+
+            Assert.That(context.ShieldAmountIncreaseRateSum,
+                Is.EqualTo(0.23d).Within(0.000000001d));
+            Assert.That(result.ComboMultiplier, Is.EqualTo(1.12d));
+            Assert.That(result.ShieldAmountIncreaseMultiplier,
+                Is.EqualTo(1.23d).Within(0.000000001d));
+            Assert.That(result.RawShieldAmount,
+                Is.EqualTo(137.89776d).Within(0.000000001d));
+            Assert.That(result.FinalShieldAmount, Is.EqualTo(137L));
+
+            double separatelyMultiplied =
+                1001d * 0.10d * 1.12d * 1.18d * 1.05d;
+            Assert.That(result.RawShieldAmount,
+                Is.Not.EqualTo(separatelyMultiplied)
+                    .Within(0.000000001d));
+        }
+
+        [TestCase(double.NaN)]
+        [TestCase(double.PositiveInfinity)]
+        [TestCase(-0.01d)]
+        public void Request_RejectsInvalidActionLocalIncrease(double rate)
+        {
+            CharacterBattleState source = Character(1000);
+            var party = new PartyBattleState(new[] { source });
+
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                new ShieldGenerationContextBuildRequest(
+                    source,
+                    party,
+                    0.25d,
+                    false,
+                    0,
+                    rate));
+        }
+
+        [Test]
         public void FullPipeline_CollectsCalculatesCreatesAndRegistersShield()
         {
             CharacterBattleState source = Character(6200);

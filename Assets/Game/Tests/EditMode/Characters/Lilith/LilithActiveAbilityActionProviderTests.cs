@@ -61,6 +61,8 @@ namespace ValorChronicle.Tests.EditMode.Characters.Lilith
                 Assert.That(battle.Party.MaxHp, Is.EqualTo(1000L));
                 Assert.That(cost.ReferenceMaxHp, Is.EqualTo(99L));
                 Assert.That(cost.CostRate, Is.EqualTo(0.15d));
+                Assert.That(cost.RoundingMode,
+                    Is.EqualTo(PartyHpCostRoundingMode.Floor));
                 Assert.That(
                     ((PartyHpCostActionResult)result.ActionResults[0])
                         .AppliedHpCost,

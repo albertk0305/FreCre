@@ -41,6 +41,8 @@ namespace ValorChronicle.Tests.EditMode.Characters.Beatrice
                 Assert.That(cost.ReferenceMaxHp,
                     Is.EqualTo(battle.Character.MaxHp));
                 Assert.That(cost.CostRate, Is.EqualTo(expectedCostRate));
+                Assert.That(cost.RoundingMode,
+                    Is.EqualTo(PartyHpCostRoundingMode.Floor));
                 AssertRoot(cost);
                 AssertMatchDamage(battle, damage, expectedTag);
                 Assert.That(damage.ActionId, Is.EqualTo(cost.ActionId + 1L));

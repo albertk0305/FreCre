@@ -10,7 +10,8 @@ namespace ValorChronicle.Battle.Combat.Shields
             PartyBattleState party,
             double shieldCoefficient,
             bool appliesCombo,
-            int finalComboCount)
+            int finalComboCount,
+            double actionLocalShieldAmountIncreaseRate = 0d)
         {
             Source = source
                 ?? throw new ArgumentNullException(nameof(source));
@@ -32,9 +33,22 @@ namespace ValorChronicle.Battle.Combat.Shields
                     "Final combo count must be positive when combo applies.");
             }
 
+            if (double.IsNaN(actionLocalShieldAmountIncreaseRate)
+                || double.IsInfinity(actionLocalShieldAmountIncreaseRate)
+                || actionLocalShieldAmountIncreaseRate < 0d)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(actionLocalShieldAmountIncreaseRate),
+                    actionLocalShieldAmountIncreaseRate,
+                    "Action-local shield amount increase must be finite "
+                        + "and non-negative.");
+            }
+
             ShieldCoefficient = shieldCoefficient;
             AppliesCombo = appliesCombo;
             FinalComboCount = finalComboCount;
+            ActionLocalShieldAmountIncreaseRate =
+                actionLocalShieldAmountIncreaseRate;
         }
 
         public CharacterBattleState Source { get; }
@@ -42,5 +56,6 @@ namespace ValorChronicle.Battle.Combat.Shields
         public double ShieldCoefficient { get; }
         public bool AppliesCombo { get; }
         public int FinalComboCount { get; }
+        public double ActionLocalShieldAmountIncreaseRate { get; }
     }
 }

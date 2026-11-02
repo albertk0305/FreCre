@@ -17,12 +17,27 @@ namespace ValorChronicle.Battle.Combat.Shields
                 SupportModifierCollector.Collect(
                     request.Source,
                     request.Party);
+            double shieldAmountIncreaseRateSum = Add(
+                modifiers.ShieldAmountIncreaseRateSum,
+                request.ActionLocalShieldAmountIncreaseRate);
             return new ShieldGenerationContext(
                 request.Source.MaxHp,
                 request.ShieldCoefficient,
                 request.AppliesCombo,
                 request.FinalComboCount,
-                modifiers.ShieldAmountIncreaseRateSum);
+                shieldAmountIncreaseRateSum);
+        }
+
+        private static double Add(double left, double right)
+        {
+            double result = left + right;
+            if (double.IsNaN(result) || double.IsInfinity(result))
+            {
+                throw new OverflowException(
+                    "Combined shield amount increase must remain finite.");
+            }
+
+            return result;
         }
     }
 }

@@ -25,6 +25,8 @@ MonoBehaviour:
   - character_baek_hyeon
   - character_beatrice_bloodstone
   - character_lilith
+  - character_karasuma_shizuku
+  - character_luciel
   relicIds:
   - relic_victors_broken_sword
   - relic_world_tree_bark

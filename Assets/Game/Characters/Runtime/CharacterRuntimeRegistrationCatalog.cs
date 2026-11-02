@@ -9,6 +9,7 @@ using ValorChronicle.Characters.Brina;
 using ValorChronicle.Characters.Fiora;
 using ValorChronicle.Characters.Koharu;
 using ValorChronicle.Characters.Lilith;
+using ValorChronicle.Characters.Luciel;
 using ValorChronicle.Characters.Marea;
 using ValorChronicle.Characters.Miyuki;
 using ValorChronicle.Characters.Naira;
@@ -129,7 +130,12 @@ namespace ValorChronicle.Characters.Runtime
                         KarasumaShizukuRules.CharacterId,
                         () => new KarasumaShizukuBuildModifier(),
                         () => new KarasumaShizukuCombatProviderRegistrar(),
-                        () => new KarasumaShizukuLookupDescriptionProvider())
+                        () => new KarasumaShizukuLookupDescriptionProvider()),
+                    new CharacterRuntimeRegistration(
+                        LucielRules.CharacterId,
+                        () => new LucielBuildModifier(),
+                        () => new LucielCombatProviderRegistrar(),
+                        () => new LucielLookupDescriptionProvider())
                 });
         }
 

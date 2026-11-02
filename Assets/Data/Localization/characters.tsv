@@ -309,3 +309,30 @@ effect.shizuku.blessing_of_shadows.name	Blessing of Shadows	암영의 가호
 effect.shizuku.blessing_of_shadows.description	The party's Dark damage increase is active until battle ends. Duplicate copies of the same passive do not stack.	전투 종료까지 파티의 어둠속성 피해 증가가 적용 중입니다. 동일 패시브는 중복 적용되지 않습니다.
 effect.shizuku.attack_increase.name	Shadow ATK Increase	암영 공격력 증가
 effect.shizuku.attack_increase.description	Shizuku's strongest party ATK increase is active for 2 turns including the turn it was applied. Weaker versions do not replace it.	적용된 턴을 포함해 2턴 동안 시즈쿠의 가장 강한 파티 공격력 증가가 적용 중입니다. 더 약한 효과로 교체되지 않습니다.
+luciel	Luciel	루시엘
+luciel.skill.passive.name	Blessing of the Fallen	추락한 자의 가호
+luciel.skill.passive.description	Permanently reduces damage taken by the party by {damage_reduction}%.	파티가 받는 피해를 전투 종료까지 {damage_reduction}% 감소시킵니다.
+luciel.skill.match3.name	Veil of Black Feathers	검은 깃의 장막
+luciel.skill.match3.description	Grants a shield equal to {shield_rate}% of Luciel's final Max HP, multiplied by the combo multiplier. Awakening-based shield amount increase: {shield_amount_increase}%. The shield lasts until depleted.	루시엘의 최종 최대 HP {shield_rate}%에 콤보 배율을 적용한 보호막을 부여합니다. 각성에 따른 보호막 생성량 증가: {shield_amount_increase}%. 보호막은 소진될 때까지 유지됩니다.
+luciel.skill.match4.name	Sanctuary of Corruption	타락의 성역
+luciel.skill.match4.description	Grants a shield equal to {shield_rate}% of Luciel's final Max HP, multiplied by the combo multiplier. Awakening-based shield amount increase: {shield_amount_increase}%. The shield lasts until depleted.	루시엘의 최종 최대 HP {shield_rate}%에 콤보 배율을 적용한 보호막을 부여합니다. 각성에 따른 보호막 생성량 증가: {shield_amount_increase}%. 보호막은 소진될 때까지 유지됩니다.
+luciel.skill.match5.name	Blessing of the Abyss	심연의 축복
+luciel.skill.match5.description	Grants a shield equal to {shield_rate}% of Luciel's final Max HP, multiplied by the combo multiplier. Awakening-based shield amount increase: {shield_amount_increase}%. Also increases damage dealt by the party by {damage_increase}% for {duration} turns including the current turn; repeated use refreshes the duration. The shield lasts until depleted.	루시엘의 최종 최대 HP {shield_rate}%에 콤보 배율을 적용한 보호막을 부여합니다. 각성에 따른 보호막 생성량 증가: {shield_amount_increase}%. 또한 현재 턴을 포함해 {duration}턴 동안 파티가 가하는 피해를 {damage_increase}% 증가시키며, 다시 사용하면 지속 시간이 갱신됩니다. 보호막은 소진될 때까지 유지됩니다.
+luciel.skill.active.name	Bloodstained Salvation	핏빛 구원
+luciel.skill.active.description	Consumes {current_hp_cost}% of the party's current HP, rounded up, while leaving at least {minimum_hp} HP, then grants a shield equal to {shield_rate}% of Luciel's final Max HP without a combo multiplier. Awakening-based shield amount increase: {shield_amount_increase}%. The shield lasts until depleted. Cooldown: {cooldown} turns.	파티의 현재 HP {current_hp_cost}%를 올림 계산해 소모하되 최소 {minimum_hp} HP를 남기고, 루시엘의 최종 최대 HP {shield_rate}%만큼 콤보 배율 없이 보호막을 부여합니다. 각성에 따른 보호막 생성량 증가: {shield_amount_increase}%. 보호막은 소진될 때까지 유지됩니다. 재사용 대기시간: {cooldown}턴.
+luciel.awakening.1.name	Unbroken Wings	꺾이지 않은 날개
+luciel.awakening.1.description	Max HP multiplier increases from {multiplier_before}% to {multiplier_after}%.	최대 HP 배율이 {multiplier_before}%에서 {multiplier_after}%로 증가합니다.
+luciel.awakening.2.name	Deepened Aegis	깊어진 수호
+luciel.awakening.2.description	The amount of every shield Luciel creates increases from {shield_increase_before}% to {shield_increase_after}%. This bonus is additive with other shield amount increases.	루시엘이 생성하는 모든 보호막량 증가율이 {shield_increase_before}%에서 {shield_increase_after}%로 변경됩니다. 이 증가는 다른 보호막량 증가 효과와 합산됩니다.
+luciel.awakening.3.name	Darkened Sanctuary	짙어진 성역
+luciel.awakening.3.description	Veil of Black Feathers changes from {match3_before}% to {match3_after}% of final Max HP, and Sanctuary of Corruption changes from {match4_before}% to {match4_after}%.	검은 깃의 장막이 최종 최대 HP의 {match3_before}%에서 {match3_after}%로, 타락의 성역이 {match4_before}%에서 {match4_after}%로 변경됩니다.
+luciel.awakening.4.name	Abyssal Grace	심연의 은총
+luciel.awakening.4.description	Blessing of the Abyss's shield changes from {shield_before}% to {shield_after}% of final Max HP, and its party damage increase changes from {damage_increase_before}% to {damage_increase_after}%.	심연의 축복 보호막이 최종 최대 HP의 {shield_before}%에서 {shield_after}%로, 파티가 가하는 피해 증가가 {damage_increase_before}%에서 {damage_increase_after}%로 변경됩니다.
+luciel.awakening.5.name	Fallen Protection	추락한 수호
+luciel.awakening.5.description	Blessing of the Fallen's party damage reduction changes from {reduction_before}% to {reduction_after}%.	추락한 자의 가호의 파티 피해 감소가 {reduction_before}%에서 {reduction_after}%로 변경됩니다.
+luciel.awakening.6.name	Perfect Salvation	완전한 구원
+luciel.awakening.6.description	Bloodstained Salvation's shield changes from {shield_before}% to {shield_after}% of Luciel's final Max HP.	핏빛 구원의 보호막이 루시엘의 최종 최대 HP {shield_before}%에서 {shield_after}%로 변경됩니다.
+effect.luciel.blessing_of_fallen_angel.name	Blessing of the Fallen	추락한 자의 가호
+effect.luciel.blessing_of_fallen_angel.description	The party's damage taken reduction remains active until battle ends.	파티의 받는 피해 감소가 전투 종료까지 적용됩니다.
+effect.luciel.match5_dealt_damage_increase.name	Blessing of the Abyss	심연의 축복
+effect.luciel.match5_dealt_damage_increase.description	Increases damage dealt by the party for 3 turns including the turn it was applied. Reapplying it refreshes the duration.	적용된 턴을 포함해 3턴 동안 파티가 가하는 피해를 증가시킵니다. 다시 적용하면 지속 시간이 갱신됩니다.

@@ -195,6 +195,68 @@ namespace ValorChronicle.Tests.EditMode.Battle.Combat.Integration
         }
 
         [Test]
+        public void ProviderActionExecutionCarriesActionLocalShieldIncrease()
+        {
+            CharacterBattleState character =
+                Character("fire", 0, ElementType.Fire);
+            PartyBattleState party = Party(character);
+            BossBattleState boss = Boss();
+            var provider = new DelegateMatchEventActionProvider(context =>
+            {
+                long actionId = context.ActionIds.Next();
+                return new CombatAction[]
+                {
+                    new ShieldAction(
+                        actionId,
+                        ActionOrigin.Match,
+                        new ShieldGenerationContextBuildRequest(
+                            context.Character,
+                            context.Party,
+                            0.25d,
+                            true,
+                            context.FinalComboCount,
+                            actionLocalShieldAmountIncreaseRate: 0.05d),
+                        new ShieldGrantRequest(
+                            actionId,
+                            context.Character.CharacterId,
+                            context.PlayerTurnNumber,
+                            3,
+                            actionId))
+                };
+            });
+            var factory = new MatchEventCombatActionFactory(
+                party,
+                boss,
+                provider,
+                new CombatActionIdSequence());
+            IReadOnlyList<CombatAction> actions =
+                factory.CreateRootActions(
+                    BeginSingleMatch(ElementType.Fire, 3));
+            var executor = new CombatActionExecutor(
+                boss,
+                party,
+                new DamageContextFactory(new SeededRandomSource(1)));
+
+            CombatActionExecutionResult execution = executor.Execute(
+                new CombatActionQueue(actions));
+            var result = (ShieldActionResult)execution.ActionResults[0];
+
+            Assert.That(actions, Has.Count.EqualTo(1));
+            Assert.That(
+                ((ShieldAction)actions[0]).ContextRequest
+                    .ActionLocalShieldAmountIncreaseRate,
+                Is.EqualTo(0.05d));
+            Assert.That(result.Context.ShieldAmountIncreaseRateSum,
+                Is.EqualTo(0.05d));
+            Assert.That(result.GenerationResult.RawShieldAmount,
+                Is.EqualTo(262.5d).Within(0.000000001d));
+            Assert.That(result.GenerationResult.FinalShieldAmount,
+                Is.EqualTo(262L));
+            Assert.That(result.ApplicationResult.GrantedShieldAmount,
+                Is.EqualTo(262L));
+        }
+
+        [Test]
         public void RepeatedElementEventsRemainSeparateAndMapEveryTier()
         {
             PartyBattleState party = Party(

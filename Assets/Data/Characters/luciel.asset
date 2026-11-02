@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b1098957cb949e48befa3ee6e101fd8, type: 3}
+  m_Name: luciel
+  m_EditorClassIdentifier: ValorChronicle.Game::ValorChronicle.Data.Definitions.CharacterDefinition
+  id: character_luciel
+  displayNameKey: luciel
+  element: 4
+  level1Hp: 1450
+  level1Attack: 80
+  level100Hp: 6000
+  level100Attack: 375
+  skillIds:
+  - skill_luciel_match3
+  - skill_luciel_match4
+  - skill_luciel_match5
+  - passive_luciel_blessing_of_fallen_angel
+  - active_luciel_soul_salvation
+  combatConfig: {fileID: 11400000, guid: b7b5ccc2e10c4fbd94f8b24fe486a293, type: 2}
+

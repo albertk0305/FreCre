@@ -55,6 +55,8 @@ MonoBehaviour:
   - character_sakuragi_koharu
   - character_baek_hyeon
   - character_lilith
+  - character_karasuma_shizuku
+  - character_luciel
   relicPoolIds:
   - relic_victors_broken_sword
   - relic_world_tree_bark
