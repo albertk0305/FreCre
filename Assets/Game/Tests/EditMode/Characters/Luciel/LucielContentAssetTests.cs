@@ -144,10 +144,10 @@ namespace ValorChronicle.Tests.EditMode.Characters.Luciel
             database.Initialize();
             presentations.Initialize();
 
-            Assert.That(database.Characters, Has.Count.EqualTo(13));
+            Assert.That(database.Characters, Has.Count.EqualTo(14));
             Assert.That(database.Characters.Select(item => item.Id),
                 Is.Unique);
-            Assert.That(runtime.Registrations, Has.Count.EqualTo(13));
+            Assert.That(runtime.Registrations, Has.Count.EqualTo(14));
             Assert.That(runtime.Registrations.Select(item =>
                 item.CharacterId), Is.Unique);
             foreach (CharacterRuntimeRegistration registration in

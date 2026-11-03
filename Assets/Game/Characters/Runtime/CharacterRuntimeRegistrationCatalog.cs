@@ -8,6 +8,7 @@ using ValorChronicle.Characters.Beatrice;
 using ValorChronicle.Characters.Brina;
 using ValorChronicle.Characters.Fiora;
 using ValorChronicle.Characters.Koharu;
+using ValorChronicle.Characters.Lancelot;
 using ValorChronicle.Characters.Lilith;
 using ValorChronicle.Characters.Livia;
 using ValorChronicle.Characters.Luciel;
@@ -141,7 +142,12 @@ namespace ValorChronicle.Characters.Runtime
                         LiviaRules.CharacterId,
                         () => new LiviaBuildModifier(),
                         () => new LiviaCombatProviderRegistrar(),
-                        () => new LiviaLookupDescriptionProvider())
+                        () => new LiviaLookupDescriptionProvider()),
+                    new CharacterRuntimeRegistration(
+                        LancelotRules.CharacterId,
+                        () => new LancelotBuildModifier(),
+                        () => new LancelotCombatProviderRegistrar(),
+                        () => new LancelotLookupDescriptionProvider())
                 });
         }
 

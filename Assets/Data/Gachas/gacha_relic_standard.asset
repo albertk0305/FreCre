@@ -54,9 +54,12 @@ MonoBehaviour:
   - character_naira_windhorn
   - character_sakuragi_koharu
   - character_baek_hyeon
+  - character_beatrice_bloodstone
   - character_lilith
   - character_karasuma_shizuku
   - character_luciel
+  - character_livia
+  - character_lancelot
   relicPoolIds:
   - relic_victors_broken_sword
   - relic_world_tree_bark

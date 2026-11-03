@@ -363,3 +363,30 @@ effect.livia.tide_of_life.name	Tide of Life	생명의 물결
 effect.livia.tide_of_life.description	Increases all healing received by the party until battle ends.	전투 종료까지 파티가 받는 모든 회복량을 증가시킵니다.
 effect.livia.embrace_of_the_deep.name	Embrace of the Deep	심해의 포옹
 effect.livia.embrace_of_the_deep.description	Reduces damage taken by the party for 2 turns including the turn it was applied. Reapplying it refreshes the duration.	적용된 턴을 포함해 2턴 동안 파티가 받는 피해를 감소시킵니다. 다시 적용하면 지속 시간이 갱신됩니다.
+lancelot	Lancelot	랜슬롯
+lancelot.skill.match3.name	Flash Slash	섬광 베기
+lancelot.skill.match3.description	Deals {coefficient}% ATK as Light damage. Critical chance before external effects: {critical_chance}%.	공격력의 {coefficient}%만큼 빛속성 피해를 줍니다. 외부 효과 적용 전 치명타 확률: {critical_chance}%.
+lancelot.skill.match4.name	Radiant Strike	성휘의 검격
+lancelot.skill.match4.description	Deals {coefficient}% ATK as Light damage. This attack gains {critical_chance}% critical chance.	공격력의 {coefficient}%만큼 빛속성 피해를 줍니다. 이 공격의 치명타 확률이 {critical_chance}%p 증가합니다.
+lancelot.skill.match5.name	Judgment of the Sacred Sword	성검의 심판
+lancelot.skill.match5.description	Deals {coefficient}% ATK as Light damage. This attack gains {critical_chance}% critical chance.	공격력의 {coefficient}%만큼 빛속성 피해를 줍니다. 이 공격의 치명타 확률이 {critical_chance}%p 증가합니다.
+lancelot.skill.passive.name	Knight's Pride	기사의 긍지
+lancelot.skill.passive.description	Permanently increases this character's critical chance by {critical_chance}%.	자신의 치명타 확률이 상시 {critical_chance}%p 증가합니다.
+lancelot.skill.active.name	Unyielding Resolve	불굴의 결의
+lancelot.skill.active.description	Increases this character's critical damage by {critical_damage}% for {duration} turns. Reapplying refreshes the duration. Cooldown: {cooldown} turns.	자신의 치명타 피해가 {duration}턴 동안 {critical_damage}%p 증가합니다. 다시 사용하면 지속 시간이 갱신됩니다. 재사용 대기시간: {cooldown}턴.
+lancelot.awakening.1.name	Oath of Steel	강철의 맹세
+lancelot.awakening.1.description	ATK multiplier increases from {multiplier_before}% to {multiplier_after}%.	공격력 배율이 {multiplier_before}%에서 {multiplier_after}%로 증가합니다.
+lancelot.awakening.2.name	Guardian's Armor	수호의 갑주
+lancelot.awakening.2.description	Max HP multiplier increases from {multiplier_before}% to {multiplier_after}%.	최대 HP 배율이 {multiplier_before}%에서 {multiplier_after}%로 증가합니다.
+lancelot.awakening.3.name	Refined Swordsmanship	정련된 검술
+lancelot.awakening.3.description	3 Match changes from {match3_before}% to {match3_after}% ATK, 4 Match from {match4_before}% to {match4_after}% ATK, and 5 Match from {match5_before}% to {match5_after}% ATK.	3매치 공격력 계수가 {match3_before}%에서 {match3_after}%로, 4매치가 {match4_before}%에서 {match4_after}%로, 5매치가 {match5_before}%에서 {match5_after}%로 변경됩니다.
+lancelot.awakening.4.name	Momentum of Victory	승리의 기세
+lancelot.awakening.4.description	Unyielding Resolve's critical damage increase changes from {active_before}% to {active_after}%.	불굴의 결의의 치명타 피해 증가량이 {active_before}%p에서 {active_after}%p로 변경됩니다.
+lancelot.awakening.5.name	Blade's Instinct	검끝의 직감
+lancelot.awakening.5.description	Permanent critical chance increase changes from {critical_before}% to {critical_after}%.	상시 치명타 확률 증가량이 {critical_before}%p에서 {critical_after}%p로 변경됩니다.
+lancelot.awakening.6.name	Essence of the Sacred Sword	성검의 진수
+lancelot.awakening.6.description	Base critical damage changes from {critical_damage_before}% to {critical_damage_after}%.	기본 치명타 피해가 {critical_damage_before}%에서 {critical_damage_after}%로 변경됩니다.
+effect.lancelot.unyielding_resolve.name	Unyielding Resolve	불굴의 결의
+effect.lancelot.unyielding_resolve.description	Critical damage is increased for the remaining duration.	남은 지속 시간 동안 치명타 피해가 증가합니다.
+effect.lancelot.knights_pride.name	Knight's Pride	기사의 긍지
+effect.lancelot.knights_pride.description	Permanently increases this character's critical chance by 20% at Awakening 0-4 and 28% at Awakening 5-6.	자신의 치명타 확률이 0~4각성에서 20%p, 5~6각성에서 28%p 상시 증가합니다.

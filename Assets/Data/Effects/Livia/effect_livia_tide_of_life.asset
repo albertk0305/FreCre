@@ -15,4 +15,4 @@ MonoBehaviour:
   id: effect_livia_tide_of_life
   displayNameKey: effect.livia.tide_of_life.name
   descriptionKey: effect.livia.tide_of_life.description
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: f8d33d5c5e3642e4fbbe60df93d4b8c8, type: 3}

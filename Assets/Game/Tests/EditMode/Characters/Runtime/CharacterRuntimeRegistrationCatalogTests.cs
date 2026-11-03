@@ -53,7 +53,7 @@ namespace ValorChronicle.Tests.EditMode.Characters.Runtime
             CharacterRuntimeRegistrationCatalog catalog =
                 CharacterRuntimeRegistrationCatalog.CreateDefault();
 
-            Assert.That(catalog.Registrations.Count, Is.EqualTo(13));
+            Assert.That(catalog.Registrations.Count, Is.EqualTo(14));
             CharacterRuntimeRegistration registration = catalog
                 .Registrations
                 .Single(item => item.CharacterId
@@ -261,7 +261,7 @@ namespace ValorChronicle.Tests.EditMode.Characters.Runtime
                 catalog.Registrations.Select(item => item.CharacterId)
                     .Distinct()
                     .Count(),
-                Is.EqualTo(13));
+                Is.EqualTo(14));
         }
 
         [Test]

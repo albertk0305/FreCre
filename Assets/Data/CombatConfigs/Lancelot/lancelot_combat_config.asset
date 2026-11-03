@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c501630946b42f8b0ae922486431e02, type: 3}
+  m_Name: lancelot_combat_config
+  m_EditorClassIdentifier: ValorChronicle.Game::ValorChronicle.Characters.Lancelot.LancelotCombatConfig
+  match3Coefficient: 1.4
+  match4Coefficient: 2.5
+  match5Coefficient: 4.5
+  passiveCriticalChanceIncreaseRate: 0.2
+  match4CriticalChanceIncreaseRate: 0.15
+  match5CriticalChanceIncreaseRate: 0.35
+  activeCriticalDamageIncreaseRate: 0.5
+  activeDurationTurns: 3
+  activeCooldownTurns: 8

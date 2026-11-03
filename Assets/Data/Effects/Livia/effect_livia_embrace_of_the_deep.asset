@@ -15,4 +15,4 @@ MonoBehaviour:
   id: effect_livia_embrace_of_the_deep
   displayNameKey: effect.livia.embrace_of_the_deep.name
   descriptionKey: effect.livia.embrace_of_the_deep.description
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 47380219da63480438628ca855041d39, type: 3}
