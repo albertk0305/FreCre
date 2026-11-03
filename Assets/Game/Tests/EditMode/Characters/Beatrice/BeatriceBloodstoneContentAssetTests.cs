@@ -295,12 +295,14 @@ namespace ValorChronicle.Tests.EditMode.Characters.Beatrice
                 string.Join("\n", dataReport.Issues.Select(
                     issue => issue.Message)));
             Assert.That(registrationIssues, Is.Empty);
-            string[] gachaCharacterIds = database.Gachas.SelectMany(
-                gacha => gacha.CharacterPoolIds).ToArray();
-            Assert.That(gachaCharacterIds.Count(id => id
+            Assert.That(database.TryGetGacha(
+                    "gacha_character_standard",
+                    out GachaDefinition standardCharacterGacha),
+                Is.True);
+            Assert.That(standardCharacterGacha.CharacterPoolIds.Count(id => id
                     == BeatriceBloodstoneRules.CharacterId),
                 Is.EqualTo(1));
-            Assert.That(gachaCharacterIds,
+            Assert.That(standardCharacterGacha.CharacterPoolIds,
                 Does.Contain("character_marea_bluefang"));
             Assert.That(database.ExchangeCatalog.CharacterIds.Count(id =>
                     id == BeatriceBloodstoneRules.CharacterId),

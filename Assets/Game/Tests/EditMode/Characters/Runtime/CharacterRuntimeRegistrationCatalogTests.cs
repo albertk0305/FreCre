@@ -13,6 +13,7 @@ using ValorChronicle.Characters.Brina;
 using ValorChronicle.Characters.Fiora;
 using ValorChronicle.Characters.Koharu;
 using ValorChronicle.Characters.Lilith;
+using ValorChronicle.Characters.Livia;
 using ValorChronicle.Characters.Luciel;
 using ValorChronicle.Characters.Marea;
 using ValorChronicle.Characters.Miyuki;
@@ -52,7 +53,7 @@ namespace ValorChronicle.Tests.EditMode.Characters.Runtime
             CharacterRuntimeRegistrationCatalog catalog =
                 CharacterRuntimeRegistrationCatalog.CreateDefault();
 
-            Assert.That(catalog.Registrations.Count, Is.EqualTo(12));
+            Assert.That(catalog.Registrations.Count, Is.EqualTo(13));
             CharacterRuntimeRegistration registration = catalog
                 .Registrations
                 .Single(item => item.CharacterId
@@ -241,11 +242,26 @@ namespace ValorChronicle.Tests.EditMode.Characters.Runtime
             Assert.That(
                 luciel.CreateLookupProvider(),
                 Is.TypeOf<LucielLookupDescriptionProvider>());
+            CharacterRuntimeRegistration livia = catalog.Registrations
+                .Single(item => item.CharacterId
+                    == LiviaRules.CharacterId);
+            Assert.That(
+                livia.SupportedCombatConfigType,
+                Is.EqualTo(typeof(LiviaCombatConfig)));
+            Assert.That(
+                livia.CreateBuildModifier(),
+                Is.TypeOf<LiviaBuildModifier>());
+            Assert.That(
+                livia.CreateCombatRegistrar(),
+                Is.TypeOf<LiviaCombatProviderRegistrar>());
+            Assert.That(
+                livia.CreateLookupProvider(),
+                Is.TypeOf<LiviaLookupDescriptionProvider>());
             Assert.That(
                 catalog.Registrations.Select(item => item.CharacterId)
                     .Distinct()
                     .Count(),
-                Is.EqualTo(12));
+                Is.EqualTo(13));
         }
 
         [Test]

@@ -336,3 +336,30 @@ effect.luciel.blessing_of_fallen_angel.name	Blessing of the Fallen	추락한 자
 effect.luciel.blessing_of_fallen_angel.description	The party's damage taken reduction remains active until battle ends.	파티의 받는 피해 감소가 전투 종료까지 적용됩니다.
 effect.luciel.match5_dealt_damage_increase.name	Blessing of the Abyss	심연의 축복
 effect.luciel.match5_dealt_damage_increase.description	Increases damage dealt by the party for 3 turns including the turn it was applied. Reapplying it refreshes the duration.	적용된 턴을 포함해 3턴 동안 파티가 가하는 피해를 증가시킵니다. 다시 적용하면 지속 시간이 갱신됩니다.
+livia	Livia	리비아
+livia.skill.match3.name	Clear Droplet	맑은 물방울
+livia.skill.match3.description	Restores party HP equal to {healing}% of Livia's final Max HP, multiplied by the combo multiplier.	리비아의 최종 최대 HP {healing}%에 콤보 배율을 적용해 파티 HP를 회복합니다.
+livia.skill.match4.name	Healing Wave	치유의 물결
+livia.skill.match4.description	Restores party HP equal to {healing}% of Livia's final Max HP, multiplied by the combo multiplier.	리비아의 최종 최대 HP {healing}%에 콤보 배율을 적용해 파티 HP를 회복합니다.
+livia.skill.match5.name	Embrace of the Deep	심해의 포옹
+livia.skill.match5.description	Restores party HP equal to {healing}% of Livia's final Max HP, multiplied by the combo multiplier. Then reduces damage taken by the party by {damage_reduction}% for {duration} turns including the current turn; repeated use refreshes the duration.	리비아의 최종 최대 HP {healing}%에 콤보 배율을 적용해 파티 HP를 회복합니다. 이후 현재 턴을 포함해 {duration}턴 동안 파티가 받는 피해를 {damage_reduction}% 감소시키며, 다시 사용하면 지속 시간이 갱신됩니다.
+livia.skill.passive.name	Tide of Life	생명의 물결
+livia.skill.passive.description	Permanently increases all party healing by {healing_increase}%.	전투 종료까지 파티의 모든 회복량을 {healing_increase}% 증가시킵니다.
+livia.skill.active.name	Fountain of Life	생명의 샘
+livia.skill.active.description	Immediately restores party HP equal to {healing}% of Livia's final Max HP without a combo multiplier. Cooldown: {cooldown} turns.	콤보 배율 없이 리비아의 최종 최대 HP {healing}%만큼 파티 HP를 즉시 회복합니다. 재사용 대기시간: {cooldown}턴.
+livia.awakening.1.name	Source of Springs	샘의 근원
+livia.awakening.1.description	Max HP multiplier increases from {multiplier_before}% to {multiplier_after}%.	최대 HP 배율이 {multiplier_before}%에서 {multiplier_after}%로 증가합니다.
+livia.awakening.2.name	Will of the Tides	물결의 의지
+livia.awakening.2.description	Livia's own healing increase changes from {healing_before}% to {healing_after}%.	리비아 자신이 발생시키는 회복량 증가가 {healing_before}%에서 {healing_after}%로 변경됩니다.
+livia.awakening.3.name	Purifying Drops	정화의 물방울
+livia.awakening.3.description	Clear Droplet's healing changes from {match3_before}% to {match3_after}% of final Max HP, and Healing Wave changes from {match4_before}% to {match4_after}%.	맑은 물방울의 회복량이 최종 최대 HP의 {match3_before}%에서 {match3_after}%로, 치유의 물결이 {match4_before}%에서 {match4_after}%로 변경됩니다.
+livia.awakening.4.name	Ocean's Embrace	깊은 바다의 품
+livia.awakening.4.description	Embrace of the Deep's healing changes from {match5_before}% to {match5_after}% of final Max HP.	심해의 포옹 회복량이 최종 최대 HP의 {match5_before}%에서 {match5_after}%로 변경됩니다.
+livia.awakening.5.name	Overflowing Vitality	넘치는 생명력
+livia.awakening.5.description	Tide of Life's party healing increase changes from {passive_before}% to {passive_after}%.	생명의 물결의 파티 회복량 증가가 {passive_before}%에서 {passive_after}%로 변경됩니다.
+livia.awakening.6.name	Eternal Spring	영원의 샘
+livia.awakening.6.description	Fountain of Life's healing changes from {active_before}% to {active_after}% of final Max HP.	생명의 샘 회복량이 최종 최대 HP의 {active_before}%에서 {active_after}%로 변경됩니다.
+effect.livia.tide_of_life.name	Tide of Life	생명의 물결
+effect.livia.tide_of_life.description	Increases all healing received by the party until battle ends.	전투 종료까지 파티가 받는 모든 회복량을 증가시킵니다.
+effect.livia.embrace_of_the_deep.name	Embrace of the Deep	심해의 포옹
+effect.livia.embrace_of_the_deep.description	Reduces damage taken by the party for 2 turns including the turn it was applied. Reapplying it refreshes the duration.	적용된 턴을 포함해 2턴 동안 파티가 받는 피해를 감소시킵니다. 다시 적용하면 지속 시간이 갱신됩니다.

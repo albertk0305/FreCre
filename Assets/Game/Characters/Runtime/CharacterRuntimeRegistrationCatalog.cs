@@ -9,6 +9,7 @@ using ValorChronicle.Characters.Brina;
 using ValorChronicle.Characters.Fiora;
 using ValorChronicle.Characters.Koharu;
 using ValorChronicle.Characters.Lilith;
+using ValorChronicle.Characters.Livia;
 using ValorChronicle.Characters.Luciel;
 using ValorChronicle.Characters.Marea;
 using ValorChronicle.Characters.Miyuki;
@@ -135,7 +136,12 @@ namespace ValorChronicle.Characters.Runtime
                         LucielRules.CharacterId,
                         () => new LucielBuildModifier(),
                         () => new LucielCombatProviderRegistrar(),
-                        () => new LucielLookupDescriptionProvider())
+                        () => new LucielLookupDescriptionProvider()),
+                    new CharacterRuntimeRegistration(
+                        LiviaRules.CharacterId,
+                        () => new LiviaBuildModifier(),
+                        () => new LiviaCombatProviderRegistrar(),
+                        () => new LiviaLookupDescriptionProvider())
                 });
         }
 
