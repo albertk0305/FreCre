@@ -59,6 +59,8 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 HandleActiveCombatActionStepApplied;
             combatBridge.BossCombatActionStepApplied +=
                 HandleBossCombatActionStepApplied;
+            combatBridge.PreBossCombatActionStepApplied +=
+                HandlePreBossCombatActionStepApplied;
             combatBridge.PostBossCombatActionStepApplied +=
                 HandlePostBossCombatActionStepApplied;
             IsInitialized = true;
@@ -82,6 +84,8 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 HandleActiveCombatActionStepApplied;
             combatBridge.BossCombatActionStepApplied -=
                 HandleBossCombatActionStepApplied;
+            combatBridge.PreBossCombatActionStepApplied -=
+                HandlePreBossCombatActionStepApplied;
             combatBridge.PostBossCombatActionStepApplied -=
                 HandlePostBossCombatActionStepApplied;
             boardController = null;
@@ -124,6 +128,12 @@ namespace ValorChronicle.Battle.Flow.Presentation
 
         private void HandlePostBossCombatActionStepApplied(
             PostBossCombatExecutionStepResult step)
+        {
+            HandleCombatActionResult(step?.ActionStep?.Result);
+        }
+
+        private void HandlePreBossCombatActionStepApplied(
+            PreBossCombatExecutionStepResult step)
         {
             HandleCombatActionResult(step?.ActionStep?.Result);
         }

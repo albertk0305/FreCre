@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55d6cf03c3d94592896877620385a225, type: 3}
+  m_Name: kayla_stride_combat_config
+  m_EditorClassIdentifier: ValorChronicle.Game::ValorChronicle.Characters.Kayla.KaylaStrideCombatConfig
+  match3Coefficient: 0.8
+  match4Coefficient: 1.4
+  match5Coefficient: 2.2
+  match5CriticalDamageIncreaseRate: 0.2
+  match5BuffDurationTurns: 2
+  activeCriticalChanceIncreaseRate: 0.15
+  activeDurationTurns: 2
+  activeCooldownTurns: 4
+  chargeCoefficientPerStack: 1.2
+  chargeEnhancementThreshold: 5
+  chargeEnhancementMultiplier: 1.5
+  chargeMaxStacks: 10
+  awakening3Match3Coefficient: 0.85
+  awakening3Match4Coefficient: 1.5
+  awakening4Match5Coefficient: 2.4
+  awakening4Match5CriticalDamageIncreaseRate: 0.25
+  awakening5ActiveCooldownTurns: 3
+  awakening6ChargeCoefficientPerStack: 1.35

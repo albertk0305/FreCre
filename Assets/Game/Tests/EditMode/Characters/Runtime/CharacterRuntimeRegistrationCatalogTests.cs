@@ -6,6 +6,7 @@ using UnityEditor;
 using UnityEngine;
 using ValorChronicle.Battle.Combat.Integration;
 using ValorChronicle.Battle.Combat.State;
+using ValorChronicle.Characters.Anubis;
 using ValorChronicle.Characters.Build;
 using ValorChronicle.Characters.BaekHyeon;
 using ValorChronicle.Characters.Beatrice;
@@ -53,7 +54,17 @@ namespace ValorChronicle.Tests.EditMode.Characters.Runtime
             CharacterRuntimeRegistrationCatalog catalog =
                 CharacterRuntimeRegistrationCatalog.CreateDefault();
 
-            Assert.That(catalog.Registrations.Count, Is.EqualTo(14));
+            Assert.That(catalog.Registrations.Count, Is.EqualTo(16));
+            CharacterRuntimeRegistration anubis = catalog.Registrations
+                .Single(item => item.CharacterId == AnubisRules.CharacterId);
+            Assert.That(anubis.SupportedCombatConfigType,
+                Is.EqualTo(typeof(AnubisCombatConfig)));
+            Assert.That(anubis.CreateBuildModifier(),
+                Is.TypeOf<AnubisBuildModifier>());
+            Assert.That(anubis.CreateCombatRegistrar(),
+                Is.TypeOf<AnubisCombatProviderRegistrar>());
+            Assert.That(anubis.CreateLookupProvider(),
+                Is.TypeOf<AnubisLookupDescriptionProvider>());
             CharacterRuntimeRegistration registration = catalog
                 .Registrations
                 .Single(item => item.CharacterId
@@ -261,7 +272,7 @@ namespace ValorChronicle.Tests.EditMode.Characters.Runtime
                 catalog.Registrations.Select(item => item.CharacterId)
                     .Distinct()
                     .Count(),
-                Is.EqualTo(14));
+                Is.EqualTo(16));
         }
 
         [Test]

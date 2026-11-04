@@ -1287,6 +1287,154 @@ namespace ValorChronicle.Battle.Flow.Presentation
                             }
                         }
 
+                        while (matchCompleted
+                            && combatBridge != null
+                            && combatBridge.IsPreBossCombatInProgress
+                            && IsFlowProgressionCurrent(
+                                version,
+                                BattlePhase.MatchEventResolving))
+                        {
+                            if (IsPaused)
+                            {
+                                yield return WaitWhilePaused();
+                            }
+                            if (!IsFlowProgressionCurrent(
+                                version,
+                                BattlePhase.MatchEventResolving))
+                            {
+                                yield break;
+                            }
+
+                            if (combatBridge.TryGetNextPreBossCombatAction(
+                                out _,
+                                out CombatAction nextPreBossAction))
+                            {
+                                if (nextPreBossAction
+                                    is DamageAction damageAction)
+                                {
+                                    CharacterBattleState attacker =
+                                        damageAction.ContextRequest.Attacker;
+                                    var request =
+                                        new ActiveDamageProjectileRequest(
+                                            attacker.PartySlotIndex,
+                                            attacker.CharacterId,
+                                            damageAction.ContextRequest
+                                                .AttackElement);
+                                    bool presentationCompleted = false;
+                                    ActiveDamageProjectileCompletion completion =
+                                        ActiveDamageProjectileCompletion
+                                            .Cancelled;
+                                    IActiveDamageProjectilePresenter presenter =
+                                        activeProjectilePresenterOverride
+                                        ?? combatPresentationController;
+                                    bool presentationStarted = false;
+                                    if (presenter != null)
+                                    {
+                                        try
+                                        {
+                                            presentationStarted =
+                                                presenter.TryPresent(
+                                                    request,
+                                                    result =>
+                                                    {
+                                                        completion = result;
+                                                        presentationCompleted =
+                                                            true;
+                                                    });
+                                        }
+                                        catch (Exception exception)
+                                        {
+                                            GameLogger.Exception(
+                                                exception,
+                                                this);
+                                            GameLogger.Warning(
+                                                "[BattleFlow] Pre-boss "
+                                                    + "damage projectile "
+                                                    + "failed to start; "
+                                                    + "applying immediately.",
+                                                this);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        GameLogger.Warning(
+                                            "[BattleFlow] Pre-boss damage "
+                                                + "projectile presenter is "
+                                                + "unavailable; applying "
+                                                + "immediately.",
+                                            this);
+                                    }
+
+                                    if (presentationStarted)
+                                    {
+                                        while (!presentationCompleted)
+                                        {
+                                            if (!IsFlowProgressionCurrent(
+                                                version,
+                                                BattlePhase
+                                                    .MatchEventResolving))
+                                            {
+                                                presenter.CancelActive();
+                                                yield break;
+                                            }
+
+                                            yield return null;
+                                        }
+
+                                        if (completion !=
+                                            ActiveDamageProjectileCompletion
+                                                .Arrived)
+                                        {
+                                            GameLogger.Error(
+                                                "[BattleFlow] Pre-boss "
+                                                    + "damage projectile was "
+                                                    + "interrupted before "
+                                                    + "combat application.",
+                                                this);
+                                            AbortBattle();
+                                            yield break;
+                                        }
+                                    }
+                                }
+
+                                if (IsPaused)
+                                {
+                                    yield return WaitWhilePaused();
+                                }
+                                if (!IsFlowProgressionCurrent(
+                                    version,
+                                    BattlePhase.MatchEventResolving))
+                                {
+                                    yield break;
+                                }
+
+                                isExecutingFlowStep = true;
+                                try
+                                {
+                                    matchCompleted = combatBridge
+                                        .TryApplyNextPreBossCombatAction(
+                                            out _);
+                                }
+                                finally
+                                {
+                                    isExecutingFlowStep = false;
+                                }
+
+                                continue;
+                            }
+
+                            isExecutingFlowStep = true;
+                            try
+                            {
+                                matchCompleted = combatBridge
+                                    .TryCompletePreBossCombatProvider();
+                            }
+                            finally
+                            {
+                                isExecutingFlowStep = false;
+                            }
+                        }
+
                         if (!matchCompleted)
                         {
                             LogMatchCompletionFailure(execution);
@@ -1748,6 +1896,7 @@ namespace ValorChronicle.Battle.Flow.Presentation
             }
 
             combatBridge?.CancelMatchEventCombat();
+            combatBridge?.CancelPreBossCombat();
             combatBridge?.CancelActiveCombat();
             combatBridge?.CancelBossActionCombat();
             combatBridge?.CancelPostBossCombat();

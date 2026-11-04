@@ -31,6 +31,8 @@ namespace ValorChronicle.Battle.Flow.Presentation
             combatStatusSources;
         private readonly IReadOnlyList<PreMatchQueueActionProviderBinding>
             preMatchQueueBindings;
+        private readonly IReadOnlyList<PreBossActionProviderBinding>
+            preBossBindings;
         private readonly IReadOnlyList<PostBossActionProviderBinding>
             postBossBindings;
         private readonly IReadOnlyList<
@@ -225,6 +227,8 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 new List<ShieldConditionalBossEffectDefinition>();
             var preMatchBindings =
                 new List<PreMatchQueueActionProviderBinding>();
+            var collectedPreBossBindings =
+                new List<PreBossActionProviderBinding>();
             var collectedPostBossBindings =
                 new List<PostBossActionProviderBinding>();
             var statusSourceKeys = new HashSet<string>(
@@ -449,6 +453,30 @@ namespace ValorChronicle.Battle.Flow.Presentation
                             provider));
                 }
 
+                IReadOnlyList<IPreBossActionProvider>
+                    registeredPreBossProviders =
+                        registration.PreBossActionProviders
+                        ?? throw new InvalidOperationException(
+                            $"The registrar for '{character.CharacterId}' "
+                                + "returned a null pre-boss provider "
+                                + "collection.");
+                for (int providerIndex = 0;
+                    providerIndex < registeredPreBossProviders.Count;
+                    providerIndex++)
+                {
+                    IPreBossActionProvider provider =
+                        registeredPreBossProviders[providerIndex]
+                        ?? throw new InvalidOperationException(
+                            $"The registrar for "
+                                + $"'{character.CharacterId}' returned a "
+                                + "null pre-boss provider at index "
+                                + $"{providerIndex}.");
+                    collectedPreBossBindings.Add(
+                        new PreBossActionProviderBinding(
+                            character,
+                            provider));
+                }
+
                 IReadOnlyList<IPostBossActionProvider>
                     registeredPostBossProviders =
                         registration.PostBossActionProviders
@@ -585,6 +613,8 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 statusSources.ToArray());
             preMatchQueueBindings = Array.AsReadOnly(
                 preMatchBindings.ToArray());
+            preBossBindings = Array.AsReadOnly(
+                collectedPreBossBindings.ToArray());
             postBossBindings = Array.AsReadOnly(
                 collectedPostBossBindings.ToArray());
             var conditionalSynchronizers = new List<
@@ -705,6 +735,7 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 DifficultyId,
                 ResultBalance,
                 preMatchQueueBindings: preMatchQueueBindings,
+                preBossBindings: preBossBindings,
                 postBossBindings: postBossBindings);
             if (ResultPersistenceService != null)
             {

@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using ValorChronicle.Battle.Combat.Integration;
+using ValorChronicle.Characters.Anubis;
 using ValorChronicle.Characters.Build;
 using ValorChronicle.Characters.BaekHyeon;
 using ValorChronicle.Characters.Beatrice;
 using ValorChronicle.Characters.Brina;
 using ValorChronicle.Characters.Fiora;
+using ValorChronicle.Characters.Kayla;
 using ValorChronicle.Characters.Koharu;
 using ValorChronicle.Characters.Lancelot;
 using ValorChronicle.Characters.Lilith;
@@ -79,6 +81,11 @@ namespace ValorChronicle.Characters.Runtime
                 new[]
                 {
                     new CharacterRuntimeRegistration(
+                        AnubisRules.CharacterId,
+                        () => new AnubisBuildModifier(),
+                        () => new AnubisCombatProviderRegistrar(),
+                        () => new AnubisLookupDescriptionProvider()),
+                    new CharacterRuntimeRegistration(
                         MareaBluefangRules.CharacterId,
                         () => new MareaBluefangBuildModifier(),
                         () => new MareaBluefangCombatProviderRegistrar(),
@@ -147,7 +154,12 @@ namespace ValorChronicle.Characters.Runtime
                         LancelotRules.CharacterId,
                         () => new LancelotBuildModifier(),
                         () => new LancelotCombatProviderRegistrar(),
-                        () => new LancelotLookupDescriptionProvider())
+                        () => new LancelotLookupDescriptionProvider()),
+                    new CharacterRuntimeRegistration(
+                        KaylaStrideRules.CharacterId,
+                        () => new KaylaStrideBuildModifier(),
+                        () => new KaylaStrideCombatProviderRegistrar(),
+                        () => new KaylaStrideLookupDescriptionProvider())
                 });
         }
 

@@ -39,6 +39,8 @@ namespace ValorChronicle.Battle.Combat.Integration
                 shieldConditionalBossEffects,
             IReadOnlyList<IPreMatchQueueActionProvider>
                 preMatchQueueActionProviders,
+            IReadOnlyList<IPreBossActionProvider>
+                preBossActionProviders,
             IReadOnlyList<IPostBossActionProvider>
                 postBossActionProviders,
             ActiveAbilityCooldownReductionHandle
@@ -59,6 +61,8 @@ namespace ValorChronicle.Battle.Combat.Integration
             PreMatchQueueActionProviders =
                 CopyPreMatchQueueActionProviders(
                     preMatchQueueActionProviders);
+            PreBossActionProviders = CopyPreBossActionProviders(
+                preBossActionProviders);
             PostBossActionProviders = CopyPostBossActionProviders(
                 postBossActionProviders);
             ActiveAbilityCooldownReductionHandle =
@@ -80,6 +84,8 @@ namespace ValorChronicle.Battle.Combat.Integration
             ShieldConditionalBossEffects { get; }
         public IReadOnlyList<IPreMatchQueueActionProvider>
             PreMatchQueueActionProviders { get; }
+        public IReadOnlyList<IPreBossActionProvider>
+            PreBossActionProviders { get; }
         public IReadOnlyList<IPostBossActionProvider>
             PostBossActionProviders { get; }
         public ActiveAbilityCooldownReductionHandle
@@ -108,6 +114,7 @@ namespace ValorChronicle.Battle.Combat.Integration
                 Array.Empty<InitialPartyEffectDefinition>(),
                 Array.Empty<ShieldConditionalBossEffectDefinition>(),
                 Array.Empty<IPreMatchQueueActionProvider>(),
+                Array.Empty<IPreBossActionProvider>(),
                 Array.Empty<IPostBossActionProvider>(),
                 activeAbilityCooldownReductionHandle: null);
         }
@@ -129,6 +136,7 @@ namespace ValorChronicle.Battle.Combat.Integration
                 Array.Empty<InitialPartyEffectDefinition>(),
                 Array.Empty<ShieldConditionalBossEffectDefinition>(),
                 Array.Empty<IPreMatchQueueActionProvider>(),
+                Array.Empty<IPreBossActionProvider>(),
                 Array.Empty<IPostBossActionProvider>(),
                 activeAbilityCooldownReductionHandle: null);
         }
@@ -175,6 +183,7 @@ namespace ValorChronicle.Battle.Combat.Integration
                 Array.Empty<InitialPartyEffectDefinition>(),
                 Array.Empty<ShieldConditionalBossEffectDefinition>(),
                 Array.Empty<IPreMatchQueueActionProvider>(),
+                Array.Empty<IPreBossActionProvider>(),
                 Array.Empty<IPostBossActionProvider>(),
                 activeAbilityCooldownReductionHandle: null);
         }
@@ -211,6 +220,7 @@ namespace ValorChronicle.Battle.Combat.Integration
                 Array.Empty<InitialPartyEffectDefinition>(),
                 Array.Empty<ShieldConditionalBossEffectDefinition>(),
                 Array.Empty<IPreMatchQueueActionProvider>(),
+                Array.Empty<IPreBossActionProvider>(),
                 Array.Empty<IPostBossActionProvider>(),
                 activeAbilityCooldownReductionHandle: null);
         }
@@ -229,6 +239,7 @@ namespace ValorChronicle.Battle.Combat.Integration
                 initialPartyEffects,
                 ShieldConditionalBossEffects,
                 PreMatchQueueActionProviders,
+                PreBossActionProviders,
                 PostBossActionProviders,
                 ActiveAbilityCooldownReductionHandle);
         }
@@ -247,6 +258,7 @@ namespace ValorChronicle.Battle.Combat.Integration
                 InitialPartyEffects,
                 shieldConditionalBossEffects,
                 PreMatchQueueActionProviders,
+                PreBossActionProviders,
                 PostBossActionProviders,
                 ActiveAbilityCooldownReductionHandle);
         }
@@ -263,6 +275,25 @@ namespace ValorChronicle.Battle.Combat.Integration
                 CombatStatusSources,
                 InitialPartyEffects,
                 ShieldConditionalBossEffects,
+                providers,
+                PreBossActionProviders,
+                PostBossActionProviders,
+                ActiveAbilityCooldownReductionHandle);
+        }
+
+        public CharacterCombatProviderRegistrationResult
+            WithPreBossActionProviders(
+                IReadOnlyList<IPreBossActionProvider> providers)
+        {
+            return new CharacterCombatProviderRegistrationResult(
+                ActiveAbilityId,
+                ActiveCooldownTurns,
+                TriggerRules,
+                ResourceRequirements,
+                CombatStatusSources,
+                InitialPartyEffects,
+                ShieldConditionalBossEffects,
+                PreMatchQueueActionProviders,
                 providers,
                 PostBossActionProviders,
                 ActiveAbilityCooldownReductionHandle);
@@ -281,6 +312,7 @@ namespace ValorChronicle.Battle.Combat.Integration
                 InitialPartyEffects,
                 ShieldConditionalBossEffects,
                 PreMatchQueueActionProviders,
+                PreBossActionProviders,
                 providers,
                 ActiveAbilityCooldownReductionHandle);
         }
@@ -310,6 +342,7 @@ namespace ValorChronicle.Battle.Combat.Integration
                 InitialPartyEffects,
                 ShieldConditionalBossEffects,
                 PreMatchQueueActionProviders,
+                PreBossActionProviders,
                 PostBossActionProviders,
                 handle);
         }
@@ -470,6 +503,27 @@ namespace ValorChronicle.Battle.Combat.Integration
                 copy[index] = providers[index]
                     ?? throw new ArgumentException(
                         $"Post-boss action provider entry {index} is null.",
+                        nameof(providers));
+            }
+
+            return Array.AsReadOnly(copy);
+        }
+
+        private static ReadOnlyCollection<IPreBossActionProvider>
+            CopyPreBossActionProviders(
+                IReadOnlyList<IPreBossActionProvider> providers)
+        {
+            if (providers == null)
+            {
+                throw new ArgumentNullException(nameof(providers));
+            }
+
+            var copy = new IPreBossActionProvider[providers.Count];
+            for (int index = 0; index < providers.Count; index++)
+            {
+                copy[index] = providers[index]
+                    ?? throw new ArgumentException(
+                        $"Pre-boss action provider entry {index} is null.",
                         nameof(providers));
             }
 

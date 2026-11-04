@@ -415,6 +415,8 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 HandleBossCombatActionStepApplied;
             bridge.ActiveCombatActionStepApplied +=
                 HandleActiveCombatActionStepApplied;
+            bridge.PreBossCombatActionStepApplied +=
+                HandlePreBossCombatActionStepApplied;
             bridge.PostBossCombatActionStepApplied +=
                 HandlePostBossCombatActionStepApplied;
             battleFlowController.PresentationMatchQueueChanged +=
@@ -454,6 +456,8 @@ namespace ValorChronicle.Battle.Flow.Presentation
                     HandleBossCombatActionStepApplied;
                 subscribedBridge.ActiveCombatActionStepApplied -=
                     HandleActiveCombatActionStepApplied;
+                subscribedBridge.PreBossCombatActionStepApplied -=
+                    HandlePreBossCombatActionStepApplied;
                 subscribedBridge.PostBossCombatActionStepApplied -=
                     HandlePostBossCombatActionStepApplied;
             }
@@ -702,6 +706,17 @@ namespace ValorChronicle.Battle.Flow.Presentation
 
         private void HandlePostBossCombatActionStepApplied(
             PostBossCombatExecutionStepResult stepResult)
+        {
+            battleFlowController?.CombatPresentationController?.TryPresent(
+                stepResult.ActionStep.Result);
+            RefreshScore();
+            RefreshCombatState();
+            RefreshActiveAvailability();
+            RefreshStatusSnapshot();
+        }
+
+        private void HandlePreBossCombatActionStepApplied(
+            PreBossCombatExecutionStepResult stepResult)
         {
             battleFlowController?.CombatPresentationController?.TryPresent(
                 stepResult.ActionStep.Result);

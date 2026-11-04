@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b1098957cb949e48befa3ee6e101fd8, type: 3}
+  m_Name: anubis
+  m_EditorClassIdentifier: ValorChronicle.Game::ValorChronicle.Data.Definitions.CharacterDefinition
+  id: character_anubis
+  displayNameKey: anubis
+  element: 3
+  level1Hp: 1100
+  level1Attack: 120
+  level100Hp: 4300
+  level100Attack: 650
+  skillIds:
+  - skill_anubis_match3
+  - skill_anubis_match4
+  - skill_anubis_match5
+  - passive_anubis_blessing_of_the_duat
+  - active_anubis_golden_guidance
+  combatConfig: {fileID: 11400000, guid: 83013def4b4f4caf9c85bd2a615669c4, type: 2}

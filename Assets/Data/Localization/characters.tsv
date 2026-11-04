@@ -390,3 +390,61 @@ effect.lancelot.unyielding_resolve.name	Unyielding Resolve	불굴의 결의
 effect.lancelot.unyielding_resolve.description	Critical damage is increased for the remaining duration.	남은 지속 시간 동안 치명타 피해가 증가합니다.
 effect.lancelot.knights_pride.name	Knight's Pride	기사의 긍지
 effect.lancelot.knights_pride.description	Permanently increases this character's critical chance by 20% at Awakening 0-4 and 28% at Awakening 5-6.	자신의 치명타 확률이 0~4각성에서 20%p, 5~6각성에서 28%p 상시 증가합니다.
+kayla	Kayla Stride	카일라 스트라이드
+kayla.description	A Light sub-damage dealer who gains Charge from allied critical hits and expends it on an Additional attack before the boss acts.	아군의 치명타 공격으로 돌진을 축적하고 보스 행동 직전에 Additional 공격으로 소모하는 빛속성 서브딜러입니다.
+kayla.skill.match3.name	Vanguard Spear Strike - 3 Match	선봉의 창격 - 3매치
+kayla.skill.match3.description	Deals {coefficient}% ATK as Light damage.	공격력의 {coefficient}%만큼 빛속성 피해를 줍니다.
+kayla.skill.match4.name	Gale Piercer - 4 Match	질풍의 관통 - 4매치
+kayla.skill.match4.description	Deals {coefficient}% ATK as Light damage.	공격력의 {coefficient}%만큼 빛속성 피해를 줍니다.
+kayla.skill.match5.name	Radiant Vanguard - 5+ Match	찬란한 선봉 - 5매치 이상
+kayla.skill.match5.description	Deals {coefficient}% ATK as Light damage, then increases the party's critical damage by {critical_damage}% for {duration} turns. Reapplying refreshes the duration.	공격력의 {coefficient}%만큼 빛속성 피해를 준 후 파티 전체의 치명타 피해를 {duration}턴 동안 {critical_damage}%p 증가시킵니다. 다시 적용하면 지속 시간이 갱신됩니다.
+kayla.skill.passive.name	Battlefield Gallop	전장의 질주
+kayla.skill.passive.description	When a party member's eligible player attack critically hits and deals damage, gains 1 Charge, up to {maximum_charge}. Before the boss acts, consumes all Charge to perform a separate Additional attack dealing {charge_coefficient}% ATK as Light damage per stack. At {enhancement_threshold} or more stacks, damage is multiplied by {enhancement_multiplier}. This Charge attack can critically hit and does not gain Charge from itself.	파티원의 유효한 플레이어 공격이 치명타로 피해를 주면 돌진을 1개 얻으며 최대 {maximum_charge}개까지 보유합니다. 보스 행동 직전에 돌진을 모두 소모하여 스택당 공격력의 {charge_coefficient}%만큼 빛속성 피해를 주는 별도의 Additional 공격을 합니다. 돌진이 {enhancement_threshold}개 이상이면 피해가 {enhancement_multiplier}배가 됩니다. 이 돌진 공격은 치명타가 발생할 수 있지만 자기 자신으로 돌진을 얻지는 않습니다.
+kayla.skill.active.name	Call to Charge	진격의 호령
+kayla.skill.active.description	Increases the party's critical chance by {critical_chance}% for {duration} turns. Reapplying refreshes the duration. Cooldown: {cooldown} turns.	파티 전체의 치명타 확률을 {duration}턴 동안 {critical_chance}%p 증가시킵니다. 다시 적용하면 지속 시간이 갱신됩니다. 재사용 대기시간: {cooldown}턴.
+kayla.status.charge.name	Charge	돌진
+kayla.status.charge.description	Current Charge count. Up to 10 can be stored and all are consumed by Battlefield Gallop before the boss acts.	현재 돌진 수입니다. 최대 10개까지 보유하며 보스 행동 직전에 전장의 질주가 모두 소모합니다.
+kayla.effect.radiant_vanguard.name	Radiant Vanguard	찬란한 선봉
+kayla.effect.radiant_vanguard.description	The party's critical damage is increased by 20%p, or 25%p from Awakening 4, for the remaining duration.	남은 지속 시간 동안 파티 전체의 치명타 피해가 20%p, 4각성부터 25%p 증가합니다.
+kayla.effect.call_to_charge.name	Call to Charge	진격의 호령
+kayla.effect.call_to_charge.description	The party's critical chance is increased by 15%p for the remaining duration.	남은 지속 시간 동안 파티 전체의 치명타 확률이 15%p 증가합니다.
+kayla.awakening.1.name	Vanguard's Pride	선봉의 긍지
+kayla.awakening.1.description	ATK multiplier increases from {multiplier_before}% to {multiplier_after}%.	공격력 배율이 {multiplier_before}%에서 {multiplier_after}%로 증가합니다.
+kayla.awakening.2.name	Iron Hooves	강철의 발굽
+kayla.awakening.2.description	Max HP multiplier increases from {multiplier_before}% to {multiplier_after}%.	최대 HP 배율이 {multiplier_before}%에서 {multiplier_after}%로 증가합니다.
+kayla.awakening.3.name	Masterful Spearmanship	숙련된 창술
+kayla.awakening.3.description	3 Match changes from {match3_before}% to {match3_after}% ATK, and 4 Match changes from {match4_before}% to {match4_after}% ATK.	3매치 공격력 계수가 {match3_before}%에서 {match3_after}%로, 4매치 공격력 계수가 {match4_before}%에서 {match4_after}%로 변경됩니다.
+kayla.awakening.4.name	Glorious Vanguard	영광의 선봉
+kayla.awakening.4.description	5 Match changes from {match5_before}% to {match5_after}% ATK, and its critical damage increase changes from {critical_damage_before}% to {critical_damage_after}%.	5매치 공격력 계수가 {match5_before}%에서 {match5_after}%로, 치명타 피해 증가량이 {critical_damage_before}%p에서 {critical_damage_after}%p로 변경됩니다.
+kayla.awakening.5.name	Relentless Advance	멈추지 않는 진격
+kayla.awakening.5.description	Call to Charge's cooldown changes from {cooldown_before} to {cooldown_after} turns.	진격의 호령의 재사용 대기시간이 {cooldown_before}턴에서 {cooldown_after}턴으로 변경됩니다.
+kayla.awakening.6.name	Charge of Radiance	백광의 돌진
+kayla.awakening.6.description	Battlefield Gallop's coefficient per Charge changes from {charge_before}% to {charge_after}% ATK.	전장의 질주의 돌진 1개당 공격력 계수가 {charge_before}%에서 {charge_after}%로 변경됩니다.
+anubis	Anubis	아누비스
+anubis.description	A Light Trickster who strengthens the party's Light damage and converts normal blocks to Light.	파티의 빛속성 피해를 강화하고 일반 블록을 빛속성으로 변환하는 빛속성 트릭스터입니다.
+anubis.skill.match3.name	Gleam of Souls - 3 Match	영혼의 빛 - 3매치
+anubis.skill.match3.description	Deals {coefficient}% ATK as Light damage, then grants Radiance of Judgment, increasing the party's Light damage by {radiance}% for the current turn. The strongest value is retained.	공격력의 {coefficient}%만큼 빛속성 피해를 준 후, 현재 턴 동안 파티 전체의 빛속성 피해를 {radiance}% 증가시키는 심판의 광휘를 부여합니다. 가장 높은 수치만 유지됩니다.
+anubis.skill.match4.name	Scales of Judgment - 4 Match	심판의 저울 - 4매치
+anubis.skill.match4.description	Deals {coefficient}% ATK as Light damage, then grants Radiance of Judgment, increasing the party's Light damage by {radiance}% for the current turn. The strongest value is retained.	공격력의 {coefficient}%만큼 빛속성 피해를 준 후, 현재 턴 동안 파티 전체의 빛속성 피해를 {radiance}% 증가시키는 심판의 광휘를 부여합니다. 가장 높은 수치만 유지됩니다.
+anubis.skill.match5.name	Verdict of the Duat - 5+ Match	명계의 선고 - 5매치 이상
+anubis.skill.match5.description	Deals {coefficient}% ATK as Light damage, then grants Radiance of Judgment, increasing the party's Light damage by {radiance}% for the current turn. The strongest value is retained.	공격력의 {coefficient}%만큼 빛속성 피해를 준 후, 현재 턴 동안 파티 전체의 빛속성 피해를 {radiance}% 증가시키는 심판의 광휘를 부여합니다. 가장 높은 수치만 유지됩니다.
+anubis.skill.passive.name	Blessing of the Duat	명계의 가호
+anubis.skill.passive.description	Permanently increases the party's Light damage by {damage_increase}% while Anubis is in the party.	아누비스가 파티에 있는 동안 파티 전체의 빛속성 피해를 {damage_increase}% 증가시킵니다.
+anubis.skill.active.name	Golden Guidance	황금빛 인도
+anubis.skill.active.description	Converts up to {block_count} non-Light normal blocks to Light while preserving at least one valid swap. Cooldown: {cooldown} turns.	유효 교환을 하나 이상 보존하면서 빛속성이 아닌 일반 블록을 최대 {block_count}개 빛속성으로 변환합니다. 재사용 대기시간: {cooldown}턴.
+anubis.awakening.1.name	Golden Authority	황금의 권능
+anubis.awakening.1.description	ATK multiplier increases from {multiplier_before}% to {multiplier_after}%.	공격력 배율이 {multiplier_before}%에서 {multiplier_after}%로 증가합니다.
+anubis.awakening.2.name	Eternal Guardian	영원의 수호자
+anubis.awakening.2.description	Max HP multiplier increases from {multiplier_before}% to {multiplier_after}%.	최대 HP 배율이 {multiplier_before}%에서 {multiplier_after}%로 증가합니다.
+anubis.awakening.3.name	Blade of Judgment	심판의 칼날
+anubis.awakening.3.description	3 Match changes from {match3_before}% to {match3_after}% ATK, 4 Match from {match4_before}% to {match4_after}% ATK, and 5 Match from {match5_before}% to {match5_after}% ATK.	3매치 공격력 계수가 {match3_before}%에서 {match3_after}%로, 4매치가 {match4_before}%에서 {match4_after}%로, 5매치가 {match5_before}%에서 {match5_after}%로 변경됩니다.
+anubis.awakening.4.name	Radiance of Ma'at	마아트의 광휘
+anubis.awakening.4.description	Radiance of Judgment from 3/4/5 Match changes from {match3_before}%/{match4_before}%/{match5_before}% to {match3_after}%/{match4_after}%/{match5_after}%.	3·4·5매치의 심판의 광휘가 {match3_before}%/{match4_before}%/{match5_before}%에서 {match3_after}%/{match4_after}%/{match5_after}%로 변경됩니다.
+anubis.awakening.5.name	Blessing of the Underworld	명계의 축복
+anubis.awakening.5.description	Blessing of the Duat's Light damage increase changes from {passive_before}% to {passive_after}%.	명계의 가호의 빛속성 피해 증가량이 {passive_before}%에서 {passive_after}%로 변경됩니다.
+anubis.awakening.6.name	Revelation of the Sun	태양의 계시
+anubis.awakening.6.description	Golden Guidance's converted block count changes from {blocks_before} to {blocks_after}.	황금빛 인도의 변환 블록 수가 {blocks_before}개에서 {blocks_after}개로 변경됩니다.
+effect.anubis.blessing_of_the_duat.name	Blessing of the Duat	명계의 가호
+effect.anubis.blessing_of_the_duat.description	The party's Light damage increase remains active until battle ends.	전투 종료까지 파티 전체의 빛속성 피해 증가가 적용됩니다.
+effect.anubis.radiance_of_judgment.name	Radiance of Judgment	심판의 광휘
+effect.anubis.radiance_of_judgment.description	The strongest Light damage increase granted by Anubis this turn is active. It expires at turn end.	이번 턴에 아누비스가 부여한 가장 높은 빛속성 피해 증가가 적용 중이며 턴 종료 시 제거됩니다.
