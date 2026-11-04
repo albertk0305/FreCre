@@ -4,8 +4,6 @@ using System.Linq;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
-using ValorChronicle.Characters.Marea;
-using ValorChronicle.Characters.Miyuki;
 using ValorChronicle.Characters.Presentation;
 using ValorChronicle.Characters.Runtime;
 using ValorChronicle.Characters.Serena;
@@ -155,6 +153,10 @@ namespace ValorChronicle.Tests.EditMode.Characters.Serena
                 new[] { registration });
             CharacterRuntimeRegistrationCatalog defaultCatalog =
                 CharacterRuntimeRegistrationCatalog.CreateDefault();
+            CharacterRuntimeRegistration defaultRegistration =
+                defaultCatalog.Registrations.Single(item =>
+                    item.CharacterId ==
+                    SerenaCoralspearRules.CharacterId);
 
             Assert.That(registration.SupportedCombatConfigType,
                 Is.EqualTo(typeof(SerenaCoralspearCombatConfig)));
@@ -165,16 +167,14 @@ namespace ValorChronicle.Tests.EditMode.Characters.Serena
             Assert.That(registration.CreateLookupProvider(),
                 Is.TypeOf<SerenaCoralspearLookupDescriptionProvider>());
             Assert.That(isolatedCatalog.Registrations.Count, Is.EqualTo(1));
-            Assert.That(defaultCatalog.Registrations.Count, Is.EqualTo(16));
-            Assert.That(defaultCatalog.Registrations.Any(item =>
-                item.CharacterId == MareaBluefangRules.CharacterId),
-                Is.True);
-            Assert.That(defaultCatalog.Registrations.Any(item =>
-                item.CharacterId == SerenaCoralspearRules.CharacterId),
-                Is.True);
-            Assert.That(defaultCatalog.Registrations.Any(item =>
-                item.CharacterId == ShimotsukiMiyukiRules.CharacterId),
-                Is.True);
+            Assert.That(defaultRegistration.SupportedCombatConfigType,
+                Is.EqualTo(typeof(SerenaCoralspearCombatConfig)));
+            Assert.That(defaultRegistration.CreateBuildModifier(),
+                Is.TypeOf<SerenaCoralspearBuildModifier>());
+            Assert.That(defaultRegistration.CreateCombatRegistrar(),
+                Is.TypeOf<SerenaCoralspearCombatProviderRegistrar>());
+            Assert.That(defaultRegistration.CreateLookupProvider(),
+                Is.TypeOf<SerenaCoralspearLookupDescriptionProvider>());
         }
 
         [Test]

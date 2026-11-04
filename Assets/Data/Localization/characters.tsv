@@ -448,3 +448,32 @@ effect.anubis.blessing_of_the_duat.name	Blessing of the Duat	명계의 가호
 effect.anubis.blessing_of_the_duat.description	The party's Light damage increase remains active until battle ends.	전투 종료까지 파티 전체의 빛속성 피해 증가가 적용됩니다.
 effect.anubis.radiance_of_judgment.name	Radiance of Judgment	심판의 광휘
 effect.anubis.radiance_of_judgment.description	The strongest Light damage increase granted by Anubis this turn is active. It expires at turn end.	이번 턴에 아누비스가 부여한 가장 높은 빛속성 피해 증가가 적용 중이며 턴 종료 시 제거됩니다.
+chloe	Chloe Valentine	클로에 발렌타인
+chloe.skill.match3.name	Mercy Round	자비의 탄환
+chloe.skill.match3.description	Restores party HP equal to {healing}% of Chloe's final Max HP, multiplied by the combo multiplier.	클로에의 최종 최대 HP {healing}%에 콤보 배율을 적용해 파티 HP를 회복합니다.
+chloe.skill.match4.name	Barrage of Grace	성수의 탄막
+chloe.skill.match4.description	Restores party HP equal to {healing}% of Chloe's final Max HP, multiplied by the combo multiplier.	클로에의 최종 최대 HP {healing}%에 콤보 배율을 적용해 파티 HP를 회복합니다.
+chloe.skill.match5.name	Salvo of Salvation	구원의 총성
+chloe.skill.match5.description	Restores party HP equal to {healing}% of Chloe's final Max HP with the combo multiplier, then increases the party's critical chance by {critical_chance}%p for {duration} turns including the current turn. Reapplying refreshes the duration.	클로에의 최종 최대 HP {healing}%에 콤보 배율을 적용해 파티 HP를 회복한 후, 현재 턴을 포함해 {duration}턴 동안 파티의 치명타 확률을 {critical_chance}%p 증가시킵니다. 다시 적용하면 지속 시간이 갱신됩니다.
+chloe.skill.passive.name	Blessing in the Smoke	연기 속의 가호
+chloe.skill.passive.description	Permanently increases the entire party's ATK by {attack_increase}% while Chloe is in the battle party.	클로에가 전투 파티에 편성되어 있으면 전투 종료까지 파티 전체의 공격력을 {attack_increase}% 증가시킵니다.
+chloe.skill.active.name	Final Confession	최후의 고해
+chloe.skill.active.description	Immediately restores party HP equal to {healing}% of Chloe's final Max HP without a combo multiplier, then increases the party's critical damage by {critical_damage}%p for {duration} turns including the current turn. Cooldown: {cooldown} turns.	콤보 배율 없이 클로에의 최종 최대 HP {healing}%만큼 파티 HP를 즉시 회복한 후, 현재 턴을 포함해 {duration}턴 동안 파티의 치명타 피해를 {critical_damage}%p 증가시킵니다. 재사용 대기시간: {cooldown}턴.
+chloe.awakening.1.name	Unwavering Faith	굳건한 신념
+chloe.awakening.1.description	Max HP multiplier increases from {multiplier_before}% to {multiplier_after}%.	최대 HP 배율이 {multiplier_before}%에서 {multiplier_after}%로 증가합니다.
+chloe.awakening.2.name	Loaded Conviction	장전된 신념
+chloe.awakening.2.description	Chloe's own healing increase changes from {healing_before}% to {healing_after}%.	클로에 자신이 발생시키는 회복량 증가가 {healing_before}%에서 {healing_after}%로 변경됩니다.
+chloe.awakening.3.name	Prayer of Mercy	자애의 기도
+chloe.awakening.3.description	Mercy Round's healing changes from {match3_before}% to {match3_after}% of final Max HP, and Barrage of Grace changes from {match4_before}% to {match4_after}%.	자비의 탄환 회복량이 최종 최대 HP의 {match3_before}%에서 {match3_after}%로, 성수의 탄막이 {match4_before}%에서 {match4_after}%로 변경됩니다.
+chloe.awakening.4.name	Blessed Bullet	축복받은 탄환
+chloe.awakening.4.description	Salvo of Salvation's healing changes from {healing_before}% to {healing_after}% of final Max HP, and its critical chance increase changes from {critical_before}%p to {critical_after}%p.	구원의 총성 회복량이 최종 최대 HP의 {healing_before}%에서 {healing_after}%로, 치명타 확률 증가가 {critical_before}%p에서 {critical_after}%p로 변경됩니다.
+chloe.awakening.5.name	Redemption of Sinners	죄인의 구원
+chloe.awakening.5.description	Final Confession's healing changes from {healing_before}% to {healing_after}% of final Max HP, and its critical damage increase changes from {critical_before}%p to {critical_after}%p.	최후의 고해 회복량이 최종 최대 HP의 {healing_before}%에서 {healing_after}%로, 치명타 피해 증가가 {critical_before}%p에서 {critical_after}%p로 변경됩니다.
+chloe.awakening.6.name	Heretical Saint	이단의 성녀
+chloe.awakening.6.description	Blessing in the Smoke's party ATK increase changes from {attack_before}% to {attack_after}%.	연기 속의 가호의 파티 공격력 증가가 {attack_before}%에서 {attack_after}%로 변경됩니다.
+effect.chloe.blessing_in_the_smoke.name	Blessing in the Smoke	연기 속의 가호
+effect.chloe.blessing_in_the_smoke.description	Increases the party's ATK until battle ends.	전투 종료까지 파티 전체의 공격력을 증가시킵니다.
+effect.chloe.salvo_of_salvation.name	Salvo of Salvation	구원의 총성
+effect.chloe.salvo_of_salvation.description	Increases the party's critical chance for 2 turns including the turn it was applied. Reapplying refreshes the duration.	적용된 턴을 포함해 2턴 동안 파티의 치명타 확률을 증가시킵니다. 다시 적용하면 지속 시간이 갱신됩니다.
+effect.chloe.final_confession.name	Final Confession	최후의 고해
+effect.chloe.final_confession.description	Increases the party's critical damage for 3 turns including the turn it was applied. Reapplying refreshes the duration.	적용된 턴을 포함해 3턴 동안 파티의 치명타 피해를 증가시킵니다. 다시 적용하면 지속 시간이 갱신됩니다.

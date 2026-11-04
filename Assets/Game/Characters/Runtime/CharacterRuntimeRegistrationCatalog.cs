@@ -7,6 +7,7 @@ using ValorChronicle.Characters.Build;
 using ValorChronicle.Characters.BaekHyeon;
 using ValorChronicle.Characters.Beatrice;
 using ValorChronicle.Characters.Brina;
+using ValorChronicle.Characters.Chloe;
 using ValorChronicle.Characters.Fiora;
 using ValorChronicle.Characters.Kayla;
 using ValorChronicle.Characters.Koharu;
@@ -105,6 +106,11 @@ namespace ValorChronicle.Characters.Runtime
                         () => new FioraAmberwingBuildModifier(),
                         () => new FioraAmberwingCombatProviderRegistrar(),
                         () => new FioraAmberwingLookupDescriptionProvider()),
+                    new CharacterRuntimeRegistration(
+                        ChloeValentineRules.CharacterId,
+                        () => new ChloeValentineBuildModifier(),
+                        () => new ChloeValentineCombatProviderRegistrar(),
+                        () => new ChloeValentineLookupDescriptionProvider()),
                     new CharacterRuntimeRegistration(
                         BrinaAshwoodRules.CharacterId,
                         () => new BrinaAshwoodBuildModifier(),

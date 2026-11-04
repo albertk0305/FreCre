@@ -62,6 +62,7 @@ MonoBehaviour:
   - character_lancelot
   - character_kayla_stride
   - character_anubis
+  - character_chloe_valentine
   relicPoolIds:
   - relic_victors_broken_sword
   - relic_world_tree_bark

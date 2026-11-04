@@ -11,8 +11,11 @@ using ValorChronicle.Characters.Build;
 using ValorChronicle.Characters.BaekHyeon;
 using ValorChronicle.Characters.Beatrice;
 using ValorChronicle.Characters.Brina;
+using ValorChronicle.Characters.Chloe;
 using ValorChronicle.Characters.Fiora;
+using ValorChronicle.Characters.Kayla;
 using ValorChronicle.Characters.Koharu;
+using ValorChronicle.Characters.Lancelot;
 using ValorChronicle.Characters.Lilith;
 using ValorChronicle.Characters.Livia;
 using ValorChronicle.Characters.Luciel;
@@ -54,7 +57,57 @@ namespace ValorChronicle.Tests.EditMode.Characters.Runtime
             CharacterRuntimeRegistrationCatalog catalog =
                 CharacterRuntimeRegistrationCatalog.CreateDefault();
 
-            Assert.That(catalog.Registrations.Count, Is.EqualTo(16));
+            string[] expectedCharacterIds =
+            {
+                AnubisRules.CharacterId,
+                MareaBluefangRules.CharacterId,
+                SerenaCoralspearRules.CharacterId,
+                ShimotsukiMiyukiRules.CharacterId,
+                FioraAmberwingRules.CharacterId,
+                ChloeValentineRules.CharacterId,
+                BrinaAshwoodRules.CharacterId,
+                NairaWindhornRules.CharacterId,
+                SakuragiKoharuRules.CharacterId,
+                BaekHyeonRules.CharacterId,
+                BeatriceBloodstoneRules.CharacterId,
+                LilithRules.CharacterId,
+                KarasumaShizukuRules.CharacterId,
+                LucielRules.CharacterId,
+                LiviaRules.CharacterId,
+                LancelotRules.CharacterId,
+                KaylaStrideRules.CharacterId
+            };
+            string[] actualCharacterIds = catalog.Registrations
+                .Select(item => item.CharacterId)
+                .ToArray();
+            ICharacterBuildModifier[] buildModifiers = catalog
+                .Registrations
+                .Select(item => item.CreateBuildModifier())
+                .ToArray();
+            ICharacterCombatProviderRegistrar[] combatRegistrars = catalog
+                .Registrations
+                .Select(item => item.CreateCombatRegistrar())
+                .ToArray();
+            ICharacterLookupDescriptionProvider[] lookupProviders = catalog
+                .Registrations
+                .Select(item => item.CreateLookupProvider())
+                .ToArray();
+
+            Assert.That(actualCharacterIds,
+                Is.EquivalentTo(expectedCharacterIds));
+            Assert.That(actualCharacterIds, Is.Unique);
+            Assert.That(buildModifiers, Has.Length.EqualTo(
+                expectedCharacterIds.Length));
+            Assert.That(buildModifiers.Select(item => item.CharacterId),
+                Is.EquivalentTo(expectedCharacterIds));
+            Assert.That(combatRegistrars, Has.Length.EqualTo(
+                expectedCharacterIds.Length));
+            Assert.That(combatRegistrars.Select(item => item.CharacterId),
+                Is.EquivalentTo(expectedCharacterIds));
+            Assert.That(lookupProviders, Has.Length.EqualTo(
+                expectedCharacterIds.Length));
+            Assert.That(lookupProviders.Select(item => item.CharacterId),
+                Is.EquivalentTo(expectedCharacterIds));
             CharacterRuntimeRegistration anubis = catalog.Registrations
                 .Single(item => item.CharacterId == AnubisRules.CharacterId);
             Assert.That(anubis.SupportedCombatConfigType,
@@ -132,6 +185,18 @@ namespace ValorChronicle.Tests.EditMode.Characters.Runtime
             Assert.That(
                 fiora.CreateLookupProvider(),
                 Is.TypeOf<FioraAmberwingLookupDescriptionProvider>());
+
+            CharacterRuntimeRegistration chloe = catalog.Registrations
+                .Single(item => item.CharacterId
+                    == ChloeValentineRules.CharacterId);
+            Assert.That(chloe.SupportedCombatConfigType,
+                Is.EqualTo(typeof(ChloeValentineCombatConfig)));
+            Assert.That(chloe.CreateBuildModifier(),
+                Is.TypeOf<ChloeValentineBuildModifier>());
+            Assert.That(chloe.CreateCombatRegistrar(),
+                Is.TypeOf<ChloeValentineCombatProviderRegistrar>());
+            Assert.That(chloe.CreateLookupProvider(),
+                Is.TypeOf<ChloeValentineLookupDescriptionProvider>());
 
             CharacterRuntimeRegistration brina = catalog.Registrations
                 .Single(item => item.CharacterId
@@ -268,11 +333,6 @@ namespace ValorChronicle.Tests.EditMode.Characters.Runtime
             Assert.That(
                 livia.CreateLookupProvider(),
                 Is.TypeOf<LiviaLookupDescriptionProvider>());
-            Assert.That(
-                catalog.Registrations.Select(item => item.CharacterId)
-                    .Distinct()
-                    .Count(),
-                Is.EqualTo(16));
         }
 
         [Test]

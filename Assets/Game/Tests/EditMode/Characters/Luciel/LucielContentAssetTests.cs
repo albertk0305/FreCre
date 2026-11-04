@@ -144,21 +144,20 @@ namespace ValorChronicle.Tests.EditMode.Characters.Luciel
             database.Initialize();
             presentations.Initialize();
 
-            Assert.That(database.Characters, Has.Count.EqualTo(16));
-            Assert.That(database.Characters.Select(item => item.Id),
-                Is.Unique);
-            Assert.That(runtime.Registrations, Has.Count.EqualTo(16));
-            Assert.That(runtime.Registrations.Select(item =>
-                item.CharacterId), Is.Unique);
-            foreach (CharacterRuntimeRegistration registration in
-                runtime.Registrations)
-            {
-                Assert.That(database.TryGetCharacter(
-                        registration.CharacterId,
-                        out _),
-                    Is.True,
-                    registration.CharacterId);
-            }
+            Assert.That(database.Characters.Count(item =>
+                    item.Id == LucielRules.CharacterId),
+                Is.EqualTo(1));
+            CharacterRuntimeRegistration runtimeRegistration = runtime
+                .Registrations.Single(item => item.CharacterId
+                    == LucielRules.CharacterId);
+            Assert.That(runtimeRegistration.SupportedCombatConfigType,
+                Is.EqualTo(typeof(LucielCombatConfig)));
+            Assert.That(runtimeRegistration.CreateBuildModifier(),
+                Is.TypeOf<LucielBuildModifier>());
+            Assert.That(runtimeRegistration.CreateCombatRegistrar(),
+                Is.TypeOf<LucielCombatProviderRegistrar>());
+            Assert.That(runtimeRegistration.CreateLookupProvider(),
+                Is.TypeOf<LucielLookupDescriptionProvider>());
 
             Assert.That(database.TryGetCharacter(
                     LucielRules.CharacterId,

@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1be8ba7a1c4f483a8e0a9c0a302d4dec, type: 3}
+  m_Name: chloe_valentine_combat_config
+  m_EditorClassIdentifier: ValorChronicle.Game::ValorChronicle.Characters.Chloe.ChloeValentineCombatConfig
+  match3HealingCoefficient: 0.07
+  match4HealingCoefficient: 0.12
+  match5HealingCoefficient: 0.2
+  match5CriticalChanceIncreaseRate: 0.12
+  match5BuffDurationTurns: 2
+  activeHealingCoefficient: 0.3
+  activeCriticalDamageIncreaseRate: 0.25
+  activeBuffDurationTurns: 3
+  activeCooldownTurns: 8
+  passivePartyAttackIncreaseRate: 0.05
+  awakening2HealingIncreaseRate: 0.05
+  awakening3Match3HealingCoefficient: 0.08
+  awakening3Match4HealingCoefficient: 0.13
+  awakening4Match5HealingCoefficient: 0.22
+  awakening4CriticalChanceIncreaseRate: 0.15
+  awakening5ActiveHealingCoefficient: 0.35
+  awakening5CriticalDamageIncreaseRate: 0.3
+  awakening6PartyAttackIncreaseRate: 0.07
+
