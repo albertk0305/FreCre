@@ -13,6 +13,7 @@ using ValorChronicle.Characters.Beatrice;
 using ValorChronicle.Characters.Brina;
 using ValorChronicle.Characters.Chloe;
 using ValorChronicle.Characters.Fiora;
+using ValorChronicle.Characters.Hazel;
 using ValorChronicle.Characters.Kayla;
 using ValorChronicle.Characters.Koharu;
 using ValorChronicle.Characters.Lancelot;
@@ -62,6 +63,7 @@ namespace ValorChronicle.Tests.EditMode.Characters.Runtime
             string[] expectedCharacterIds =
             {
                 AnubisRules.CharacterId,
+                HazelSparksRules.CharacterId,
                 MareaBluefangRules.CharacterId,
                 MeimeiRules.CharacterId,
                 SerenaCoralspearRules.CharacterId,

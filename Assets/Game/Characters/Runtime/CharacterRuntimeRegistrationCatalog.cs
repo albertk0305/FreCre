@@ -9,6 +9,7 @@ using ValorChronicle.Characters.Beatrice;
 using ValorChronicle.Characters.Brina;
 using ValorChronicle.Characters.Chloe;
 using ValorChronicle.Characters.Fiora;
+using ValorChronicle.Characters.Hazel;
 using ValorChronicle.Characters.Kayla;
 using ValorChronicle.Characters.Koharu;
 using ValorChronicle.Characters.Lancelot;
@@ -88,6 +89,11 @@ namespace ValorChronicle.Characters.Runtime
                         () => new AnubisBuildModifier(),
                         () => new AnubisCombatProviderRegistrar(),
                         () => new AnubisLookupDescriptionProvider()),
+                    new CharacterRuntimeRegistration(
+                        HazelSparksRules.CharacterId,
+                        () => new HazelSparksBuildModifier(),
+                        () => new HazelSparksCombatProviderRegistrar(),
+                        () => new HazelSparksLookupDescriptionProvider()),
                     new CharacterRuntimeRegistration(
                         MareaBluefangRules.CharacterId,
                         () => new MareaBluefangBuildModifier(),

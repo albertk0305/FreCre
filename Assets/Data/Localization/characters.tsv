@@ -536,3 +536,32 @@ sherry.awakening.6.name	Curtain Call	커튼 콜
 sherry.awakening.6.description	Maximum Jackpot coefficient changes from {jackpot_before}% to {jackpot_after}% ATK.	잭팟의 최대 공격력 계수가 {jackpot_before}%에서 {jackpot_after}%로 강화됩니다.
 effect.sherry.oni_intimidation.name	Oni's Intimidation	오니의 위압
 effect.sherry.oni_intimidation.description	Increases damage taken by the Boss. The strongest value is retained, and equal values retain the longer duration.	보스가 받는 피해를 증가시킵니다. 더 강한 수치를 유지하며, 수치가 같으면 더 긴 지속 시간을 유지합니다.
+hazel	Hazel Sparks	헤이즐 스파크스
+hazel.description	A Fire Trickster and blacksmith who builds Sharpening to strengthen the party's Fire damage, converts overflow into a turn-long ATK increase, and reforges normal blocks into Fire.	연마를 쌓아 파티의 불속성 피해를 강화하고, 초과 연마를 해당 턴의 공격력 증가로 전환하며, 일반 블록을 불속성으로 재단하는 대장장이 소녀이자 불속성 트릭스터입니다.
+hazel.skill.match3.name	Flame Tempering	불꽃 담금질
+hazel.skill.match3.description	Deals {coefficient}% ATK as Fire damage, then gains {sharpening_gain} Sharpening. Sharpening can be held up to {max_stacks}; each overflow Sharpening increases party ATK by {overflow_attack_increase}% for the current turn.	공격력의 {coefficient}%만큼 불속성 피해를 준 후 연마를 {sharpening_gain} 얻습니다. 연마는 최대 {max_stacks}까지 보유하며, 초과 연마 1개당 해당 턴 동안 파티 공격력이 {overflow_attack_increase}% 증가합니다.
+hazel.skill.match4.name	Flames of Steel	강철의 불꽃
+hazel.skill.match4.description	Deals {coefficient}% ATK as Fire damage, then gains {sharpening_gain} Sharpening. Sharpening can be held up to {max_stacks}; each overflow Sharpening increases party ATK by {overflow_attack_increase}% for the current turn.	공격력의 {coefficient}%만큼 불속성 피해를 준 후 연마를 {sharpening_gain} 얻습니다. 연마는 최대 {max_stacks}까지 보유하며, 초과 연마 1개당 해당 턴 동안 파티 공격력이 {overflow_attack_increase}% 증가합니다.
+hazel.skill.match5.name	Masterwork	장인의 걸작
+hazel.skill.match5.description	Deals {coefficient}% ATK as Fire damage, then gains {sharpening_gain} Sharpening. Sharpening can be held up to {max_stacks}; each overflow Sharpening increases party ATK by {overflow_attack_increase}% for the current turn.	공격력의 {coefficient}%만큼 불속성 피해를 준 후 연마를 {sharpening_gain} 얻습니다. 연마는 최대 {max_stacks}까지 보유하며, 초과 연마 1개당 해당 턴 동안 파티 공격력이 {overflow_attack_increase}% 증가합니다.
+hazel.skill.passive.name	Artisan's Touch	장인의 손길
+hazel.skill.passive.description	Each Sharpening increases the party's Fire damage by {rate_per_stack}%, up to {max_damage_increase}% at {max_stacks} Sharpening. The effect updates as Sharpening changes and lasts until battle ends.	연마 1개당 파티 전체의 불속성 피해가 {rate_per_stack}% 증가하며, 연마 {max_stacks}개에서 최대 {max_damage_increase}% 증가합니다. 연마가 변하면 효과량이 갱신되며 전투 종료까지 유지됩니다.
+hazel.resource.sharpening.name	Sharpening	연마
+hazel.resource.sharpening.description	Starts battle with {initial_stacks} Sharpening and stores up to {max_stacks}. Gains {match3_gain}/{match4_gain}/{match5_gain} from 3/4/5+ Match after damage is dealt. Sharpening persists across turns.	전투 시작 시 연마 {initial_stacks}개를 보유하며 최대 {max_stacks}개까지 저장합니다. 3/4/5매치 이상 피해 처리 후 각각 {match3_gain}/{match4_gain}/{match5_gain}개를 얻으며, 연마는 턴이 바뀌어도 유지됩니다.
+hazel.effect.artisans_touch.description	Increases the party's Fire damage according to Hazel's current Sharpening until battle ends.	헤이즐의 현재 연마에 따라 전투 종료까지 파티 전체의 불속성 피해를 증가시킵니다.
+hazel.effect.forged_momentum.name	Forged Momentum	화력 단련
+hazel.effect.forged_momentum.description	Each cumulative overflow Sharpening increases party ATK by {rate_per_overflow}% for {duration} turn. The value is replaced with the latest total and expires at turn end.	현재 턴의 누적 초과 연마 1개당 파티 공격력이 {duration}턴 동안 {rate_per_overflow}% 증가합니다. 최신 누적량에 맞춰 효과량이 교체되며 턴 종료 시 만료됩니다.
+hazel.skill.active.name	Flame Reforging	불꽃 재단
+hazel.skill.active.description	Randomly converts up to {block_count} non-Fire normal blocks to Fire while preserving at least one valid swap. No damage or Sharpening is gained. Cooldown: {cooldown} turns.	유효 교환을 하나 이상 유지하면서 불속성이 아닌 일반 블록을 무작위로 최대 {block_count}개 불속성으로 변환합니다. 피해나 연마를 얻지 않습니다. 재사용 대기시간: {cooldown}턴.
+hazel.awakening.1.name	Sturdy Workwear	튼튼한 작업복
+hazel.awakening.1.description	Max HP multiplier increases from {multiplier_before}% to {multiplier_after}%.	최대 HP 배율이 {multiplier_before}%에서 {multiplier_after}%로 증가합니다.
+hazel.awakening.2.name	Hands of Steel	강철 같은 손길
+hazel.awakening.2.description	ATK multiplier increases from {multiplier_before}% to {multiplier_after}%.	공격력 배율이 {multiplier_before}%에서 {multiplier_after}%로 증가합니다.
+hazel.awakening.3.name	Masterful Smithing	숙련된 제련술
+hazel.awakening.3.description	3 Match changes from {match3_before}% to {match3_after}% ATK, 4 Match from {match4_before}% to {match4_after}% ATK, and 5 Match from {match5_before}% to {match5_after}% ATK.	3매치 공격력 계수가 {match3_before}%에서 {match3_after}%로, 4매치가 {match4_before}%에서 {match4_after}%로, 5매치가 {match5_before}%에서 {match5_after}%로 증가합니다.
+hazel.awakening.4.name	Precision Sharpening	정교한 연마
+hazel.awakening.4.description	Fire damage increase per Sharpening changes from {rate_before}% to {rate_after}%, raising the maximum from {maximum_before}% to {maximum_after}%.	연마 1개당 불속성 피해 증가가 {rate_before}%에서 {rate_after}%로 강화되어 최대 증가량이 {maximum_before}%에서 {maximum_after}%로 증가합니다.
+hazel.awakening.5.name	Blazing Masterpiece	타오르는 명작
+hazel.awakening.5.description	Forged Momentum's party ATK increase per overflow Sharpening changes from {rate_before}% to {rate_after}%.	화력 단련의 초과 연마 1개당 파티 공격력 증가가 {rate_before}%에서 {rate_after}%로 강화됩니다.
+hazel.awakening.6.name	Blazing Forge	타오르는 화로
+hazel.awakening.6.description	Starting Sharpening changes from {initial_before} to {initial_after}, and the initial Fire damage increase changes from {damage_before}% to {damage_after}%.	전투 시작 연마가 {initial_before}개에서 {initial_after}개로 증가하며, 초기 불속성 피해 증가가 {damage_before}%에서 {damage_after}%로 강화됩니다.
