@@ -120,7 +120,11 @@ namespace ValorChronicle.Battle.Combat.Integration
             long idBeforeProvider = actionIds.LastIssuedId;
             IReadOnlyList<CombatAction> rootActions =
                 provider.CreateRootActions(context);
-            ValidateRootActions(rootActions, idBeforeProvider);
+            ValidateRootActions(
+                rootActions,
+                idBeforeProvider,
+                requireAtLeastOne: !(provider is
+                    IActiveAbilityEmptyRootActionProvider));
             CombatActionExecutionSession actionSession =
                 executor.BeginExecution(
                     rootActions,
@@ -129,6 +133,20 @@ namespace ValorChronicle.Battle.Combat.Integration
             {
                 throw new InvalidOperationException(
                     "Active runtime changed after prevalidation.");
+            }
+
+            if (provider is IActiveAbilitySuccessCommitter committer)
+            {
+                try
+                {
+                    committer.CommitActiveSuccess(context);
+                }
+                catch (Exception exception)
+                {
+                    // Root actions and Active runtime are already committed.
+                    // A listener failure cannot safely roll either back.
+                    GameLogger.Exception(exception);
+                }
             }
 
             session = new ActiveAbilityCombatExecutionSession(

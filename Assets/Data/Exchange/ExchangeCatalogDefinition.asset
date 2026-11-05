@@ -33,6 +33,7 @@ MonoBehaviour:
   - character_anubis
   - character_chloe_valentine
   - character_meimei
+  - character_sherry
   relicIds:
   - relic_victors_broken_sword
   - relic_world_tree_bark

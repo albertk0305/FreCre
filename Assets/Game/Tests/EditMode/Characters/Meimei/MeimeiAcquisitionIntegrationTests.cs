@@ -34,6 +34,8 @@ namespace ValorChronicle.Tests.EditMode.Characters.Meimei
             "Assets/Data/Party/CharacterPresentationCatalog.asset";
         private const string StandardCharacterGachaId =
             "gacha_character_standard";
+        private const string StandardRelicGachaId =
+            "gacha_relic_standard";
 
         private static readonly string[] PreviousCharacterIds =
         {
@@ -74,6 +76,10 @@ namespace ValorChronicle.Tests.EditMode.Characters.Meimei
                     StandardCharacterGachaId,
                     out GachaDefinition gacha),
                 Is.True);
+            Assert.That(database.TryGetGacha(
+                    StandardRelicGachaId,
+                    out GachaDefinition relicGacha),
+                Is.True);
             ExchangeCatalogDefinition exchange = database.ExchangeCatalog;
 
             Assert.That(gacha.SinglePullCost, Is.EqualTo(100L));
@@ -88,20 +94,21 @@ namespace ValorChronicle.Tests.EditMode.Characters.Meimei
             Assert.That(gacha.CharacterPoolIds.Take(
                     PreviousCharacterIds.Length),
                 Is.EqualTo(PreviousCharacterIds));
-            Assert.That(gacha.CharacterPoolIds.Last(),
-                Is.EqualTo(MeimeiRules.CharacterId));
             Assert.That(gacha.CharacterPoolIds.Count(id => id
                     == MeimeiRules.CharacterId),
                 Is.EqualTo(1));
             Assert.That(gacha.CharacterPoolIds, Is.Unique);
+
+            Assert.That(relicGacha.CharacterPoolIds.Count(id => id
+                    == MeimeiRules.CharacterId),
+                Is.EqualTo(1));
+            Assert.That(relicGacha.CharacterPoolIds, Is.Unique);
 
             Assert.That(exchange, Is.Not.Null);
             Assert.That(exchange.CharacterExchangeCost, Is.EqualTo(60L));
             Assert.That(exchange.CharacterIds.Take(
                     PreviousCharacterIds.Length),
                 Is.EqualTo(PreviousCharacterIds));
-            Assert.That(exchange.CharacterIds.Last(),
-                Is.EqualTo(MeimeiRules.CharacterId));
             Assert.That(exchange.CharacterIds.Count(id => id
                     == MeimeiRules.CharacterId),
                 Is.EqualTo(1));

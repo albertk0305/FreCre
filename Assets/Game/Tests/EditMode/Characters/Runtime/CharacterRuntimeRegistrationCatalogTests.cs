@@ -26,6 +26,7 @@ using ValorChronicle.Characters.Naira;
 using ValorChronicle.Characters.Presentation;
 using ValorChronicle.Characters.Runtime;
 using ValorChronicle.Characters.Serena;
+using ValorChronicle.Characters.Sherry;
 using ValorChronicle.Characters.Shizuku;
 using ValorChronicle.Data.Database;
 using ValorChronicle.Data.Definitions;
@@ -64,6 +65,7 @@ namespace ValorChronicle.Tests.EditMode.Characters.Runtime
                 MareaBluefangRules.CharacterId,
                 MeimeiRules.CharacterId,
                 SerenaCoralspearRules.CharacterId,
+                SherryRules.CharacterId,
                 ShimotsukiMiyukiRules.CharacterId,
                 FioraAmberwingRules.CharacterId,
                 ChloeValentineRules.CharacterId,

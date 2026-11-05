@@ -510,3 +510,29 @@ effect.chloe.salvo_of_salvation.name	Salvo of Salvation	구원의 총성
 effect.chloe.salvo_of_salvation.description	Increases the party's critical chance for 2 turns including the turn it was applied. Reapplying refreshes the duration.	적용된 턴을 포함해 2턴 동안 파티의 치명타 확률을 증가시킵니다. 다시 적용하면 지속 시간이 갱신됩니다.
 effect.chloe.final_confession.name	Final Confession	최후의 고해
 effect.chloe.final_confession.description	Increases the party's critical damage for 3 turns including the turn it was applied. Reapplying refreshes the duration.	적용된 턴을 포함해 3턴 동안 파티의 치명타 피해를 증가시킵니다. 다시 적용하면 지속 시간이 갱신됩니다.
+sherry	Sherry	셰리
+sherry.description	A Fire sub damage dealer who alternates match tiers to build Stylish Rank, inflicts Oni's Intimidation, and spends all ranks on Jackpot.	서로 다른 매칭을 연계해 스타일리쉬 랭크를 쌓고 오니의 위압을 부여하며, 모든 랭크를 잭팟으로 소비하는 불속성 서브딜러입니다.
+sherry.skill.match3.name	Oni's Knuckle - 3 Match	오니의 손맛 - 3매치
+sherry.skill.match3.description	Deals {coefficient}% ATK as Fire damage. After the attack, if Stylish Rank is at least {minimum_rank}, increases damage taken by the Boss by {oni_rate}% for {duration} turns.	공격력의 {coefficient}%만큼 불속성 피해를 줍니다. 공격 후 스타일리쉬 랭크가 {minimum_rank} 이상이면 보스가 받는 피해를 {duration}턴 동안 {oni_rate}% 증가시킵니다.
+sherry.skill.match4.name	Savage Rush - 4 Match	난폭한 연격 - 4매치
+sherry.skill.match4.description	Deals {coefficient}% ATK as Fire damage. After the attack, if Stylish Rank is at least {minimum_rank}, increases damage taken by the Boss by {oni_rate}% for {duration} turns.	공격력의 {coefficient}%만큼 불속성 피해를 줍니다. 공격 후 스타일리쉬 랭크가 {minimum_rank} 이상이면 보스가 받는 피해를 {duration}턴 동안 {oni_rate}% 증가시킵니다.
+sherry.skill.match5.name	Demon's Rampage - 5 Match	귀신의 난무 - 5매치
+sherry.skill.match5.description	Deals {coefficient}% ATK as Fire damage. After the attack, if Stylish Rank is at least {minimum_rank}, increases damage taken by the Boss by {oni_rate}% for {duration} turns.	공격력의 {coefficient}%만큼 불속성 피해를 줍니다. 공격 후 스타일리쉬 랭크가 {minimum_rank} 이상이면 보스가 받는 피해를 {duration}턴 동안 {oni_rate}% 증가시킵니다.
+sherry.skill.passive.name	Stylish	스타일리쉬
+sherry.skill.passive.description	The first Sherry match grants 1 Stylish Rank. A match tier different from Sherry's previous match grants 1 rank, up to {max_rank}. Damage dealt increases along an exponential curve with base {exponent_base}, up to {max_damage_increase}%.	셰리의 첫 매칭은 스타일리쉬 랭크를 1 얻습니다. 직전 셰리 매칭과 다른 종류의 매칭을 발동하면 랭크를 1 얻으며, 최대 {max_rank}랭크까지 보유합니다. 가하는 피해가 밑 {exponent_base}의 지수 곡선에 따라 최대 {max_damage_increase}% 증가합니다.
+sherry.skill.active.name	Jackpot!	잭팟!
+sherry.skill.active.description	Consumes all Stylish Rank and deals Fire damage based on the rank snapshot. Rank coefficients: 1={rank1}%, 2={rank2}%, 3={rank3}%, 4={rank4}%, 5={rank5}%, 6={rank6}%, 7={rank7}% ATK. Maximum: {max_coefficient}% ATK. Usable at rank 0 without damage. Cooldown: {cooldown} turn.	스타일리쉬 랭크를 모두 소비하고 소비 전 랭크에 따른 불속성 피해를 줍니다. 랭크별 계수: 1={rank1}%, 2={rank2}%, 3={rank3}%, 4={rank4}%, 5={rank5}%, 6={rank6}%, 7={rank7}% ATK. 최대 {max_coefficient}% ATK입니다. 0랭크에서도 피해 없이 사용할 수 있습니다. 재사용 대기시간: {cooldown}턴.
+sherry.awakening.1.name	Fixer's Instinct	해결사의 본능
+sherry.awakening.1.description	ATK multiplier increases from {multiplier_before}% to {multiplier_after}%.	공격력 배율이 {multiplier_before}%에서 {multiplier_after}%로 증가합니다.
+sherry.awakening.2.name	Oni's Endurance	오니의 맷집
+sherry.awakening.2.description	Max HP multiplier increases from {multiplier_before}% to {multiplier_after}%.	최대 HP 배율이 {multiplier_before}%에서 {multiplier_after}%로 증가합니다.
+sherry.awakening.3.name	Dazzling Combo	화려한 연격
+sherry.awakening.3.description	3 Match changes from {match3_before}% to {match3_after}% ATK, 4 Match from {match4_before}% to {match4_after}% ATK, and 5 Match from {match5_before}% to {match5_after}% ATK.	3매치 공격력 계수가 {match3_before}%에서 {match3_after}%로, 4매치가 {match4_before}%에서 {match4_after}%로, 5매치가 {match5_before}%에서 {match5_after}%로 증가합니다.
+sherry.awakening.4.name	Overwhelming Presence	압도적인 존재감
+sherry.awakening.4.description	Oni's Intimidation from 3/4/5 Match changes from {match3_before}/{match4_before}/{match5_before}% to {match3_after}/{match4_after}/{match5_after}%.	3/4/5매치의 오니의 위압이 {match3_before}/{match4_before}/{match5_before}%에서 {match3_after}/{match4_after}/{match5_after}%로 강화됩니다.
+sherry.awakening.5.name	True Style	진정한 스타일
+sherry.awakening.5.description	Maximum Stylish damage increase changes from {damage_before}% to {damage_after}%.	스타일리쉬의 최대 가하는 피해 증가량이 {damage_before}%에서 {damage_after}%로 강화됩니다.
+sherry.awakening.6.name	Curtain Call	커튼 콜
+sherry.awakening.6.description	Maximum Jackpot coefficient changes from {jackpot_before}% to {jackpot_after}% ATK.	잭팟의 최대 공격력 계수가 {jackpot_before}%에서 {jackpot_after}%로 강화됩니다.
+effect.sherry.oni_intimidation.name	Oni's Intimidation	오니의 위압
+effect.sherry.oni_intimidation.description	Increases damage taken by the Boss. The strongest value is retained, and equal values retain the longer duration.	보스가 받는 피해를 증가시킵니다. 더 강한 수치를 유지하며, 수치가 같으면 더 긴 지속 시간을 유지합니다.

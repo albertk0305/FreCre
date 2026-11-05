@@ -21,6 +21,7 @@ using ValorChronicle.Characters.Miyuki;
 using ValorChronicle.Characters.Naira;
 using ValorChronicle.Characters.Presentation;
 using ValorChronicle.Characters.Serena;
+using ValorChronicle.Characters.Sherry;
 using ValorChronicle.Characters.Shizuku;
 using ValorChronicle.Data.Database;
 using ValorChronicle.Localization;
@@ -102,6 +103,11 @@ namespace ValorChronicle.Characters.Runtime
                         () => new SerenaCoralspearBuildModifier(),
                         () => new SerenaCoralspearCombatProviderRegistrar(),
                         () => new SerenaCoralspearLookupDescriptionProvider()),
+                    new CharacterRuntimeRegistration(
+                        SherryRules.CharacterId,
+                        () => new SherryBuildModifier(),
+                        () => new SherryCombatProviderRegistrar(),
+                        () => new SherryLookupDescriptionProvider()),
                     new CharacterRuntimeRegistration(
                         ShimotsukiMiyukiRules.CharacterId,
                         () => new ShimotsukiMiyukiBuildModifier(),
