@@ -12,12 +12,14 @@ namespace ValorChronicle.Battle.Board
         private readonly IRandomSource randomSource;
         private readonly BoardMoveAnalyzer moveAnalyzer;
         private readonly int maxRandomSelectionAttempts;
+        private readonly int maxDeterministicCombinationAttempts;
 
         public BoardElementConversionResolver(
             IRandomSource randomSource,
             BoardMoveAnalyzer moveAnalyzer,
             int maxRandomSelectionAttempts =
-                DefaultMaxRandomSelectionAttempts)
+                DefaultMaxRandomSelectionAttempts,
+            int maxDeterministicCombinationAttempts = int.MaxValue)
         {
             this.randomSource = randomSource
                 ?? throw new ArgumentNullException(nameof(randomSource));
@@ -29,7 +31,15 @@ namespace ValorChronicle.Battle.Board
                     nameof(maxRandomSelectionAttempts));
             }
 
+            if (maxDeterministicCombinationAttempts < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(maxDeterministicCombinationAttempts));
+            }
+
             this.maxRandomSelectionAttempts = maxRandomSelectionAttempts;
+            this.maxDeterministicCombinationAttempts =
+                maxDeterministicCombinationAttempts;
         }
 
         public BoardElementConversionResult Resolve(
@@ -88,35 +98,43 @@ namespace ValorChronicle.Battle.Board
                 }
             }
 
-            var combination = CreateInitialCombination(conversionCount);
             int deterministicCombinationCount = 0;
-            do
+            if (maxDeterministicCombinationAttempts > 0)
             {
-                deterministicCombinationCount++;
-                IReadOnlyList<BoardPosition> selected = SelectCombination(
-                    candidates,
-                    combination);
-                BoardElementConversionResult candidate = BuildResult(
-                    board,
-                    targetElement,
-                    requestedCount,
-                    selected,
-                    maxRandomSelectionAttempts,
-                    deterministicCombinationCount,
-                    usedDeterministicSearch: true);
-                if (moveAnalyzer.HasAnyValidSwap(candidate.Board))
+                var combination = CreateInitialCombination(conversionCount);
+                do
                 {
-                    return candidate;
+                    deterministicCombinationCount++;
+                    IReadOnlyList<BoardPosition> selected = SelectCombination(
+                        candidates,
+                        combination);
+                    BoardElementConversionResult candidate = BuildResult(
+                        board,
+                        targetElement,
+                        requestedCount,
+                        selected,
+                        maxRandomSelectionAttempts,
+                        deterministicCombinationCount,
+                        usedDeterministicSearch: true);
+                    if (moveAnalyzer.HasAnyValidSwap(candidate.Board))
+                    {
+                        return candidate;
+                    }
                 }
+                while (deterministicCombinationCount
+                        < maxDeterministicCombinationAttempts
+                    && MoveToNextCombination(
+                        combination,
+                        candidates.Count));
             }
-            while (MoveToNextCombination(combination, candidates.Count));
 
             return Failure(
                 board,
                 requestedCount,
                 maxRandomSelectionAttempts,
                 deterministicCombinationCount,
-                usedDeterministicSearch: true,
+                usedDeterministicSearch:
+                    maxDeterministicCombinationAttempts > 0,
                 BoardElementConversionFailure.NoPlayableCombination);
         }
 

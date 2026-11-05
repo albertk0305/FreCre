@@ -518,7 +518,15 @@ namespace ValorChronicle.Battle.Flow.Presentation
                     character.CharacterId,
                     registration.ActiveAbilityId,
                     out _);
-                if (!hasCombatProvider && !hasBoardProvider)
+                bool hasBoardShuffleElementConversionProvider =
+                    ActiveProviders
+                        .TryResolveBoardShuffleElementConversion(
+                            character.CharacterId,
+                            registration.ActiveAbilityId,
+                            out _);
+                if (!hasCombatProvider
+                    && !hasBoardProvider
+                    && !hasBoardShuffleElementConversionProvider)
                 {
                     throw new InvalidOperationException(
                         $"The registrar for '{character.CharacterId}' did "

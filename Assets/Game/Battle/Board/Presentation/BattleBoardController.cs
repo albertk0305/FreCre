@@ -10,7 +10,8 @@ namespace ValorChronicle.Battle.Board.Presentation
 {
     public sealed class BattleBoardController : MonoBehaviour,
         IBattleBoardMutationSink,
-        IBattleBoardElementConversionSink
+        IBattleBoardElementConversionSink,
+        IBattleBoardShuffleElementConversionSink
     {
         [SerializeField]
         private BattleBoardView boardView = null;
@@ -59,6 +60,8 @@ namespace ValorChronicle.Battle.Board.Presentation
         private BoardShuffler boardShuffler;
         private BoardRockMutationResolver rockMutationResolver;
         private BoardElementConversionResolver elementConversionResolver;
+        private BoardShuffleElementConversionResolver
+            shuffleElementConversionResolver;
         private BoardSwapActionResolver swapActionResolver;
         private BoardActionPresentationTimings actionTimings;
         private IEnumerator activePresentationSequence;
@@ -88,6 +91,8 @@ namespace ValorChronicle.Battle.Board.Presentation
             get;
             private set;
         }
+        public BoardShuffleElementConversionResult
+            LastShuffleElementConversionResult { get; private set; }
         public bool IsInitialized => initialized;
         public bool IsBoardReady { get; private set; }
         public bool HasInitialBoardReady => initialBoardReadyPublished;
@@ -118,6 +123,7 @@ namespace ValorChronicle.Battle.Board.Presentation
             && boardView != null
             && !boardView.IsAnimating;
         public bool CanAcceptElementConversion => CanAcceptBoardInput;
+        public bool CanAcceptShuffleElementConversion => CanAcceptBoardInput;
 
         private bool HasResolverGraph => randomSource != null
             && blockIdGenerator != null
@@ -126,6 +132,7 @@ namespace ValorChronicle.Battle.Board.Presentation
             && boardShuffler != null
             && rockMutationResolver != null
             && elementConversionResolver != null
+            && shuffleElementConversionResolver != null
             && swapActionResolver != null
             && actionTimings != null;
 
@@ -254,6 +261,10 @@ namespace ValorChronicle.Battle.Board.Presentation
             var conversionResolver = new BoardElementConversionResolver(
                 sharedRandomSource,
                 moveAnalyzer);
+            var shuffleConversionResolver =
+                new BoardShuffleElementConversionResolver(
+                    sharedRandomSource,
+                    moveAnalyzer);
             BoardActionPresentationTimings timings = CreateActionTimings();
 
             BoardState generatedBoard = generator.Generate();
@@ -281,6 +292,7 @@ namespace ValorChronicle.Battle.Board.Presentation
             boardShuffler = shuffler;
             rockMutationResolver = rockResolver;
             elementConversionResolver = conversionResolver;
+            shuffleElementConversionResolver = shuffleConversionResolver;
             swapActionResolver = actionResolver;
             actionTimings = timings;
             StartObservingCascadeStepPresentation();
@@ -436,6 +448,95 @@ namespace ValorChronicle.Battle.Board.Presentation
                 GameLogger.Exception(exception, this);
                 GameLogger.Error(
                     "[BattleBoard] Element conversion resolution failed.",
+                    this);
+                result = null;
+                return false;
+            }
+            finally
+            {
+                isActionInProgress = false;
+            }
+        }
+
+        public bool TryShuffleAndConvertElements(
+            ElementType targetElement,
+            int requestedCount,
+            out BoardShuffleElementConversionResult result)
+        {
+            if (!Enum.IsDefined(typeof(ElementType), targetElement))
+            {
+                throw new ArgumentOutOfRangeException(nameof(targetElement));
+            }
+
+            if (requestedCount < 0 || requestedCount > 5)
+            {
+                throw new ArgumentOutOfRangeException(nameof(requestedCount));
+            }
+
+            result = null;
+            if (!CanAcceptBoardInput
+                || shuffleElementConversionResolver == null)
+            {
+                return false;
+            }
+
+            BoardState beforeBoard = CurrentBoard;
+            isActionInProgress = true;
+            try
+            {
+                BoardShuffleElementConversionResult resolved =
+                    shuffleElementConversionResolver.Resolve(
+                        beforeBoard,
+                        targetElement,
+                        requestedCount);
+                LastShuffleElementConversionResult = resolved;
+                result = resolved;
+                if (!resolved.Succeeded)
+                {
+                    return false;
+                }
+
+                if (ReferenceEquals(beforeBoard, resolved.Board))
+                {
+                    throw new InvalidOperationException(
+                        "Shuffle conversion must return an independent "
+                            + "BoardState.");
+                }
+
+                CurrentBoard = resolved.Board;
+                IsBoardReady = false;
+                try
+                {
+                    // The composite Resolver is pure. Commit and render only
+                    // its final Board, never its intermediate shuffle.
+                    boardView.Render(CurrentBoard);
+                    if (!boardView.MatchesBoard(CurrentBoard))
+                    {
+                        throw new InvalidOperationException(
+                            "The shuffle-converted board View does not "
+                                + "match CurrentBoard.");
+                    }
+                }
+                catch (Exception exception)
+                {
+                    GameLogger.Exception(exception, this);
+                    GameLogger.Error(
+                        "[BattleBoard] Shuffle conversion presentation "
+                            + "failed.",
+                        this);
+                    RestoreAfterFailedElementConversion(beforeBoard);
+                    result = null;
+                    return false;
+                }
+
+                IsBoardReady = true;
+                return true;
+            }
+            catch (Exception exception)
+            {
+                GameLogger.Exception(exception, this);
+                GameLogger.Error(
+                    "[BattleBoard] Shuffle conversion resolution failed.",
                     this);
                 result = null;
                 return false;

@@ -1,4 +1,37 @@
 key	en	ko
+meimei	Meimei	메이메이
+meimei.description	A Fire main damage dealer and drunken-style martial artist who gathers three independent cups and Tipsiness.	서로 독립적인 세 잔과 술기운을 모아 싸우는 취권 격투가이자 불속성 메인 딜러입니다.
+meimei.skill.match3.name	Drunken Fist	취중권
+meimei.skill.match3.description	Deals {coefficient}% ATK as Fire damage and gains the First Cup. Gaining the same cup again has no effect.	공격력의 {coefficient}%만큼 불속성 피해를 주고 첫 잔을 획득합니다. 같은 잔을 다시 획득해도 중복되지 않습니다.
+meimei.skill.match4.name	Staggering Chain Kick	비틀비틀 연환각
+meimei.skill.match4.description	Deals {coefficient}% ATK as Fire damage, gains the Second Cup, and gains {tipsiness_gain} Tipsiness. Gaining the same cup again has no effect.	공격력의 {coefficient}%만큼 불속성 피해를 주고 둘째 잔을 획득하며 술기운을 {tipsiness_gain}개 얻습니다. 같은 잔을 다시 획득해도 중복되지 않습니다.
+meimei.skill.match5.name	Dead Drunk Barrage	만취난타
+meimei.skill.match5.description	Deals {coefficient}% ATK as Fire damage, gains the Final Cup, and gains {tipsiness_gain} Tipsiness. Gaining the same cup again has no effect.	공격력의 {coefficient}%만큼 불속성 피해를 주고 마지막 잔을 획득하며 술기운을 {tipsiness_gain}개 얻습니다. 같은 잔을 다시 획득해도 중복되지 않습니다.
+meimei.skill.passive.name	Three-Cup Drunken Fist	삼배취권
+meimei.skill.passive.description	The First, Second, and Final Cups persist independently across turns. When all three are held, consumes only the three cups and activates Drunken Immortal Dance. Tipsiness is retained and can be stored up to {tipsiness_max}.	첫 잔·둘째 잔·마지막 잔은 서로 독립적으로 턴이 지나도 유지됩니다. 세 잔을 모두 보유하면 세 잔만 소비하고 취선난무를 발동합니다. 술기운은 소비하지 않으며 최대 {tipsiness_max}개까지 보유합니다.
+meimei.skill.passive.additional_description	Drunken Immortal Dance performs a separate Additional attack that deals {coefficient}% ATK as Fire damage.	취선난무는 공격력의 {coefficient}%만큼 불속성 피해를 주는 별도의 Additional 공격입니다.
+meimei.skill.active.name	Drunken Dance	취중난무
+meimei.skill.active.description	Forcibly shuffles normal blocks, then attempts to convert up to the current Tipsiness amount to Fire, with a maximum of {maximum_conversion}. Conversion count may be reduced to keep at least one valid swap, and only the number actually converted is consumed. Can be used at 0 Tipsiness to shuffle only. Cooldown: {cooldown} turn.	일반 블록을 강제로 셔플한 뒤 현재 술기운 수만큼, 최대 {maximum_conversion}개까지 불 블록으로 변환을 시도합니다. 유효 교환을 하나 이상 유지하기 위해 변환량이 줄어들 수 있으며 실제 변환한 수량만큼만 술기운을 소비합니다. 술기운이 0개여도 셔플만 수행할 수 있습니다. 재사용 대기시간: {cooldown}턴.
+meimei.status.first_cup.name	First Cup	첫 잔
+meimei.status.first_cup.description	The First Cup is held. It persists across turns and is consumed when all three cups complete Three-Cup Drunken Fist.	첫 잔을 보유 중입니다. 턴이 지나도 유지되며 세 잔이 완성되어 삼배취권이 발동할 때 소비됩니다.
+meimei.status.second_cup.name	Second Cup	둘째 잔
+meimei.status.second_cup.description	The Second Cup is held. It persists across turns and is consumed when all three cups complete Three-Cup Drunken Fist.	둘째 잔을 보유 중입니다. 턴이 지나도 유지되며 세 잔이 완성되어 삼배취권이 발동할 때 소비됩니다.
+meimei.status.final_cup.name	Final Cup	마지막 잔
+meimei.status.final_cup.description	The Final Cup is held. It persists across turns and is consumed when all three cups complete Three-Cup Drunken Fist.	마지막 잔을 보유 중입니다. 턴이 지나도 유지되며 세 잔이 완성되어 삼배취권이 발동할 때 소비됩니다.
+meimei.status.tipsiness.name	Tipsiness	술기운
+meimei.status.tipsiness.description	Current Tipsiness. Up to 5 can be stored, and Drunken Dance consumes only the amount actually converted to Fire blocks.	현재 술기운입니다. 최대 5개까지 보유하며 취중난무가 실제로 불 블록으로 변환한 수량만큼만 소비합니다.
+meimei.awakening.1.name	Heated Fists	달아오른 주먹
+meimei.awakening.1.description	ATK multiplier increases from {multiplier_before}% to {multiplier_after}%.	공격력 배율이 {multiplier_before}%에서 {multiplier_after}%로 증가합니다.
+meimei.awakening.2.name	Drunkard's Fortitude	취객의 맷집
+meimei.awakening.2.description	Max HP multiplier increases from {multiplier_before}% to {multiplier_after}%.	최대 HP 배율이 {multiplier_before}%에서 {multiplier_after}%로 증가합니다.
+meimei.awakening.3.name	Unsteady Fist Art	흐트러진 권법
+meimei.awakening.3.description	3 Match changes from {match3_before}% to {match3_after}% ATK, and 4 Match changes from {match4_before}% to {match4_after}% ATK.	3매치 공격력 계수가 {match3_before}%에서 {match3_after}%로, 4매치 공격력 계수가 {match4_before}%에서 {match4_after}%로 변경됩니다.
+meimei.awakening.4.name	Dead Drunk Strike	만취의 일격
+meimei.awakening.4.description	5 Match changes from {match5_before}% to {match5_after}% ATK.	5매치 공격력 계수가 {match5_before}%에서 {match5_after}%로 변경됩니다.
+meimei.awakening.5.name	Drunken Immortal's Realm	취선의 경지
+meimei.awakening.5.description	Drunken Immortal Dance changes from {additional_before}% to {additional_after}% ATK.	취선난무의 공격력 계수가 {additional_before}%에서 {additional_after}%로 변경됩니다.
+meimei.awakening.6.name	Dead Drunk Insight	만취의 통찰
+meimei.awakening.6.description	Critical chance gained per valid Tipsiness changes from {critical_before}%p to {critical_after}%p. Tipsiness immediately before Drunken Dance is snapshotted and remains valid for that turn even when conversion consumes Tipsiness.	유효한 술기운 1개당 치명타 확률 증가량이 {critical_before}%p에서 {critical_after}%p로 변경됩니다. 취중난무 사용 직전 술기운을 스냅샷으로 저장하며, 변환으로 술기운을 소비해도 해당 턴 동안 유지됩니다.
 marea.stats_lookup.passive.condition	Water Element is present at attack start.	공격 시작 시 물 원소가 있습니다.
 marea.stats_lookup.passive.effect	Damage dealt +{damage_increase}%.	주는 피해 +{damage_increase}%.
 marea.stats_lookup.lingering_surge.condition	Consume {required_water} Water Elements at once.	물 원소 {required_water}개를 한 번에 소모합니다.

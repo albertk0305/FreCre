@@ -1178,6 +1178,82 @@ namespace ValorChronicle.Tests.EditMode.Board.Presentation
                 Is.True);
         }
 
+        [UnityTest]
+        public IEnumerator ShuffleElementConversion_CommitsOnlyFinalBoard()
+        {
+            yield return InitializeReadyBoard();
+            BoardState sourceBoard = CreateOneMoveBoard();
+            ConfigureShuffleElementConversion(
+                sourceBoard,
+                new SeededRandomSource(17));
+            int startedCount = 0;
+            int finishedCount = 0;
+            controller.BoardActionStarted += _ => startedCount++;
+            controller.BoardActionFinished += _ => finishedCount++;
+
+            Assert.That(controller.TryShuffleAndConvertElements(
+                ElementType.Fire,
+                0,
+                out BoardShuffleElementConversionResult result), Is.True);
+
+            Assert.That(result.Succeeded, Is.True);
+            Assert.That(result.ConvertedCount, Is.Zero);
+            Assert.That(result.RequestedConversionCount, Is.Zero);
+            Assert.That(controller.CurrentBoard, Is.SameAs(result.Board));
+            Assert.That(controller.CurrentBoard, Is.Not.SameAs(sourceBoard));
+            Assert.That(controller.LastShuffleElementConversionResult,
+                Is.SameAs(result));
+            Assert.That(boardView.MatchesBoard(controller.CurrentBoard),
+                Is.True);
+            Assert.That(controller.IsBoardReady, Is.True);
+            Assert.That(controller.CanAcceptBoardInput, Is.True);
+            Assert.That(startedCount, Is.Zero);
+            Assert.That(finishedCount, Is.Zero);
+            Assert.That(BoardMatchFinder.FindMatches(controller.CurrentBoard),
+                Is.Empty);
+            Assert.That(new BoardMoveAnalyzer().HasAnyValidSwap(
+                controller.CurrentBoard), Is.True);
+        }
+
+        [UnityTest]
+        public IEnumerator ShuffleElementConversion_FailurePreservesBoardView()
+        {
+            yield return InitializeReadyBoard();
+            BoardState sourceBoard = CreateUniformBoard(ElementType.Fire);
+            ConfigureShuffleElementConversion(
+                sourceBoard,
+                new SeededRandomSource(17));
+            BoardBlock[] original = Capture(sourceBoard);
+
+            Assert.That(controller.TryShuffleAndConvertElements(
+                ElementType.Fire,
+                5,
+                out BoardShuffleElementConversionResult result), Is.False);
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Succeeded, Is.False);
+            Assert.That(controller.CurrentBoard, Is.SameAs(sourceBoard));
+            Assert.That(boardView.MatchesBoard(sourceBoard), Is.True);
+            Assert.That(controller.IsBoardReady, Is.True);
+            Assert.That(controller.CanAcceptBoardInput, Is.True);
+            AssertOriginalUnchanged(sourceBoard, original);
+        }
+
+        private void ConfigureShuffleElementConversion(
+            BoardState board,
+            IRandomSource random)
+        {
+            SetProperty(controller, "CurrentBoard", board);
+            SetProperty(controller, "IsBoardReady", true);
+            boardView.Render(board);
+            SetField(
+                controller,
+                "shuffleElementConversionResolver",
+                new BoardShuffleElementConversionResolver(
+                    random,
+                    new BoardMoveAnalyzer()));
+        }
+
         private void ConfigureElementConversion(
             BoardState board,
             IRandomSource conversionRandom,

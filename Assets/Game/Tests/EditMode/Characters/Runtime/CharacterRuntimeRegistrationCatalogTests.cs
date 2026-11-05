@@ -20,6 +20,7 @@ using ValorChronicle.Characters.Lilith;
 using ValorChronicle.Characters.Livia;
 using ValorChronicle.Characters.Luciel;
 using ValorChronicle.Characters.Marea;
+using ValorChronicle.Characters.Meimei;
 using ValorChronicle.Characters.Miyuki;
 using ValorChronicle.Characters.Naira;
 using ValorChronicle.Characters.Presentation;
@@ -61,6 +62,7 @@ namespace ValorChronicle.Tests.EditMode.Characters.Runtime
             {
                 AnubisRules.CharacterId,
                 MareaBluefangRules.CharacterId,
+                MeimeiRules.CharacterId,
                 SerenaCoralspearRules.CharacterId,
                 ShimotsukiMiyukiRules.CharacterId,
                 FioraAmberwingRules.CharacterId,
@@ -137,6 +139,21 @@ namespace ValorChronicle.Tests.EditMode.Characters.Runtime
             Assert.That(
                 registration.CreateLookupProvider(),
                 Is.TypeOf<MareaBluefangLookupDescriptionProvider>());
+
+            CharacterRuntimeRegistration meimei = catalog.Registrations
+                .Single(item => item.CharacterId == MeimeiRules.CharacterId);
+            Assert.That(
+                meimei.SupportedCombatConfigType,
+                Is.EqualTo(typeof(MeimeiCombatConfig)));
+            Assert.That(
+                meimei.CreateBuildModifier(),
+                Is.TypeOf<MeimeiBuildModifier>());
+            Assert.That(
+                meimei.CreateCombatRegistrar(),
+                Is.TypeOf<MeimeiCombatProviderRegistrar>());
+            Assert.That(
+                meimei.CreateLookupProvider(),
+                Is.TypeOf<MeimeiLookupDescriptionProvider>());
 
             CharacterRuntimeRegistration serena = catalog.Registrations
                 .Single(item => item.CharacterId

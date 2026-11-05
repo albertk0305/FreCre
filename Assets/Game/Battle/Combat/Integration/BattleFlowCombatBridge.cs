@@ -179,7 +179,9 @@ namespace ValorChronicle.Battle.Combat.Integration
             IReadOnlyList<PreBossActionProviderBinding>
                 preBossBindings = null,
             IReadOnlyList<PostBossActionProviderBinding>
-                postBossBindings = null)
+                postBossBindings = null,
+            IBattleBoardShuffleElementConversionSink
+                boardShuffleElementConversionSink = null)
         {
             this.coordinator = coordinator
                 ?? throw new ArgumentNullException(nameof(coordinator));
@@ -253,7 +255,10 @@ namespace ValorChronicle.Battle.Combat.Integration
                 activeProviders,
                 boardElementConversionSink
                     ?? boardMutationSink
-                        as IBattleBoardElementConversionSink);
+                        as IBattleBoardElementConversionSink,
+                boardShuffleElementConversionSink
+                    ?? boardMutationSink
+                        as IBattleBoardShuffleElementConversionSink);
             turnEndProcessor = new BattleTurnEndProcessor(party, boss);
             coordinator.ResultReached += HandleResultReached;
         }

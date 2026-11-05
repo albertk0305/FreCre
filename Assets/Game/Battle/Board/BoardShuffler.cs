@@ -170,6 +170,61 @@ namespace ValorChronicle.Battle.Board
                 "Unable to create a playable board within the shuffle attempt limits.");
         }
 
+        public bool TryCreatePlayablePermutation(
+            BoardState board,
+            out BoardShuffleResult result)
+        {
+            if (board == null)
+            {
+                throw new ArgumentNullException(nameof(board));
+            }
+
+            ValidateFullBoard(board);
+            CollectNormalBlocks(
+                board,
+                out List<BoardPosition> positions,
+                out List<BoardBlock> originalBlocks,
+                out ElementType[] originalElements);
+
+            for (int attempt = 1;
+                attempt <= maxPermutationAttempts;
+                attempt++)
+            {
+                ElementType[] candidateElements =
+                    CopyElements(originalElements);
+                Shuffle(candidateElements);
+                if (!HasElementPositionChange(
+                        originalElements,
+                        candidateElements))
+                {
+                    continue;
+                }
+
+                BoardState candidate = BuildCandidate(
+                    board,
+                    positions,
+                    originalBlocks,
+                    candidateElements);
+                if (!IsPlayable(candidate))
+                {
+                    continue;
+                }
+
+                result = BuildResult(
+                    candidate,
+                    BoardShuffleKind.Permutation,
+                    positions,
+                    originalBlocks,
+                    originalElements,
+                    candidateElements,
+                    attempt);
+                return true;
+            }
+
+            result = null;
+            return false;
+        }
+
         private static void ValidateFullBoard(BoardState board)
         {
             for (int index = 0; index < BoardConstants.CellCount; index++)
@@ -296,6 +351,21 @@ namespace ValorChronicle.Battle.Board
             var copy = new ElementType[source.Length];
             Array.Copy(source, copy, source.Length);
             return copy;
+        }
+
+        private static bool HasElementPositionChange(
+            IReadOnlyList<ElementType> original,
+            IReadOnlyList<ElementType> candidate)
+        {
+            for (int index = 0; index < original.Count; index++)
+            {
+                if (original[index] != candidate[index])
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

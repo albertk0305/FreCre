@@ -11,8 +11,14 @@ namespace ValorChronicle.Battle.Combat.Integration
         private readonly Dictionary<ProviderKey, IActiveAbilityBoardPlanProvider>
             boardProviders =
                 new Dictionary<ProviderKey, IActiveAbilityBoardPlanProvider>();
+        private readonly Dictionary<ProviderKey,
+            IActiveAbilityBoardShuffleElementConversionPlanProvider>
+            boardShuffleElementConversionProviders =
+                new Dictionary<ProviderKey,
+                    IActiveAbilityBoardShuffleElementConversionPlanProvider>();
 
-        public int Count => providers.Count + boardProviders.Count;
+        public int Count => providers.Count + boardProviders.Count
+            + boardShuffleElementConversionProviders.Count;
 
         public void Register(
             string characterId,
@@ -27,7 +33,7 @@ namespace ValorChronicle.Battle.Combat.Integration
             }
 
             var key = new ProviderKey(characterId, activeAbilityId);
-            if (providers.ContainsKey(key) || boardProviders.ContainsKey(key))
+            if (Contains(key))
             {
                 throw new InvalidOperationException(
                     $"An active provider is already registered for "
@@ -50,7 +56,7 @@ namespace ValorChronicle.Battle.Combat.Integration
             }
 
             var key = new ProviderKey(characterId, activeAbilityId);
-            if (providers.ContainsKey(key) || boardProviders.ContainsKey(key))
+            if (Contains(key))
             {
                 throw new InvalidOperationException(
                     $"An active provider is already registered for "
@@ -58,6 +64,29 @@ namespace ValorChronicle.Battle.Combat.Integration
             }
 
             boardProviders.Add(key, provider);
+        }
+
+        public void RegisterBoardShuffleElementConversion(
+            string characterId,
+            string activeAbilityId,
+            IActiveAbilityBoardShuffleElementConversionPlanProvider provider)
+        {
+            ValidateId(characterId, nameof(characterId));
+            ValidateId(activeAbilityId, nameof(activeAbilityId));
+            if (provider == null)
+            {
+                throw new ArgumentNullException(nameof(provider));
+            }
+
+            var key = new ProviderKey(characterId, activeAbilityId);
+            if (Contains(key))
+            {
+                throw new InvalidOperationException(
+                    $"An active provider is already registered for "
+                        + $"'{characterId}/{activeAbilityId}'.");
+            }
+
+            boardShuffleElementConversionProviders.Add(key, provider);
         }
 
         public bool TryResolve(
@@ -82,6 +111,26 @@ namespace ValorChronicle.Battle.Combat.Integration
             return boardProviders.TryGetValue(
                 new ProviderKey(characterId, activeAbilityId),
                 out provider);
+        }
+
+        public bool TryResolveBoardShuffleElementConversion(
+            string characterId,
+            string activeAbilityId,
+            out IActiveAbilityBoardShuffleElementConversionPlanProvider
+                provider)
+        {
+            ValidateId(characterId, nameof(characterId));
+            ValidateId(activeAbilityId, nameof(activeAbilityId));
+            return boardShuffleElementConversionProviders.TryGetValue(
+                new ProviderKey(characterId, activeAbilityId),
+                out provider);
+        }
+
+        private bool Contains(ProviderKey key)
+        {
+            return providers.ContainsKey(key)
+                || boardProviders.ContainsKey(key)
+                || boardShuffleElementConversionProviders.ContainsKey(key);
         }
 
         private static void ValidateId(string id, string parameterName)

@@ -17,6 +17,23 @@ namespace ValorChronicle.Battle.Combat.Integration
             ActiveAbilityBoardPlanContext context);
     }
 
+    public interface IActiveAbilityBoardShuffleElementConversionPlanProvider
+    {
+        /// <summary>
+        /// Creates a side-effect-free composite Board plan. Runtime state
+        /// must only be changed after the final Board commit succeeds.
+        /// </summary>
+        ActiveAbilityBoardShuffleElementConversionPlan CreateBoardPlan(
+            ActiveAbilityBoardPlanContext context);
+    }
+
+    public interface
+        IActiveAbilityBoardShuffleElementConversionSuccessCommitter
+    {
+        void CommitBoardSuccess(
+            ActiveAbilityBoardShuffleElementConversionSuccessContext context);
+    }
+
     /// <summary>
     /// Receives the single success commit for a Board-only Active after the
     /// sink has returned a validated successful result. Implementations must
@@ -44,7 +61,8 @@ namespace ValorChronicle.Battle.Combat.Integration
             ActiveAbilityBinding binding,
             CharacterBattleState character,
             PartyBattleState party,
-            BossBattleState boss)
+            BossBattleState boss,
+            int currentTurn)
         {
             Binding = binding
                 ?? throw new ArgumentNullException(nameof(binding));
@@ -54,12 +72,67 @@ namespace ValorChronicle.Battle.Combat.Integration
                 ?? throw new ArgumentNullException(nameof(party));
             Boss = boss
                 ?? throw new ArgumentNullException(nameof(boss));
+            if (currentTurn <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(currentTurn));
+            }
+
+            CurrentTurn = currentTurn;
         }
 
         public ActiveAbilityBinding Binding { get; }
         public CharacterBattleState Character { get; }
         public PartyBattleState Party { get; }
         public BossBattleState Boss { get; }
+        public int CurrentTurn { get; }
+    }
+
+    public sealed class ActiveAbilityBoardShuffleElementConversionPlan
+    {
+        public ActiveAbilityBoardShuffleElementConversionPlan(
+            ElementType targetElement,
+            int requestedCount)
+        {
+            if (!Enum.IsDefined(typeof(ElementType), targetElement))
+            {
+                throw new ArgumentOutOfRangeException(nameof(targetElement));
+            }
+
+            if (requestedCount < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(requestedCount));
+            }
+
+            TargetElement = targetElement;
+            RequestedCount = requestedCount;
+        }
+
+        public ElementType TargetElement { get; }
+        public int RequestedCount { get; }
+    }
+
+    public sealed class
+        ActiveAbilityBoardShuffleElementConversionSuccessContext
+    {
+        internal ActiveAbilityBoardShuffleElementConversionSuccessContext(
+            ActiveAbilityBoardPlanContext planContext,
+            ActiveAbilityBoardShuffleElementConversionPlan plan,
+            BoardShuffleElementConversionResult result)
+        {
+            PlanContext = planContext
+                ?? throw new ArgumentNullException(nameof(planContext));
+            Plan = plan ?? throw new ArgumentNullException(nameof(plan));
+            Result = result ?? throw new ArgumentNullException(nameof(result));
+        }
+
+        public ActiveAbilityBoardPlanContext PlanContext { get; }
+        public ActiveAbilityBoardShuffleElementConversionPlan Plan { get; }
+        public BoardShuffleElementConversionResult Result { get; }
+        public ActiveAbilityBinding Binding => PlanContext.Binding;
+        public CharacterBattleState Character => PlanContext.Character;
+        public PartyBattleState Party => PlanContext.Party;
+        public BossBattleState Boss => PlanContext.Boss;
+        public int CurrentTurn => PlanContext.CurrentTurn;
     }
 
     public sealed class ActiveAbilityBoardElementConversionPlan

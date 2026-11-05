@@ -21,6 +21,7 @@ using ValorChronicle.Battle.Flow.Presentation;
 using ValorChronicle.Battle.Results;
 using ValorChronicle.Bosses.Kragmor;
 using ValorChronicle.Characters.Marea;
+using ValorChronicle.Characters.Meimei;
 using ValorChronicle.Characters.Miyuki;
 using ValorChronicle.Characters.Fiora;
 using ValorChronicle.Characters.Runtime;
@@ -33,6 +34,7 @@ using ValorChronicle.Party.Battle;
 using ValorChronicle.Party.Presentation;
 using ValorChronicle.Tests.EditMode.Characters.Miyuki;
 using ValorChronicle.Tests.EditMode.Characters.Fiora;
+using ValorChronicle.Tests.EditMode.Battle.Flow;
 
 namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
 {
@@ -160,6 +162,9 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
                     CreateCharacterPresentation(
                         SerenaCoralspearRules.CharacterId,
                         serenaFaceSprite),
+                    CreateCharacterPresentation(
+                        MeimeiRules.CharacterId,
+                        mareaFaceSprite),
                     CreateCharacterPresentation(
                         FioraAmberwingRules.CharacterId,
                         characterTwoFaceSprite),
@@ -1800,6 +1805,164 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
         }
 
         [Test]
+        public void MeimeiMatchAndTriggerRefreshIndependentCupStatuses()
+        {
+            InvokePrivate(hudController, "OnEnable");
+            BattleSceneCombatComposition composition =
+                CreateMeimeiProductionComposition(partySlotIndex: 2);
+            ConnectComposition(composition);
+            Assert.That(flowController.Coordinator.StartBattle(), Is.True);
+            InvokePrivate(hudController, "Start");
+            BattleCharacterSlotView slot = characterSlots[2];
+
+            Assert.That(composition.CombatStatusSources,
+                Has.Count.EqualTo(4));
+            Assert.That(slot.GetStatusSlot(0).IconImage.sprite,
+                Is.SameAs(chaseIconSprite));
+            Assert.That(slot.GetStatusSlot(0).ValueText.text,
+                Is.EqualTo("0"));
+
+            BoardCascadeResult cascade =
+                BattleFlowTestSupport.CreateCascade(
+                    new[]
+                    {
+                        BattleFlowTestSupport.Match(
+                            ElementType.Fire,
+                            new BoardPosition(0, 0),
+                            new BoardPosition(1, 0),
+                            new BoardPosition(2, 0)),
+                        BattleFlowTestSupport.Match(
+                            ElementType.Fire,
+                            new BoardPosition(0, 1),
+                            new BoardPosition(1, 1),
+                            new BoardPosition(2, 1),
+                            new BoardPosition(3, 1)),
+                        BattleFlowTestSupport.Match(
+                            ElementType.Fire,
+                            new BoardPosition(0, 2),
+                            new BoardPosition(1, 2),
+                            new BoardPosition(2, 2),
+                            new BoardPosition(3, 2),
+                            new BoardPosition(4, 2))
+                    });
+            Assert.That(flowController.Coordinator.TryBeginBoardResolution(),
+                Is.True);
+            Assert.That(flowController.Coordinator.NotifyBoardActionResolved(
+                    cascade,
+                    consumesTurn: true),
+                Is.True);
+
+            Assert.That(flowController.Coordinator.TryBeginNextMatchEvent(
+                    out MatchEventExecution first),
+                Is.True);
+            Assert.That(bridge.ResolveMatchEvent(first), Is.True);
+            Assert.That(slot.GetStatusSlot(0).IconImage.sprite,
+                Is.SameAs(fireSprite));
+            Assert.That(slot.GetStatusSlot(0).ValueText.gameObject.activeSelf,
+                Is.False);
+            Assert.That(slot.GetStatusSlot(1).ValueText.text,
+                Is.EqualTo("0"));
+
+            Assert.That(flowController.Coordinator.TryBeginNextMatchEvent(
+                    out MatchEventExecution second),
+                Is.True);
+            Assert.That(bridge.ResolveMatchEvent(second), Is.True);
+            Assert.That(slot.GetStatusSlot(0).IconImage.sprite,
+                Is.SameAs(fireSprite));
+            Assert.That(slot.GetStatusSlot(1).IconImage.sprite,
+                Is.SameAs(waterSprite));
+            Assert.That(slot.GetStatusSlot(2).ValueText.text,
+                Is.EqualTo("1"));
+
+            Assert.That(flowController.Coordinator.TryBeginNextMatchEvent(
+                    out MatchEventExecution third),
+                Is.True);
+            Assert.That(bridge.ResolveMatchEvent(third), Is.True);
+            Assert.That(slot.GetStatusSlot(0).IconImage.sprite,
+                Is.SameAs(chaseIconSprite));
+            Assert.That(slot.GetStatusSlot(0).ValueText.text,
+                Is.EqualTo("3"));
+            Assert.That(slot.GetStatusSlot(1).Root.activeSelf, Is.False);
+            Assert.That(slot.GetStatusSlot(2).Root.activeSelf, Is.False);
+            Assert.That(slot.GetStatusSlot(3).Root.activeSelf, Is.False);
+        }
+
+        [Test]
+        public void MeimeiActivePresentationRefreshesTipsinessIncludingZeroUse()
+        {
+            InvokePrivate(hudController, "OnEnable");
+            BattleSceneCombatComposition composition =
+                CreateMeimeiProductionComposition(partySlotIndex: 2);
+            ConnectComposition(composition);
+            Assert.That(flowController.Coordinator.StartBattle(), Is.True);
+            InvokePrivate(hudController, "Start");
+            var tipsinessSource = (MeimeiCombatStatusSource)
+                composition.CombatStatusSources[3];
+            MeimeiBattleState state = GetField<MeimeiBattleState>(
+                tipsinessSource,
+                "battleState");
+            BattleStatusIconView status =
+                characterSlots[2].GetStatusSlot(0);
+            state.GainTipsiness(5);
+            hudController.RefreshInitialSnapshot();
+            Assert.That(status.ValueText.text, Is.EqualTo("5"));
+
+            state.CommitSuccessfulActive(1, 3, false);
+            InvokePrivate(
+                hudController,
+                "HandleActivePresentationStateChanged");
+            Assert.That(status.ValueText.text, Is.EqualTo("2"));
+
+            state.CommitSuccessfulActive(2, 0, false);
+            InvokePrivate(
+                hudController,
+                "HandleActivePresentationStateChanged");
+            Assert.That(status.ValueText.text, Is.EqualTo("2"));
+        }
+
+        [Test]
+        public void MeimeiFourStatusesUseExistingSlotsAndReserveOverEffects()
+        {
+            InvokePrivate(hudController, "OnEnable");
+            BattleSceneCombatComposition composition =
+                CreateMeimeiProductionComposition(partySlotIndex: 2);
+            ConnectComposition(composition);
+            Assert.That(flowController.Coordinator.StartBattle(), Is.True);
+            InvokePrivate(hudController, "Start");
+            var firstSource = (MeimeiCombatStatusSource)
+                composition.CombatStatusSources[0];
+            MeimeiBattleState state = GetField<MeimeiBattleState>(
+                firstSource,
+                "battleState");
+            state.TryAcquireCup(MeimeiCup.First);
+            state.TryAcquireCup(MeimeiCup.Second);
+            state.TryAcquireCup(MeimeiCup.Final);
+            state.GainTipsiness(4);
+            CharacterBattleState character = composition.Party.Characters[0];
+            character.Effects.ApplyEffect(CreateEffect(
+                810,
+                "effect_meimei_slot_priority",
+                remainingTurns: 2,
+                EffectStackPolicy.SeparateInstance));
+
+            hudController.RefreshInitialSnapshot();
+
+            BattleCharacterSlotView slot = characterSlots[2];
+            Assert.That(slot.StatusSlotCount, Is.EqualTo(4));
+            Assert.That(character.Effects.Count, Is.EqualTo(1));
+            Assert.That(slot.GetStatusSlot(0).IconImage.sprite,
+                Is.SameAs(fireSprite));
+            Assert.That(slot.GetStatusSlot(1).IconImage.sprite,
+                Is.SameAs(waterSprite));
+            Assert.That(slot.GetStatusSlot(2).IconImage.sprite,
+                Is.SameAs(darkSprite));
+            Assert.That(slot.GetStatusSlot(3).IconImage.sprite,
+                Is.SameAs(chaseIconSprite));
+            Assert.That(slot.GetStatusSlot(3).ValueText.text,
+                Is.EqualTo("4"));
+        }
+
+        [Test]
         public void ActivePresentationChangeRefreshesBoardOnlyCombatStatus()
         {
             InvokePrivate(hudController, "OnEnable");
@@ -3139,6 +3302,64 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
         }
 
         private BattleSceneCombatComposition
+            CreateMeimeiProductionComposition(int partySlotIndex)
+        {
+            BossDefinition bossDefinition =
+                ScriptableObject.CreateInstance<BossDefinition>();
+            createdObjects.Add(bossDefinition);
+            SetField(bossDefinition, "id", KragmorRules.BossId);
+            SetField(bossDefinition, "element", ElementType.Fire);
+            SetField(bossDefinition, "turnLimit", 25);
+            var difficulty = new BossDifficultyStats(
+                "difficulty_normal",
+                66000,
+                100d);
+            SetField(
+                bossDefinition,
+                "difficultyStats",
+                new[] { difficulty });
+            KragmorCombatConfig kragmorConfig =
+                KragmorTestConfig.Create();
+            createdObjects.Add(kragmorConfig);
+            KragmorTestConfig.Assign(bossDefinition, kragmorConfig);
+
+            CharacterDefinition definition =
+                ScriptableObject.CreateInstance<CharacterDefinition>();
+            createdObjects.Add(definition);
+            SetField(definition, "id", MeimeiRules.CharacterId);
+            SetField(definition, "element", ElementType.Fire);
+            SetField(definition, "level1Hp", 900);
+            SetField(definition, "level1Attack", 180);
+            SetField(definition, "level100Hp", 3400);
+            SetField(definition, "level100Attack", 1050);
+            MeimeiCombatConfig config =
+                ScriptableObject.CreateInstance<MeimeiCombatConfig>();
+            createdObjects.Add(config);
+            SetField(definition, "combatConfig", config);
+
+            return new BattleSceneCombatComposition(
+                new[]
+                {
+                    new BattlePartyMemberInput(
+                        definition.Id,
+                        partySlotIndex,
+                        level: 1,
+                        awakening: 0,
+                        characterDefinition: definition)
+                },
+                new CharacterCombatProviderRegistrarCatalog(
+                    new ICharacterCombatProviderRegistrar[]
+                    {
+                        new MeimeiCombatProviderRegistrar()
+                    }),
+                bossDefinition,
+                kragmorConfig,
+                difficulty,
+                new SeededRandomSource(1),
+                BattleResultBalanceDefaults.Create());
+        }
+
+        private BattleSceneCombatComposition
             CreateMiyukiProductionComposition(
                 int partySlotIndex,
                 int awakening)
@@ -3709,6 +3930,22 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
                 FioraAmberwingRules.FollowUpHealingStatusId,
                 null,
                 SkillKind.Passive);
+            SkillDefinition meimeiFirstCup = CreateSkillDefinition(
+                MeimeiRules.FirstCupStatusId,
+                includeIcons ? fireSprite : null,
+                SkillKind.Passive);
+            SkillDefinition meimeiSecondCup = CreateSkillDefinition(
+                MeimeiRules.SecondCupStatusId,
+                includeIcons ? waterSprite : null,
+                SkillKind.Passive);
+            SkillDefinition meimeiFinalCup = CreateSkillDefinition(
+                MeimeiRules.FinalCupStatusId,
+                includeIcons ? darkSprite : null,
+                SkillKind.Passive);
+            SkillDefinition meimeiTipsiness = CreateSkillDefinition(
+                MeimeiRules.TipsinessStatusId,
+                includeIcons ? chaseIconSprite : null,
+                SkillKind.Passive);
 
             EffectDefinition mareaEffect = CreateEffectDefinition(
                 MareaBluefangRules.ActiveEffectId,
@@ -3755,7 +3992,11 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
                     compression,
                     collapse,
                     serenaPassive,
-                    fioraFollowUp
+                    fioraFollowUp,
+                    meimeiFirstCup,
+                    meimeiSecondCup,
+                    meimeiFinalCup,
+                    meimeiTipsiness
                 });
             SetField(
                 database,

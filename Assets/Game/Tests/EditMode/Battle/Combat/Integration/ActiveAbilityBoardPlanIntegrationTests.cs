@@ -357,6 +357,58 @@ namespace ValorChronicle.Tests.EditMode.Battle.Combat.Integration
         }
 
         [Test]
+        public void CompositeBoardActiveAllowsShuffleOnlyAndConsumesUse()
+        {
+            BoardState original = CreateBoard(DeadBoardElements);
+            var sink = new ResolverCompositeBoardSink(original, seed: 17);
+            var provider = new RecordingCompositeBoardProvider(
+                requestedCount: 0);
+            RuntimeBattle battle = CreateCompositeBoardBattle(
+                sink,
+                provider);
+
+            Assert.That(battle.Bridge.TryUseActive(0), Is.True);
+
+            Assert.That(provider.PlanCallCount, Is.EqualTo(1));
+            Assert.That(provider.CommitCount, Is.EqualTo(1));
+            Assert.That(provider.CommittedTurn, Is.EqualTo(1));
+            Assert.That(sink.LastTargetElement, Is.EqualTo(ElementType.Fire));
+            Assert.That(sink.LastRequestedCount, Is.Zero);
+            Assert.That(sink.LastResult.Succeeded, Is.True);
+            Assert.That(sink.LastResult.ConvertedCount, Is.Zero);
+            Assert.That(sink.Board, Is.Not.SameAs(original));
+            Assert.That(battle.ActiveState.UsedThisTurn, Is.True);
+            Assert.That(battle.ActiveState.RemainingCooldown, Is.EqualTo(3));
+            Assert.That(battle.Bridge.LastActiveExecutionResult.ActionResults,
+                Is.Empty);
+            Assert.That(battle.Coordinator.PendingMatchEventCount, Is.Zero);
+        }
+
+        [Test]
+        public void CompositeBoardFailureRollsBackCooldownAndSkipsCommit()
+        {
+            BoardState original = CreateBoard(DeadBoardElements);
+            var sink = new ResolverCompositeBoardSink(original, seed: 17)
+            {
+                ReturnFalse = true
+            };
+            var provider = new RecordingCompositeBoardProvider(
+                requestedCount: 3);
+            RuntimeBattle battle = CreateCompositeBoardBattle(
+                sink,
+                provider);
+
+            Assert.That(battle.Bridge.TryUseActive(0), Is.False);
+
+            Assert.That(provider.PlanCallCount, Is.EqualTo(1));
+            Assert.That(provider.CommitCount, Is.Zero);
+            Assert.That(sink.Board, Is.SameAs(original));
+            Assert.That(battle.ActiveState.UsedThisTurn, Is.False);
+            Assert.That(battle.ActiveState.RemainingCooldown, Is.Zero);
+            Assert.That(battle.Bridge.LastActiveExecutionResult, Is.Null);
+        }
+
+        [Test]
         public void SuccessCommitExceptionCannotRetroactivelyFailBoardActive()
         {
             var sink = new ResolverBoardSink(
@@ -392,6 +444,22 @@ namespace ValorChronicle.Tests.EditMode.Battle.Combat.Integration
             return CreateBattle(registry, sink, selectedProvider);
         }
 
+        private static RuntimeBattle CreateCompositeBoardBattle(
+            ResolverCompositeBoardSink sink,
+            RecordingCompositeBoardProvider provider)
+        {
+            var registry = new ActiveAbilityActionProviderRegistry();
+            registry.RegisterBoardShuffleElementConversion(
+                "hero",
+                "board_active",
+                provider);
+            return CreateBattle(
+                registry,
+                boardSink: null,
+                boardProvider: null,
+                compositeBoardSink: sink);
+        }
+
         private static RuntimeBattle CreateCombatBattle()
         {
             var registry = new ActiveAbilityActionProviderRegistry();
@@ -405,7 +473,9 @@ namespace ValorChronicle.Tests.EditMode.Battle.Combat.Integration
         private static RuntimeBattle CreateBattle(
             ActiveAbilityActionProviderRegistry registry,
             IBattleBoardElementConversionSink boardSink,
-            IActiveAbilityBoardPlanProvider boardProvider)
+            IActiveAbilityBoardPlanProvider boardProvider,
+            IBattleBoardShuffleElementConversionSink
+                compositeBoardSink = null)
         {
             var coordinator = new BattleFlowCoordinator(25, new[] { 3 });
             var character = new CharacterBattleState(
@@ -444,7 +514,8 @@ namespace ValorChronicle.Tests.EditMode.Battle.Combat.Integration
                 boardMutationSink: null,
                 difficultyId: null,
                 resultBalance: null,
-                boardElementConversionSink: boardSink);
+                boardElementConversionSink: boardSink,
+                boardShuffleElementConversionSink: compositeBoardSink);
             coordinator.StartBattle();
             return new RuntimeBattle(
                 coordinator,
@@ -564,6 +635,42 @@ namespace ValorChronicle.Tests.EditMode.Battle.Combat.Integration
                 ActiveAbilityBoardPlanContext context)
             {
                 return null;
+            }
+        }
+
+        private sealed class RecordingCompositeBoardProvider
+            : IActiveAbilityBoardShuffleElementConversionPlanProvider,
+              IActiveAbilityBoardShuffleElementConversionSuccessCommitter
+        {
+            private readonly int requestedCount;
+
+            public RecordingCompositeBoardProvider(int requestedCount)
+            {
+                this.requestedCount = requestedCount;
+            }
+
+            public int PlanCallCount { get; private set; }
+            public int CommitCount { get; private set; }
+            public int CommittedTurn { get; private set; }
+
+            public ActiveAbilityBoardShuffleElementConversionPlan
+                CreateBoardPlan(ActiveAbilityBoardPlanContext context)
+            {
+                PlanCallCount++;
+                return new ActiveAbilityBoardShuffleElementConversionPlan(
+                    ElementType.Fire,
+                    requestedCount);
+            }
+
+            public void CommitBoardSuccess(
+                ActiveAbilityBoardShuffleElementConversionSuccessContext
+                    context)
+            {
+                CommitCount++;
+                CommittedTurn = context.CurrentTurn;
+                Assert.That(context.Result.Succeeded, Is.True);
+                Assert.That(context.Result.RequestedConversionCount,
+                    Is.EqualTo(requestedCount));
             }
         }
 
@@ -769,6 +876,58 @@ namespace ValorChronicle.Tests.EditMode.Battle.Combat.Integration
                 Board = board;
                 randomValues = values;
                 LastResult = null;
+            }
+        }
+
+        private sealed class ResolverCompositeBoardSink
+            : IBattleBoardShuffleElementConversionSink
+        {
+            private readonly int seed;
+
+            public ResolverCompositeBoardSink(BoardState board, int seed)
+            {
+                Board = board;
+                this.seed = seed;
+            }
+
+            public bool CanAcceptShuffleElementConversion { get; set; } = true;
+            public bool ReturnFalse { get; set; }
+            public ElementType LastTargetElement { get; private set; }
+            public int LastRequestedCount { get; private set; }
+            public BoardState Board { get; private set; }
+            public BoardShuffleElementConversionResult LastResult
+            {
+                get;
+                private set;
+            }
+
+            public bool TryShuffleAndConvertElements(
+                ElementType targetElement,
+                int requestedCount,
+                out BoardShuffleElementConversionResult result)
+            {
+                LastTargetElement = targetElement;
+                LastRequestedCount = requestedCount;
+                if (ReturnFalse)
+                {
+                    result = null;
+                    return false;
+                }
+
+                result = new BoardShuffleElementConversionResolver(
+                    new SeededRandomSource(seed),
+                    new BoardMoveAnalyzer()).Resolve(
+                        Board,
+                        targetElement,
+                        requestedCount);
+                LastResult = result;
+                if (!result.Succeeded)
+                {
+                    return false;
+                }
+
+                Board = result.Board;
+                return true;
             }
         }
 

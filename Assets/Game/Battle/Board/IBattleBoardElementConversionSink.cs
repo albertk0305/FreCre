@@ -20,4 +20,23 @@ namespace ValorChronicle.Battle.Board
             int requestedCount,
             out BoardElementConversionResult result);
     }
+
+    public interface IBattleBoardShuffleElementConversionSink
+    {
+        /// <summary>
+        /// True only while the authoritative Board and its presentation can
+        /// accept an immediate, synchronous shuffle and conversion.
+        /// </summary>
+        bool CanAcceptShuffleElementConversion { get; }
+
+        /// <summary>
+        /// Applies a shuffle and conversion atomically. Zero requested
+        /// conversions are valid and mean shuffle-only. Returning false must
+        /// leave the authoritative Board unchanged.
+        /// </summary>
+        bool TryShuffleAndConvertElements(
+            ElementType targetElement,
+            int requestedCount,
+            out BoardShuffleElementConversionResult result);
+    }
 }

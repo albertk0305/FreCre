@@ -20,6 +20,8 @@ namespace ValorChronicle.Battle.Combat.Integration
         private readonly ActiveAbilityActionProviderRegistry providers;
         private readonly IBattleBoardElementConversionSink
             boardElementConversionSink;
+        private readonly IBattleBoardShuffleElementConversionSink
+            boardShuffleElementConversionSink;
 
         public ActiveAbilityCombatExecutor(
             BattleFlowCoordinator coordinator,
@@ -29,7 +31,9 @@ namespace ValorChronicle.Battle.Combat.Integration
             CombatActionIdSequence actionIds,
             IReadOnlyList<ActiveAbilityBinding> bindings,
             ActiveAbilityActionProviderRegistry providers,
-            IBattleBoardElementConversionSink boardElementConversionSink = null)
+            IBattleBoardElementConversionSink boardElementConversionSink = null,
+            IBattleBoardShuffleElementConversionSink
+                boardShuffleElementConversionSink = null)
         {
             this.coordinator = coordinator
                 ?? throw new ArgumentNullException(nameof(coordinator));
@@ -44,6 +48,8 @@ namespace ValorChronicle.Battle.Combat.Integration
             this.providers = providers
                 ?? throw new ArgumentNullException(nameof(providers));
             this.boardElementConversionSink = boardElementConversionSink;
+            this.boardShuffleElementConversionSink =
+                boardShuffleElementConversionSink;
             bindingsByIndex = CreateBindings(bindings);
         }
 
@@ -77,7 +83,9 @@ namespace ValorChronicle.Battle.Combat.Integration
                 out ActiveAbilityBinding binding,
                 out CharacterBattleState character,
                 out IActiveAbilityActionProvider provider,
-                out IActiveAbilityBoardPlanProvider boardProvider))
+                out IActiveAbilityBoardPlanProvider boardProvider,
+                out IActiveAbilityBoardShuffleElementConversionPlanProvider
+                    boardShuffleElementConversionProvider))
             {
                 return false;
             }
@@ -89,6 +97,16 @@ namespace ValorChronicle.Battle.Combat.Integration
                     binding,
                     character,
                     boardProvider,
+                    out session);
+            }
+
+            if (boardShuffleElementConversionProvider != null)
+            {
+                return TryBeginBoardShuffleElementConversionExecution(
+                    activeAbilityIndex,
+                    binding,
+                    character,
+                    boardShuffleElementConversionProvider,
                     out session);
             }
 
@@ -124,6 +142,7 @@ namespace ValorChronicle.Battle.Combat.Integration
         {
             return TryResolveAvailableActive(
                 activeAbilityIndex,
+                out _,
                 out _,
                 out _,
                 out _,
@@ -171,12 +190,15 @@ namespace ValorChronicle.Battle.Combat.Integration
             out ActiveAbilityBinding binding,
             out CharacterBattleState character,
             out IActiveAbilityActionProvider provider,
-            out IActiveAbilityBoardPlanProvider boardProvider)
+            out IActiveAbilityBoardPlanProvider boardProvider,
+            out IActiveAbilityBoardShuffleElementConversionPlanProvider
+                boardShuffleElementConversionProvider)
         {
             binding = null;
             character = null;
             provider = null;
             boardProvider = null;
+            boardShuffleElementConversionProvider = null;
             if (!coordinator.CanUseActiveAbility(activeAbilityIndex))
             {
                 return false;
@@ -199,12 +221,22 @@ namespace ValorChronicle.Battle.Combat.Integration
                 return true;
             }
 
-            return providers.TryResolveBoard(
+            if (providers.TryResolveBoard(
                     binding.CharacterId,
                     binding.ActiveAbilityId,
-                    out boardProvider)
-                && boardElementConversionSink != null
-                && boardElementConversionSink.CanAcceptElementConversion;
+                    out boardProvider))
+            {
+                return boardElementConversionSink != null
+                    && boardElementConversionSink.CanAcceptElementConversion;
+            }
+
+            return providers.TryResolveBoardShuffleElementConversion(
+                    binding.CharacterId,
+                    binding.ActiveAbilityId,
+                    out boardShuffleElementConversionProvider)
+                && boardShuffleElementConversionSink != null
+                && boardShuffleElementConversionSink
+                    .CanAcceptShuffleElementConversion;
         }
 
         private bool TryBeginBoardExecution(
@@ -219,7 +251,8 @@ namespace ValorChronicle.Battle.Combat.Integration
                 binding,
                 character,
                 party,
-                boss);
+                boss,
+                coordinator.Context.CurrentTurn);
             ActiveAbilityBoardElementConversionPlan plan =
                 provider.CreateBoardPlan(planContext)
                 ?? throw new InvalidOperationException(
@@ -303,6 +336,121 @@ namespace ValorChronicle.Battle.Combat.Integration
                 binding,
                 character,
                 actionSession);
+            return true;
+        }
+
+        private bool TryBeginBoardShuffleElementConversionExecution(
+            int activeAbilityIndex,
+            ActiveAbilityBinding binding,
+            CharacterBattleState character,
+            IActiveAbilityBoardShuffleElementConversionPlanProvider provider,
+            out ActiveAbilityCombatExecutionSession session)
+        {
+            session = null;
+            var planContext = new ActiveAbilityBoardPlanContext(
+                binding,
+                character,
+                party,
+                boss,
+                coordinator.Context.CurrentTurn);
+            ActiveAbilityBoardShuffleElementConversionPlan plan =
+                provider.CreateBoardPlan(planContext)
+                ?? throw new InvalidOperationException(
+                    "Composite Board Active providers must return a plan.");
+
+            if (!coordinator.TryUseActiveAbility(activeAbilityIndex))
+            {
+                throw new InvalidOperationException(
+                    "Active runtime changed after prevalidation.");
+            }
+
+            BoardShuffleElementConversionResult boardResult;
+            bool committed;
+            try
+            {
+                committed = boardShuffleElementConversionSink
+                    .TryShuffleAndConvertElements(
+                        plan.TargetElement,
+                        plan.RequestedCount,
+                        out boardResult);
+            }
+            catch
+            {
+                RollbackCommittedActive(activeAbilityIndex);
+                throw;
+            }
+
+            if (!committed
+                || !IsValidBoardShuffleElementConversionResult(
+                    boardResult,
+                    plan))
+            {
+                RollbackCommittedActive(activeAbilityIndex);
+                return false;
+            }
+
+            var successContext =
+                new ActiveAbilityBoardShuffleElementConversionSuccessContext(
+                    planContext,
+                    plan,
+                    boardResult);
+            if (provider is
+                IActiveAbilityBoardShuffleElementConversionSuccessCommitter
+                    committer)
+            {
+                try
+                {
+                    committer.CommitBoardSuccess(successContext);
+                }
+                catch (Exception exception)
+                {
+                    // The Board and cooldown are already committed. Keep the
+                    // failure visible; providers must prevalidate and use a
+                    // non-throwing battle-state commit.
+                    GameLogger.Exception(exception);
+                    throw;
+                }
+            }
+
+            CombatActionExecutionSession actionSession =
+                executor.BeginExecution(
+                    Array.Empty<CombatAction>(),
+                    coordinator.Context.CurrentTurn);
+            session = new ActiveAbilityCombatExecutionSession(
+                binding,
+                character,
+                actionSession);
+            return true;
+        }
+
+        private static bool IsValidBoardShuffleElementConversionResult(
+            BoardShuffleElementConversionResult result,
+            ActiveAbilityBoardShuffleElementConversionPlan plan)
+        {
+            if (result == null
+                || !result.Succeeded
+                || result.RequestedConversionCount != plan.RequestedCount
+                || result.ConvertedCount < 0
+                || result.ConvertedCount > plan.RequestedCount
+                || result.ConversionEntries.Count != result.ConvertedCount)
+            {
+                return false;
+            }
+
+            for (int index = 0;
+                index < result.ConversionEntries.Count;
+                index++)
+            {
+                BoardElementConversionEntry entry =
+                    result.ConversionEntries[index];
+                if (entry.BlockType != BoardBlockType.Normal
+                    || entry.PreviousElement == plan.TargetElement
+                    || entry.NewElement != plan.TargetElement)
+                {
+                    return false;
+                }
+            }
+
             return true;
         }
 

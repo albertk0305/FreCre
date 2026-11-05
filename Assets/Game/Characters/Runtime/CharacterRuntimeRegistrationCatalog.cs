@@ -16,6 +16,7 @@ using ValorChronicle.Characters.Lilith;
 using ValorChronicle.Characters.Livia;
 using ValorChronicle.Characters.Luciel;
 using ValorChronicle.Characters.Marea;
+using ValorChronicle.Characters.Meimei;
 using ValorChronicle.Characters.Miyuki;
 using ValorChronicle.Characters.Naira;
 using ValorChronicle.Characters.Presentation;
@@ -91,6 +92,11 @@ namespace ValorChronicle.Characters.Runtime
                         () => new MareaBluefangBuildModifier(),
                         () => new MareaBluefangCombatProviderRegistrar(),
                         () => new MareaBluefangLookupDescriptionProvider()),
+                    new CharacterRuntimeRegistration(
+                        MeimeiRules.CharacterId,
+                        () => new MeimeiBuildModifier(),
+                        () => new MeimeiCombatProviderRegistrar(),
+                        () => new MeimeiLookupDescriptionProvider()),
                     new CharacterRuntimeRegistration(
                         SerenaCoralspearRules.CharacterId,
                         () => new SerenaCoralspearBuildModifier(),
