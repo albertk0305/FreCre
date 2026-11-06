@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
@@ -115,6 +116,42 @@ namespace ValorChronicle.Tests.EditMode.Board.Presentation
                 null);
 
             Assert.That(spriteSet.GetSprite(block), Is.SameAs(rock));
+        }
+
+        [Test]
+        public void CanonicalSpriteSet_MapsRootDurabilityWithoutChangingBaseSprites()
+        {
+            const string spriteSetPath =
+                "Assets/Game/Battle/Board/Presentation/Settings/"
+                + "BoardElementSpriteSet.asset";
+            BoardElementSpriteSet canonical =
+                AssetDatabase.LoadAssetAtPath<BoardElementSpriteSet>(
+                    spriteSetPath);
+            var intactRoot = new BoardBlock(
+                201,
+                BoardBlockType.Root,
+                element: null,
+                durability: 2);
+            BoardBlock damagedRoot = intactRoot.WithRootDurability(1);
+            var rockBlock = new BoardBlock(
+                202,
+                BoardBlockType.Rock,
+                element: null);
+
+            Assert.That(canonical, Is.Not.Null);
+            Assert.That(AssetDatabase.GetAssetPath(
+                canonical.GetSprite(intactRoot)),
+                Is.EqualTo("Assets/Sprites/UI/Blocks/RootBlock.png"));
+            Assert.That(AssetDatabase.GetAssetPath(
+                canonical.GetSprite(damagedRoot)),
+                Is.EqualTo(
+                    "Assets/Sprites/UI/Blocks/RootBlockCracked.png"));
+            Assert.That(AssetDatabase.GetAssetPath(
+                canonical.GetSprite(rockBlock)),
+                Is.EqualTo("Assets/Sprites/UI/Blocks/RockBlock.png"));
+            Assert.That(AssetDatabase.GetAssetPath(
+                canonical.GetSprite(ElementType.Fire)),
+                Is.EqualTo("Assets/Sprites/UI/Blocks/FireBlock.png"));
         }
 
         [Test]

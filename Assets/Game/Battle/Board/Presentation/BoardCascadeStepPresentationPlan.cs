@@ -7,16 +7,22 @@ namespace ValorChronicle.Battle.Board.Presentation
     public sealed class BoardCascadeStepPresentationPlan
     {
         private readonly ReadOnlyCollection<BoardBlockRemoval> removals;
+        private readonly ReadOnlyCollection<BoardBlockStateChange>
+            stateChanges;
         private readonly ReadOnlyCollection<BoardBlockMove> moves;
         private readonly ReadOnlyCollection<BoardBlockSpawn> spawns;
 
         internal BoardCascadeStepPresentationPlan(
+            IReadOnlyList<BoardBlockStateChange> stateChanges,
             IReadOnlyList<BoardBlockRemoval> removals,
             IReadOnlyList<BoardBlockMove> moves,
             IReadOnlyList<BoardBlockSpawn> spawns,
             BoardState collapseBoard,
             BoardState board)
         {
+            this.stateChanges = CopyAsReadOnly(
+                stateChanges,
+                nameof(stateChanges));
             this.removals = CopyAsReadOnly(removals, nameof(removals));
             this.moves = CopyAsReadOnly(moves, nameof(moves));
             this.spawns = CopyAsReadOnly(spawns, nameof(spawns));
@@ -25,6 +31,8 @@ namespace ValorChronicle.Battle.Board.Presentation
             Board = board ?? throw new ArgumentNullException(nameof(board));
         }
 
+        public IReadOnlyList<BoardBlockStateChange> StateChanges =>
+            stateChanges;
         public IReadOnlyList<BoardBlockRemoval> Removals => removals;
         public IReadOnlyList<BoardBlockMove> Moves => moves;
         public IReadOnlyList<BoardBlockSpawn> Spawns => spawns;

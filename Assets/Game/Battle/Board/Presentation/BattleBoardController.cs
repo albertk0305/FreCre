@@ -11,7 +11,8 @@ namespace ValorChronicle.Battle.Board.Presentation
     public sealed class BattleBoardController : MonoBehaviour,
         IBattleBoardMutationSink,
         IBattleBoardElementConversionSink,
-        IBattleBoardShuffleElementConversionSink
+        IBattleBoardShuffleElementConversionSink,
+        IBattleBoardStateSource
     {
         [SerializeField]
         private BattleBoardView boardView = null;
@@ -59,6 +60,7 @@ namespace ValorChronicle.Battle.Board.Presentation
         private BoardRefiller boardRefiller;
         private BoardShuffler boardShuffler;
         private BoardRockMutationResolver rockMutationResolver;
+        private BoardRootMutationResolver rootMutationResolver;
         private BoardElementConversionResolver elementConversionResolver;
         private BoardShuffleElementConversionResolver
             shuffleElementConversionResolver;
@@ -68,8 +70,11 @@ namespace ValorChronicle.Battle.Board.Presentation
         private BoardSwapActionResult activeActionResult;
         private int nextCascadeStepPresentationIndex;
         private BattleBoardMutationCommand activeMutationCommand;
-        private BoardRockMutationResult activeMutationResult;
+        private IBattleBoardMutationResult activeMutationResult;
+        private BoardState activeMutationBeforeBoard;
         private Action<BattleBoardMutationCompletion> activeMutationCompletion;
+        private int stableRootCount;
+        private bool hasStableBoardSnapshot;
 
         public event Action InitialBoardReady;
         public event Action<BoardActionExecution> BoardActionStarted;
@@ -77,11 +82,17 @@ namespace ValorChronicle.Battle.Board.Presentation
             CascadeStepPresented;
         public event Action<int> MatchGroupsRemovalStarted;
         public event Action<BoardActionCompletion> BoardActionFinished;
+        public event Action StableBoardChanged;
         public event Action ExternalInputDisabled;
 
         public BoardState CurrentBoard { get; private set; }
         public BoardSwapActionResult LastSwapActionResult { get; private set; }
         public BoardRockMutationResult LastRockMutationResult
+        {
+            get;
+            private set;
+        }
+        public BoardRootMutationResult LastRootMutationResult
         {
             get;
             private set;
@@ -125,12 +136,18 @@ namespace ValorChronicle.Battle.Board.Presentation
         public bool CanAcceptElementConversion => CanAcceptBoardInput;
         public bool CanAcceptShuffleElementConversion => CanAcceptBoardInput;
 
+        public int GetRootCount()
+        {
+            return hasStableBoardSnapshot ? stableRootCount : 0;
+        }
+
         private bool HasResolverGraph => randomSource != null
             && blockIdGenerator != null
             && boardGenerator != null
             && boardRefiller != null
             && boardShuffler != null
             && rockMutationResolver != null
+            && rootMutationResolver != null
             && elementConversionResolver != null
             && shuffleElementConversionResolver != null
             && swapActionResolver != null
@@ -190,7 +207,7 @@ namespace ValorChronicle.Battle.Board.Presentation
                 CompleteActiveMutation(
                     BattleBoardMutationCompletionStatus.Failed,
                     interruptionFailure ?? new InvalidOperationException(
-                        "Rock mutation presentation was interrupted."));
+                        "Board mutation presentation was interrupted."));
             }
             else
             {
@@ -258,6 +275,11 @@ namespace ValorChronicle.Battle.Board.Presentation
                 sharedIdGenerator,
                 moveAnalyzer,
                 shuffler);
+            var rootResolver = new BoardRootMutationResolver(
+                sharedRandomSource,
+                sharedIdGenerator,
+                moveAnalyzer,
+                shuffler);
             var conversionResolver = new BoardElementConversionResolver(
                 sharedRandomSource,
                 moveAnalyzer);
@@ -270,6 +292,7 @@ namespace ValorChronicle.Battle.Board.Presentation
             BoardState generatedBoard = generator.Generate();
             CurrentBoard = generatedBoard;
             IsBoardReady = false;
+            CaptureStableBoardSnapshot(notifyObservers: false);
 
             IEnumerator initialDrop;
             try
@@ -291,6 +314,7 @@ namespace ValorChronicle.Battle.Board.Presentation
             boardRefiller = refiller;
             boardShuffler = shuffler;
             rockMutationResolver = rockResolver;
+            rootMutationResolver = rootResolver;
             elementConversionResolver = conversionResolver;
             shuffleElementConversionResolver = shuffleConversionResolver;
             swapActionResolver = actionResolver;
@@ -441,6 +465,7 @@ namespace ValorChronicle.Battle.Board.Presentation
                 }
 
                 IsBoardReady = true;
+                CaptureStableBoardSnapshot(notifyObservers: true);
                 return true;
             }
             catch (Exception exception)
@@ -530,6 +555,7 @@ namespace ValorChronicle.Battle.Board.Presentation
                 }
 
                 IsBoardReady = true;
+                CaptureStableBoardSnapshot(notifyObservers: true);
                 return true;
             }
             catch (Exception exception)
@@ -566,30 +592,41 @@ namespace ValorChronicle.Battle.Board.Presentation
                 || isActionInProgress
                 || boardView == null
                 || boardView.IsAnimating
-                || rockMutationResolver == null)
+                || rockMutationResolver == null
+                || rootMutationResolver == null)
             {
                 return false;
             }
 
-            if (command.Kind != BattleBoardMutationKind.CreateRock)
-            {
-                throw new NotSupportedException(
-                    $"Unsupported Board mutation: {command.Kind}.");
-            }
-
-            BoardRockMutationResult result;
+            IBattleBoardMutationResult result;
             try
             {
-                result = rockMutationResolver.Resolve(
-                    CurrentBoard,
-                    command.RequestedCount,
-                    command.MaximumCount);
+                switch (command.Kind)
+                {
+                    case BattleBoardMutationKind.CreateRock:
+                        LastRockMutationResult = rockMutationResolver.Resolve(
+                            CurrentBoard,
+                            command.RequestedCount,
+                            command.MaximumCount);
+                        result = LastRockMutationResult;
+                        break;
+                    case BattleBoardMutationKind.CreateRoot:
+                        LastRootMutationResult = rootMutationResolver.Resolve(
+                            CurrentBoard,
+                            command.RequestedCount,
+                            command.MaximumCount);
+                        result = LastRootMutationResult;
+                        break;
+                    default:
+                        throw new NotSupportedException(
+                            $"Unsupported Board mutation: {command.Kind}.");
+                }
             }
             catch (Exception exception)
             {
                 GameLogger.Exception(exception, this);
                 GameLogger.Error(
-                    "[BattleBoard] Rock mutation resolution failed.",
+                    "[BattleBoard] Board mutation resolution failed.",
                     this);
                 completion(new BattleBoardMutationCompletion(
                     command,
@@ -599,12 +636,10 @@ namespace ValorChronicle.Battle.Board.Presentation
                 return true;
             }
 
-            LastRockMutationResult = result;
             if (!result.Succeeded)
             {
                 GameLogger.Error(
-                    $"[BattleBoard] Rock mutation failed. "
-                        + $"Failure={result.Failure}.",
+                    $"[BattleBoard] {command.Kind} mutation failed.",
                     this);
                 completion(new BattleBoardMutationCompletion(
                     command,
@@ -633,6 +668,7 @@ namespace ValorChronicle.Battle.Board.Presentation
                     boardView.Render(preShuffleBoard);
                     activeMutationCommand = command;
                     activeMutationResult = result;
+                    activeMutationBeforeBoard = beforeBoard;
                     activeMutationCompletion = completion;
                     activePresentationSequence =
                         boardView.PlayShuffleTransition(
@@ -640,7 +676,7 @@ namespace ValorChronicle.Battle.Board.Presentation
                             result.ShuffleResult,
                             shuffleDuration);
                     int version = ++actionVersion;
-                    StartCoroutine(RunRockMutationPresentation(version));
+                    StartCoroutine(RunMutationPresentation(version));
                     return true;
                 }
                 catch (Exception exception)
@@ -648,15 +684,15 @@ namespace ValorChronicle.Battle.Board.Presentation
                     activePresentationSequence = null;
                     activeMutationCommand = null;
                     activeMutationResult = null;
+                    activeMutationBeforeBoard = null;
                     activeMutationCompletion = null;
                     isActionInProgress = false;
                     GameLogger.Exception(exception, this);
                     GameLogger.Error(
-                        "[BattleBoard] Rock mutation shuffle presentation "
+                        "[BattleBoard] Board mutation shuffle presentation "
                             + "failed to start.",
                         this);
-                    UpdateReadyStateAfterPresentation(
-                        "The failed Rock mutation shuffle did not stabilize.");
+                    RestoreAfterFailedMutation(beforeBoard);
                     completion(new BattleBoardMutationCompletion(
                         command,
                         result,
@@ -676,25 +712,27 @@ namespace ValorChronicle.Battle.Board.Presentation
                 presentationFailure = exception;
                 GameLogger.Exception(exception, this);
                 GameLogger.Error(
-                    "[BattleBoard] Rock mutation presentation failed.",
+                    "[BattleBoard] Board mutation presentation failed.",
                     this);
             }
             finally
             {
                 isActionInProgress = false;
                 UpdateReadyStateAfterPresentation(
-                    "The Rock mutation View does not match CurrentBoard.");
+                    "The Board mutation View does not match CurrentBoard.",
+                    notifyStableBoardChanged: false);
             }
 
             if (presentationFailure != null || !IsBoardReady)
             {
+                RestoreAfterFailedMutation(beforeBoard);
                 completion(new BattleBoardMutationCompletion(
                     command,
                     result,
                     BattleBoardMutationCompletionStatus.Failed,
                     presentationFailure
                         ?? new InvalidOperationException(
-                            "Rock mutation presentation did not stabilize.")));
+                            "Board mutation presentation did not stabilize.")));
                 return true;
             }
 
@@ -702,10 +740,11 @@ namespace ValorChronicle.Battle.Board.Presentation
                 command,
                 result,
                 BattleBoardMutationCompletionStatus.Completed));
+            StableBoardChanged?.Invoke();
             return true;
         }
 
-        private IEnumerator RunRockMutationPresentation(int version)
+        private IEnumerator RunMutationPresentation(int version)
         {
             Exception failure = null;
             while (actionVersion == version
@@ -746,17 +785,18 @@ namespace ValorChronicle.Battle.Board.Presentation
             {
                 GameLogger.Exception(failure, this);
                 GameLogger.Error(
-                    "[BattleBoard] Rock mutation shuffle presentation failed.",
+                    "[BattleBoard] Board mutation shuffle presentation failed.",
                     this);
             }
 
             UpdateReadyStateAfterPresentation(
-                "The completed Rock mutation shuffle View does not match "
-                    + "CurrentBoard.");
+                "The completed Board mutation shuffle View does not match "
+                    + "CurrentBoard.",
+                notifyStableBoardChanged: false);
             if (failure == null && !IsBoardReady)
             {
                 failure = new InvalidOperationException(
-                    "Rock mutation shuffle presentation did not stabilize.");
+                    "Board mutation shuffle presentation did not stabilize.");
             }
 
             CompleteActiveMutation(
@@ -771,15 +811,23 @@ namespace ValorChronicle.Battle.Board.Presentation
             Exception failure)
         {
             BattleBoardMutationCommand command = activeMutationCommand;
-            BoardRockMutationResult result = activeMutationResult;
+            IBattleBoardMutationResult result = activeMutationResult;
+            BoardState beforeBoard = activeMutationBeforeBoard;
             Action<BattleBoardMutationCompletion> completion =
                 activeMutationCompletion;
             activeMutationCommand = null;
             activeMutationResult = null;
+            activeMutationBeforeBoard = null;
             activeMutationCompletion = null;
             if (command == null || result == null || completion == null)
             {
                 return;
+            }
+
+            if (status != BattleBoardMutationCompletionStatus.Completed
+                && beforeBoard != null)
+            {
+                RestoreAfterFailedMutation(beforeBoard);
             }
 
             completion(new BattleBoardMutationCompletion(
@@ -787,38 +835,82 @@ namespace ValorChronicle.Battle.Board.Presentation
                 result,
                 status,
                 failure));
+            if (status == BattleBoardMutationCompletionStatus.Completed
+                && IsBoardReady)
+            {
+                StableBoardChanged?.Invoke();
+            }
         }
 
         private static BoardState BuildPreShuffleBoard(
             BoardState beforeBoard,
-            BoardRockMutationResult result)
+            IBattleBoardMutationResult result)
         {
             if (result.ShuffleResult == null
                 || !result.ShuffleResult.WasShuffled)
             {
                 throw new InvalidOperationException(
-                    "A shuffled Rock mutation requires a shuffle result.");
+                    "A shuffled Board mutation requires a shuffle result.");
             }
 
             BoardState preShuffleBoard = beforeBoard.Clone();
-            for (int index = 0; index < result.Placements.Count; index++)
+            if (result is BoardRockMutationResult rockResult)
             {
-                BoardRockPlacement placement = result.Placements[index];
-                if (!ReferenceEquals(
-                    preShuffleBoard.Get(placement.Position),
-                    placement.ReplacedBlock))
+                for (int index = 0;
+                    index < rockResult.Placements.Count;
+                    index++)
                 {
-                    throw new InvalidOperationException(
-                        "A Rock placement does not match the source Board at "
-                            + $"{placement.Position}.");
+                    BoardRockPlacement placement =
+                        rockResult.Placements[index];
+                    ValidatePlacementSource(
+                        preShuffleBoard,
+                        placement.Position,
+                        placement.ReplacedBlock,
+                        "Rock");
+                    preShuffleBoard.Set(
+                        placement.Position,
+                        placement.RockBlock);
                 }
-
-                preShuffleBoard.Set(
-                    placement.Position,
-                    placement.RockBlock);
+            }
+            else if (result is BoardRootMutationResult rootResult)
+            {
+                for (int index = 0;
+                    index < rootResult.Placements.Count;
+                    index++)
+                {
+                    BoardRootPlacement placement =
+                        rootResult.Placements[index];
+                    ValidatePlacementSource(
+                        preShuffleBoard,
+                        placement.Position,
+                        placement.ReplacedBlock,
+                        "Root");
+                    preShuffleBoard.Set(
+                        placement.Position,
+                        placement.RootBlock);
+                }
+            }
+            else
+            {
+                throw new NotSupportedException(
+                    $"Unsupported mutation result: {result.GetType().Name}.");
             }
 
             return preShuffleBoard;
+        }
+
+        private static void ValidatePlacementSource(
+            BoardState board,
+            BoardPosition position,
+            BoardBlock expected,
+            string displayName)
+        {
+            if (!ReferenceEquals(board.Get(position), expected))
+            {
+                throw new InvalidOperationException(
+                    $"A {displayName} placement does not match the source "
+                        + $"Board at {position}.");
+            }
         }
 
         private IEnumerator RenderInitialBoard(
@@ -874,6 +966,7 @@ namespace ValorChronicle.Battle.Board.Presentation
             else if (!initialBoardReadyPublished)
             {
                 initialBoardReadyPublished = true;
+                CaptureStableBoardSnapshot(notifyObservers: true);
                 InitialBoardReady?.Invoke();
             }
         }
@@ -1100,7 +1193,9 @@ namespace ValorChronicle.Battle.Board.Presentation
             }
         }
 
-        private void UpdateReadyStateAfterPresentation(string failureMessage)
+        private void UpdateReadyStateAfterPresentation(
+            string failureMessage,
+            bool notifyStableBoardChanged = true)
         {
             bool matches = CurrentBoard != null
                 && boardView != null
@@ -1110,6 +1205,40 @@ namespace ValorChronicle.Battle.Board.Presentation
             if (!matches)
             {
                 GameLogger.Error($"[BattleBoard] {failureMessage}", this);
+            }
+            else
+            {
+                CaptureStableBoardSnapshot(notifyStableBoardChanged);
+            }
+        }
+
+        private void CaptureStableBoardSnapshot(bool notifyObservers)
+        {
+            if (CurrentBoard == null)
+            {
+                return;
+            }
+
+            int rootCount = 0;
+            for (int y = 0; y < BoardConstants.Height; y++)
+            {
+                for (int x = 0; x < BoardConstants.Width; x++)
+                {
+                    BoardBlock block = CurrentBoard.Get(
+                        new BoardPosition(x, y));
+                    if (block != null
+                        && block.BlockType == BoardBlockType.Root)
+                    {
+                        rootCount++;
+                    }
+                }
+            }
+
+            stableRootCount = rootCount;
+            hasStableBoardSnapshot = true;
+            if (notifyObservers)
+            {
+                StableBoardChanged?.Invoke();
             }
         }
 
@@ -1130,6 +1259,34 @@ namespace ValorChronicle.Battle.Board.Presentation
                 GameLogger.Error(
                     "[BattleBoard] Failed to restore the board View after "
                         + "an Element conversion presentation failure.",
+                    this);
+                IsBoardReady = false;
+            }
+        }
+
+        private void RestoreAfterFailedMutation(BoardState beforeBoard)
+        {
+            if (beforeBoard == null)
+            {
+                return;
+            }
+
+            CurrentBoard = beforeBoard;
+            IsBoardReady = false;
+            try
+            {
+                boardView.Render(beforeBoard);
+                UpdateReadyStateAfterPresentation(
+                    "The restored Board mutation View does not match "
+                        + "CurrentBoard.",
+                    notifyStableBoardChanged: false);
+            }
+            catch (Exception exception)
+            {
+                GameLogger.Exception(exception, this);
+                GameLogger.Error(
+                    "[BattleBoard] Failed to restore the Board View after "
+                        + "a mutation presentation failure.",
                     this);
                 IsBoardReady = false;
             }

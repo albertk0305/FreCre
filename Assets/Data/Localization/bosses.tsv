@@ -1,6 +1,20 @@
 key	en	ko
 kragmor	Kragmor	크라그모르
 thalassion	Thalassion	탈라시온
+orver	Orver	오르베르
+orver.description	An ancient root horror that spreads living roots across the battlefield.	전장에 살아 있는 뿌리를 퍼뜨리는 고대의 뿌리괴수입니다.
+boss_action.orver.ancient_strike.name	Ancient Timber Strike	고목의 강타
+boss_action.orver.ancient_strike.description	Strikes the entire party with an ancient timber limb.	고대의 나무 팔로 파티 전체를 공격합니다.
+boss_action.orver.root_infestation.name	Root Infestation	뿌리 침식
+boss_action.orver.root_infestation.description	Creates one Root when fewer than two Roots exist.	Root가 2개 미만이면 Root 1개를 생성합니다.
+boss_action.orver.ancient_wrath.name	Wrath of the Ancient Tree	고목의 징벌
+boss_action.orver.ancient_wrath.description	Strikes the entire party when two Roots already exist.	Root가 2개 존재하면 파티 전체를 강하게 공격합니다.
+boss_action.orver.root_lash.name	Twisted Root Lash	뒤틀린 뿌리 채찍
+boss_action.orver.root_lash.description	Lashes the entire party with twisted roots.	뒤틀린 뿌리로 파티 전체를 공격합니다.
+boss_action.orver.life_siphon.name	Life Siphon	생명의 착취
+boss_action.orver.life_siphon.description	Deals greater damage for each Root, then restores Orver's HP.	Root 수에 따라 더 큰 피해를 주고 오르베르의 HP를 회복합니다.
+boss_action.orver.withered_strike.name	Withered Strike	메마른 일격
+boss_action.orver.withered_strike.description	Performs a weakened strike when no Roots remain.	Root가 없을 때 약화된 공격을 가합니다.
 boss_action.thalassion.tidal_strike.name	Tidal Strike	해류 강타
 boss_action.thalassion.tidal_strike.description	Strikes the entire party with a powerful current.	강한 해류로 파티 전체를 공격합니다.
 boss_action.thalassion.abyssal_aegis.name	Abyssal Aegis	심해의 수호

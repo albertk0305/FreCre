@@ -2,6 +2,7 @@ namespace ValorChronicle.Battle.Board
 {
     public enum BattleBoardMutationKind
     {
-        CreateRock = 0
+        CreateRock = 0,
+        CreateRoot = 1
     }
 }

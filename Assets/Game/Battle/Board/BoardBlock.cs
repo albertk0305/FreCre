@@ -8,7 +8,8 @@ namespace ValorChronicle.Battle.Board
         public BoardBlock(
             long runtimeId,
             BoardBlockType blockType,
-            ElementType? element)
+            ElementType? element,
+            int durability = 0)
         {
             if (blockType == BoardBlockType.Normal && !element.HasValue)
             {
@@ -17,20 +18,56 @@ namespace ValorChronicle.Battle.Board
                     nameof(element));
             }
 
-            if (blockType == BoardBlockType.Rock && element.HasValue)
+            if ((blockType == BoardBlockType.Rock
+                    || blockType == BoardBlockType.Root)
+                && element.HasValue)
             {
                 throw new ArgumentException(
-                    "A Rock block cannot have an element.",
+                    $"A {blockType} block cannot have an element.",
                     nameof(element));
+            }
+
+            if (blockType == BoardBlockType.Root)
+            {
+                if (durability < 1 || durability > 2)
+                {
+                    throw new ArgumentOutOfRangeException(
+                        nameof(durability),
+                        durability,
+                        "Root durability must be one or two.");
+                }
+            }
+            else if (durability != 0)
+            {
+                throw new ArgumentException(
+                    "Only Root blocks can have durability.",
+                    nameof(durability));
             }
 
             RuntimeId = runtimeId;
             BlockType = blockType;
             Element = element;
+            Durability = durability;
         }
 
         public long RuntimeId { get; }
         public BoardBlockType BlockType { get; }
         public ElementType? Element { get; }
+        public int Durability { get; }
+
+        public BoardBlock WithRootDurability(int durability)
+        {
+            if (BlockType != BoardBlockType.Root)
+            {
+                throw new InvalidOperationException(
+                    "Only Root blocks can change Root durability.");
+            }
+
+            return new BoardBlock(
+                RuntimeId,
+                BoardBlockType.Root,
+                element: null,
+                durability);
+        }
     }
 }

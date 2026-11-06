@@ -16,10 +16,12 @@ using ValorChronicle.Battle.Combat.Healing;
 using ValorChronicle.Battle.Combat.Damage;
 using ValorChronicle.Battle.Combat.Integration;
 using ValorChronicle.Battle.Combat.State;
+using ValorChronicle.Battle.Entry;
 using ValorChronicle.Battle.Flow;
 using ValorChronicle.Battle.Flow.Presentation;
 using ValorChronicle.Battle.Results;
 using ValorChronicle.Bosses.Kragmor;
+using ValorChronicle.Bosses.Orver;
 using ValorChronicle.Characters.Marea;
 using ValorChronicle.Characters.Meimei;
 using ValorChronicle.Characters.Miyuki;
@@ -2068,7 +2070,7 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
         }
 
         [Test]
-        public void MissingPresentationMetadataUsesExistingHudFallbacks()
+        public void MissingBossPresentationClearsSerializedBossSprite()
         {
             DefinitionDatabase emptyDatabase =
                 ScriptableObject.CreateInstance<DefinitionDatabase>();
@@ -2101,7 +2103,67 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
             Assert.That(bossStatusSlots[1].IconImage.sprite,
                 Is.SameAs(waterSprite));
             Assert.That(hudController.BossImage.sprite,
-                Is.SameAs(defaultBossSprite));
+                Is.Null);
+        }
+
+        [Test]
+        public void OrverWithoutVisualStateSourceUsesCanonicalDefaultSprite()
+        {
+            const string databasePath =
+                "Assets/Data/Database/DefinitionDatabase.asset";
+            const string expectedSpritePath =
+                "Assets/Sprites/Boss/Orver/OrverIdle.png";
+            DefinitionDatabase database =
+                AssetDatabase.LoadAssetAtPath<DefinitionDatabase>(
+                    databasePath);
+            Assert.That(database, Is.Not.Null);
+            database.Initialize();
+            Assert.That(database.TryGetCharacter(
+                MareaBluefangRules.CharacterId,
+                out CharacterDefinition character), Is.True);
+            Assert.That(BattleEncounterFactory.TryCreate(
+                database,
+                new BattleEntryRequest(
+                    OrverRules.BossId,
+                    "difficulty_normal"),
+                out BattleEncounterDefinition encounter,
+                out string error), Is.True, error);
+
+            var composition = new BattleSceneCombatComposition(
+                new[]
+                {
+                    new BattlePartyMemberInput(
+                        character.Id,
+                        partySlotIndex: 0,
+                        level: 1,
+                        awakening: 0,
+                        characterDefinition: character)
+                },
+                CharacterRuntimeRegistrationCatalog.CreateDefault()
+                    .CreateCombatRegistrarCatalog(),
+                encounter,
+                new SeededRandomSource(1),
+                BattleResultBalanceDefaults.Create());
+            SetProperty(combatBootstrap, "DefinitionDatabase", database);
+            SetProperty(
+                combatBootstrap,
+                "CombatComposition",
+                composition);
+            Assert.That(composition.TryBindBossBoardStateSource(
+                boardController), Is.True);
+            InvokePrivate(hudController, "OnEnable");
+            flowController.Initialize(
+                composition.FlowSetup,
+                coordinator => composition.CreateBridge(coordinator));
+            bridge = composition.Bridge;
+            Assert.That(flowController.Coordinator.StartBattle(), Is.True);
+            InvokePrivate(hudController, "Start");
+
+            Assert.That(composition.BossVisualStateSource, Is.Null);
+            Assert.That(
+                AssetDatabase.GetAssetPath(
+                    hudController.BossImage.sprite),
+                Is.EqualTo(expectedSpritePath));
         }
 
         [Test]
@@ -2722,6 +2784,82 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
                 0f);
             Assert.That(hudController.BossShieldImage.gameObject.activeSelf,
                 Is.False);
+        }
+
+        [Test]
+        public void BossHealStepRefreshesBossHpAndReducedScoreImmediately()
+        {
+            InvokePrivate(hudController, "OnEnable");
+            InitializeCombat(
+                bossMaxHp: 1000,
+                characterAttack: 200d,
+                matchActions: context => new CombatAction[]
+                {
+                    new DamageAction(
+                        context.ActionIds.Next(),
+                        ActionOrigin.Match,
+                        new DamageContextBuildRequest(
+                            context.Character,
+                            context.Party,
+                            context.Boss,
+                            context.Character.Element,
+                            ValorChronicle.Battle.Combat.Attacks.AttackType.Match,
+                            context.MatchAttackTag,
+                            1d,
+                            true,
+                            context.FinalComboCount,
+                            false))
+                },
+                bossActions: context => new CombatAction[]
+                {
+                    new BossHealAction(
+                        context.ActionIds.Next(),
+                        context.Boss,
+                        0.10d)
+                });
+            Assert.That(flowController.Coordinator.StartBattle(), Is.True);
+            InvokePrivate(hudController, "Start");
+
+            MatchEventExecution execution = BeginSingleWaterMatch();
+            Assert.That(bridge.ResolveMatchEvent(execution), Is.True);
+            long scoreBeforeHealing = bridge.DamageScore;
+            long hpBeforeHealing = bridge.Boss.CurrentHp;
+            Assert.That(scoreBeforeHealing, Is.GreaterThan(0L));
+            Assert.That(flowController.Context.Phase,
+                Is.EqualTo(BattlePhase.BossActing));
+            int batchCount = 0;
+            bridge.CombatActionsApplied += () => batchCount++;
+
+            Assert.That(bridge.TryBeginBossActionCombat(1), Is.True);
+            Assert.That(bridge.TryApplyNextBossCombatAction(
+                out CombatActionExecutionStepResult step), Is.True);
+            var healing = (BossHealActionResult)step.Result;
+
+            Assert.That(batchCount, Is.Zero);
+            Assert.That(healing.AppliedHealing, Is.GreaterThan(0L));
+            Assert.That(bridge.Boss.CurrentHp,
+                Is.EqualTo(hpBeforeHealing + healing.AppliedHealing));
+            Assert.That(bridge.DamageScore,
+                Is.EqualTo(Math.Max(
+                    0L,
+                    scoreBeforeHealing - healing.AppliedHealing)));
+            Assert.That(hudController.ScoreText.text,
+                Is.EqualTo("Score " + bridge.DamageScore.ToString(
+                    "N0",
+                    CultureInfo.InvariantCulture)));
+            AssertHp(
+                hudController.BossHpText,
+                hudController.BossHpSlider,
+                $"{bridge.Boss.CurrentHp} / {bridge.Boss.MaxHp}",
+                (float)((double)bridge.Boss.CurrentHp
+                    / bridge.Boss.MaxHp));
+
+            Assert.That(bridge.TryCompleteBossActionCombat(), Is.True);
+            Assert.That(batchCount, Is.EqualTo(1));
+            Assert.That(hudController.ScoreText.text,
+                Is.EqualTo("Score " + bridge.DamageScore.ToString(
+                    "N0",
+                    CultureInfo.InvariantCulture)));
         }
 
         [Test]

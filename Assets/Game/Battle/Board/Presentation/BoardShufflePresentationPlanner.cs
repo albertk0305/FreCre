@@ -126,7 +126,8 @@ namespace ValorChronicle.Battle.Board.Presentation
                 else
                 {
                     if (entriesByPosition.ContainsKey(position)
-                        || beforeBlock.Element != afterBlock.Element)
+                        || beforeBlock.Element != afterBlock.Element
+                        || beforeBlock.Durability != afterBlock.Durability)
                     {
                         throw new InvalidOperationException(
                             "A non-Normal block must remain unchanged at " +
@@ -163,7 +164,8 @@ namespace ValorChronicle.Battle.Board.Presentation
 
             return expected.RuntimeId == actual.RuntimeId
                 && expected.BlockType == actual.BlockType
-                && expected.Element == actual.Element;
+                && expected.Element == actual.Element
+                && expected.Durability == actual.Durability;
         }
     }
 }

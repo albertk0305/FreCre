@@ -4,6 +4,8 @@ using UnityEditor;
 using UnityEngine;
 using ValorChronicle.Battle.Entry;
 using ValorChronicle.Bosses.Kragmor;
+using ValorChronicle.Bosses.Orver;
+using ValorChronicle.Bosses.Thalassion;
 using ValorChronicle.Data.Database;
 using ValorChronicle.Data.Definitions;
 using ValorChronicle.Localization;
@@ -27,6 +29,12 @@ namespace ValorChronicle.Tests.EditMode
             "Assets/Sprites/Boss/Kragmor/KragmorExposed.png";
         private const string CompressionSpritePath =
             "Assets/Sprites/Boss/Kragmor/KragmorEnergy.png";
+        private const string OrverFaceSpritePath =
+            "Assets/Sprites/Boss/Orver/OrverFace.png";
+        private const string OrverDefaultSpritePath =
+            "Assets/Sprites/Boss/Orver/OrverIdle.png";
+        private const string ThalassionDefaultSpritePath =
+            "Assets/Sprites/Boss/Thalassion/ThalassionIdle.png";
 
         private readonly List<Object> createdObjects = new List<Object>();
 
@@ -85,6 +93,42 @@ namespace ValorChronicle.Tests.EditMode
             Assert.That(
                 AssetDatabase.GetAssetPath(compression),
                 Is.EqualTo(CompressionSpritePath));
+        }
+
+        [Test]
+        public void CanonicalPresentation_ProvidesDistinctOrverSprites()
+        {
+            DefinitionDatabase database = LoadDatabase();
+            Assert.That(database.TryGetBossPresentation(
+                OrverRules.BossId,
+                out BossPresentationDefinition presentation), Is.True);
+
+            Assert.That(
+                AssetDatabase.GetAssetPath(presentation.DefaultSprite),
+                Is.EqualTo(OrverDefaultSpritePath));
+            Assert.That(
+                AssetDatabase.GetAssetPath(presentation.FaceSprite),
+                Is.EqualTo(OrverFaceSpritePath));
+            Assert.That(
+                AssetDatabase.GetAssetPath(presentation.DefaultSprite),
+                Is.Not.EqualTo(DefaultSpritePath));
+            Assert.That(presentation.StateVisuals, Is.Empty);
+        }
+
+        [Test]
+        public void CanonicalPresentation_PreservesThalassionDefaultSprite()
+        {
+            DefinitionDatabase database = LoadDatabase();
+            Assert.That(database.TryGetBossPresentation(
+                ThalassionRules.BossId,
+                out BossPresentationDefinition presentation), Is.True);
+
+            Assert.That(
+                AssetDatabase.GetAssetPath(presentation.DefaultSprite),
+                Is.EqualTo(ThalassionDefaultSpritePath));
+            Assert.That(
+                AssetDatabase.GetAssetPath(presentation.DefaultSprite),
+                Is.Not.EqualTo(OrverDefaultSpritePath));
         }
 
         [Test]

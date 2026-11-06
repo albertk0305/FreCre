@@ -108,6 +108,11 @@ namespace ValorChronicle.Battle.Combat.Actions
                 return ExecuteBossDamage(bossDamageAction, executionOrder);
             }
 
+            if (action is BossHealAction bossHealAction)
+            {
+                return ExecuteBossHealing(bossHealAction, executionOrder);
+            }
+
             if (action is PartyHpCostAction hpCostAction)
             {
                 return ExecutePartyHpCost(hpCostAction, executionOrder);
@@ -211,6 +216,21 @@ namespace ValorChronicle.Battle.Combat.Actions
                 executionOrder,
                 context,
                 damageResult,
+                applicationResult);
+        }
+
+        private BossHealActionResult ExecuteBossHealing(
+            BossHealAction action,
+            int executionOrder)
+        {
+            ValidateBossReference(action.TargetBoss);
+            BossHealingApplicationResult applicationResult =
+                BossHealingApplier.Apply(
+                    boss,
+                    action.MaxHpHealingCoefficient);
+            return new BossHealActionResult(
+                action,
+                executionOrder,
                 applicationResult);
         }
 

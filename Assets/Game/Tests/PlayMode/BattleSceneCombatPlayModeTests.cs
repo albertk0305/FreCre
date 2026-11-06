@@ -1644,6 +1644,12 @@ namespace ValorChronicle.Tests.PlayMode
                     board,
                     new List<BoardBlockSpawn>());
             BoardCascadeStep step = CreateNonPublic<BoardCascadeStep>(
+                new[]
+                {
+                    typeof(IReadOnlyList<BoardMatch>),
+                    typeof(BoardCollapseResult),
+                    typeof(BoardRefillResult)
+                },
                 new List<BoardMatch> { match },
                 collapse,
                 refill);
@@ -2319,10 +2325,57 @@ namespace ValorChronicle.Tests.PlayMode
 
         private static T CreateNonPublic<T>(params object[] arguments)
         {
-            ConstructorInfo constructor = typeof(T).GetConstructors(
+            ConstructorInfo[] constructors = typeof(T).GetConstructors(
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            if (constructors.Length != 1)
+            {
+                throw new InvalidOperationException(
+                    $"Expected exactly one non-public constructor for "
+                        + $"{typeof(T).FullName}, but found "
+                        + $"{constructors.Length}. Specify the intended "
+                        + "parameter signature explicitly.");
+            }
+
+            return (T)constructors[0].Invoke(arguments);
+        }
+
+        private static T CreateNonPublic<T>(
+            Type[] parameterTypes,
+            params object[] arguments)
+        {
+            if (parameterTypes == null)
+            {
+                throw new ArgumentNullException(nameof(parameterTypes));
+            }
+
+            if (arguments == null
+                || parameterTypes.Length != arguments.Length)
+            {
+                throw new ArgumentException(
+                    "Constructor parameter types and arguments must have "
+                        + "the same length.",
+                    nameof(arguments));
+            }
+
+            ConstructorInfo[] constructors = typeof(T).GetConstructors(
                     BindingFlags.Instance | BindingFlags.NonPublic)
-                .Single();
-            return (T)constructor.Invoke(arguments);
+                .Where(constructor => constructor.GetParameters()
+                    .Select(parameter => parameter.ParameterType)
+                    .SequenceEqual(parameterTypes))
+                .ToArray();
+            if (constructors.Length != 1)
+            {
+                string signature = string.Join(
+                    ", ",
+                    parameterTypes.Select(type => type.FullName));
+                throw new InvalidOperationException(
+                    $"Expected exactly one non-public constructor for "
+                        + $"{typeof(T).FullName} with signature "
+                        + $"({signature}), but found "
+                        + $"{constructors.Length}.");
+            }
+
+            return (T)constructors[0].Invoke(arguments);
         }
     }
 }

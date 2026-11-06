@@ -4,6 +4,7 @@ using System.Reflection;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using ValorChronicle.Battle.Board;
 using ValorChronicle.Battle.Combat.Actions;
 using ValorChronicle.Battle.Combat.Integration;
 using ValorChronicle.Battle.Combat.State;
@@ -109,6 +110,28 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
             Assert.That(first.CombatActionProvider,
                 Is.Not.SameAs(second.CombatActionProvider));
             Assert.That(first.Boss, Is.Not.SameAs(second.Boss));
+        }
+
+        [Test]
+        public void CompositionBindsBoardSourceToItsOwnRuntimeProvider()
+        {
+            var runtimeFactory = new TestBossRuntimeFactory("test_boss");
+            BattleEncounterDefinition encounter = CreateEncounter(
+                runtimeFactory);
+            using BattleSceneCombatComposition first = Compose(encounter);
+            using BattleSceneCombatComposition second = Compose(encounter);
+            var firstSource = new TestBoardStateSource(1);
+            var secondSource = new TestBoardStateSource(2);
+
+            Assert.That(first.TryBindBossBoardStateSource(firstSource),
+                Is.True);
+            Assert.That(second.TryBindBossBoardStateSource(secondSource),
+                Is.True);
+
+            Assert.That(runtimeFactory.CreatedProviders[0]
+                .BoardStateSource, Is.SameAs(firstSource));
+            Assert.That(runtimeFactory.CreatedProviders[1]
+                .BoardStateSource, Is.SameAs(secondSource));
         }
 
         [Test]
@@ -292,8 +315,17 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
 
         private sealed class TestBossActionProvider
             : IBossCombatActionProvider,
-                IBossIntentSource
+                IBossIntentSource,
+                IBossBoardStateConsumer
         {
+            public IBattleBoardStateSource BoardStateSource { get; private set; }
+
+            public void BindBoardStateSource(
+                IBattleBoardStateSource boardStateSource)
+            {
+                BoardStateSource = boardStateSource;
+            }
+
             public IReadOnlyList<CombatAction> CreateRootActions(
                 BossCombatActionContext context)
             {
@@ -309,6 +341,21 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
                     {
                         new BossIntentPreview(1, "test_boss_action")
                     };
+            }
+        }
+
+        private sealed class TestBoardStateSource : IBattleBoardStateSource
+        {
+            private readonly int rootCount;
+
+            public TestBoardStateSource(int rootCount)
+            {
+                this.rootCount = rootCount;
+            }
+
+            public int GetRootCount()
+            {
+                return rootCount;
             }
         }
 

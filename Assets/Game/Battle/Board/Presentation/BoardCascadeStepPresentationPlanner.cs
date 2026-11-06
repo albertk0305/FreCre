@@ -21,22 +21,72 @@ namespace ValorChronicle.Battle.Board.Presentation
 
             Dictionary<long, BoardPosition> beforePositions =
                 CollectRuntimeIds(beforeBoard, false, "beforeBoard");
+            BoardState boardAfterStateChanges = ValidateStateChanges(
+                beforeBoard,
+                step);
             ValidateRemovals(beforeBoard, step, out HashSet<long> removedIds);
             ValidateMoves(
-                beforeBoard,
+                boardAfterStateChanges,
                 step.Collapse.Board,
                 step.Collapse.Moves,
                 removedIds);
-            ValidateCollapseBoard(beforeBoard, step, removedIds);
+            ValidateCollapseBoard(
+                boardAfterStateChanges,
+                step,
+                removedIds);
             ValidateSpawns(beforePositions, step);
             ValidateFinalBoard(step);
 
             return new BoardCascadeStepPresentationPlan(
+                step.StateChanges,
                 step.Collapse.Removals,
                 step.Collapse.Moves,
                 step.Refill.Spawns,
                 step.Collapse.Board,
                 step.Board);
+        }
+
+        private static BoardState ValidateStateChanges(
+            BoardState beforeBoard,
+            BoardCascadeStep step)
+        {
+            BoardRootImpactResult expected =
+                BoardRootImpactResolver.Resolve(beforeBoard, step.Matches);
+            if (expected.Changes.Count != step.StateChanges.Count)
+            {
+                throw new InvalidOperationException(
+                    "Cascade Root state changes do not match the resolved "
+                        + "match groups.");
+            }
+
+            BoardState changedBoard = beforeBoard.Clone();
+            var positions = new HashSet<BoardPosition>();
+            for (int index = 0; index < step.StateChanges.Count; index++)
+            {
+                BoardBlockStateChange actual = step.StateChanges[index];
+                BoardBlockStateChange expectedChange =
+                    expected.Changes[index];
+                if (!positions.Add(actual.Position)
+                    || actual.Position != expectedChange.Position
+                    || !BlocksMatch(
+                        actual.PreviousBlock,
+                        expectedChange.PreviousBlock)
+                    || !BlocksMatch(
+                        actual.CurrentBlock,
+                        expectedChange.CurrentBlock)
+                    || !BlocksMatch(
+                        beforeBoard.Get(actual.Position),
+                        actual.PreviousBlock))
+                {
+                    throw new InvalidOperationException(
+                        "A cascade Root state change is invalid at "
+                            + $"{actual.Position}.");
+                }
+
+                changedBoard.Set(actual.Position, actual.CurrentBlock);
+            }
+
+            return changedBoard;
         }
 
         private static void ValidateRemovals(
@@ -321,11 +371,16 @@ namespace ValorChronicle.Battle.Board.Presentation
             bool isSupportedRock = block != null
                 && block.BlockType == BoardBlockType.Rock
                 && !block.Element.HasValue;
-            if (!isSupportedNormal && !isSupportedRock)
+            bool isSupportedRoot = block != null
+                && block.BlockType == BoardBlockType.Root
+                && !block.Element.HasValue
+                && block.Durability >= 1
+                && block.Durability <= 2;
+            if (!isSupportedNormal && !isSupportedRock && !isSupportedRoot)
             {
                 throw new NotSupportedException(
-                    $"Only elemental Normal blocks and elementless Rock "
-                        + $"blocks are supported in {context}.");
+                    $"Only supported Normal, Rock, and Root blocks are "
+                        + $"allowed in {context}.");
             }
         }
 
@@ -338,7 +393,8 @@ namespace ValorChronicle.Battle.Board.Presentation
 
             return expected.RuntimeId == actual.RuntimeId
                 && expected.BlockType == actual.BlockType
-                && expected.Element == actual.Element;
+                && expected.Element == actual.Element
+                && expected.Durability == actual.Durability;
         }
     }
 }

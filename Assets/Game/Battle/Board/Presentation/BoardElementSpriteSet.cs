@@ -27,6 +27,12 @@ namespace ValorChronicle.Battle.Board.Presentation
         [SerializeField]
         private Sprite rock;
 
+        [SerializeField]
+        private Sprite rootIntact;
+
+        [SerializeField]
+        private Sprite rootDamaged;
+
         public Sprite GetSprite(BoardBlock block)
         {
             if (block == null)
@@ -50,6 +56,14 @@ namespace ValorChronicle.Battle.Board.Presentation
                 }
 
                 return rock;
+            }
+
+            if (block.BlockType == BoardBlockType.Root
+                && !block.Element.HasValue)
+            {
+                return block.Durability == 2
+                    ? rootIntact
+                    : rootDamaged;
             }
 
             throw new NotSupportedException(
@@ -119,12 +133,35 @@ namespace ValorChronicle.Battle.Board.Presentation
             Sprite darkSprite,
             Sprite rockSprite)
         {
+            Configure(
+                fireSprite,
+                waterSprite,
+                grassSprite,
+                lightSprite,
+                darkSprite,
+                rockSprite,
+                rootIntactSprite: null,
+                rootDamagedSprite: null);
+        }
+
+        public void Configure(
+            Sprite fireSprite,
+            Sprite waterSprite,
+            Sprite grassSprite,
+            Sprite lightSprite,
+            Sprite darkSprite,
+            Sprite rockSprite,
+            Sprite rootIntactSprite,
+            Sprite rootDamagedSprite)
+        {
             fire = fireSprite;
             water = waterSprite;
             grass = grassSprite;
             light = lightSprite;
             dark = darkSprite;
             rock = rockSprite;
+            rootIntact = rootIntactSprite;
+            rootDamaged = rootDamagedSprite;
         }
     }
 }

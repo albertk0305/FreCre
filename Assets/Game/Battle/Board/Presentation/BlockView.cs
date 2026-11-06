@@ -29,11 +29,6 @@ namespace ValorChronicle.Battle.Board.Presentation
                 throw new ArgumentNullException(nameof(block));
             }
 
-            if (sprite == null)
-            {
-                throw new ArgumentNullException(nameof(sprite));
-            }
-
             EnsureImage();
             RuntimeId = block.RuntimeId;
             Position = position;
@@ -62,11 +57,6 @@ namespace ValorChronicle.Battle.Board.Presentation
 
         public void SetSprite(Sprite sprite)
         {
-            if (sprite == null)
-            {
-                throw new ArgumentNullException(nameof(sprite));
-            }
-
             EnsureImage();
             image.sprite = sprite;
         }

@@ -849,7 +849,7 @@ namespace ValorChronicle.Tests.EditMode.Board.Presentation
             controller.StopAllCoroutines();
             var presentation = (IEnumerator)InvokePrivate(
                 controller,
-                "RunRockMutationPresentation",
+                "RunMutationPresentation",
                 presentationVersion);
             int remainingPresentationFrames = 0;
             while (presentation.MoveNext())

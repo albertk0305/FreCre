@@ -146,6 +146,92 @@ namespace ValorChronicle.Tests.EditMode.Battle.Combat.Integration
             Assert.That(collector.DamageScore, Is.EqualTo(100L));
         }
 
+        [Test]
+        public void Collect_SubtractsAppliedBossHealingFromDamageScore()
+        {
+            BossBattleState boss = Boss(1000L);
+            CharacterBattleState character = Character();
+            var party = new PartyBattleState(new[] { character });
+            TestExecution execution = Execute(
+                boss,
+                new CombatAction[]
+                {
+                    Damage(1L, 5d, character, party, boss),
+                    new BossHealAction(2L, boss, 0.20d)
+                },
+                party);
+            var collector = Collector();
+
+            Assert.That(collector.Collect(execution.Result),
+                Is.EqualTo(500L));
+            Assert.That(collector.CumulativeAppliedDamage,
+                Is.EqualTo(500L));
+            Assert.That(collector.CumulativeAppliedBossHealing,
+                Is.EqualTo(200L));
+            Assert.That(collector.DamageScore, Is.EqualTo(300L));
+        }
+
+        [Test]
+        public void Collect_SubtractsOnlyActuallyAppliedBossHealing()
+        {
+            BossBattleState boss = Boss(1000L);
+            CharacterBattleState character = Character();
+            var party = new PartyBattleState(new[] { character });
+            TestExecution execution = Execute(
+                boss,
+                new CombatAction[]
+                {
+                    Damage(1L, 0.50d, character, party, boss),
+                    new BossHealAction(2L, boss, 0.20d)
+                },
+                party);
+            var healing = (BossHealActionResult)
+                execution.Result.ActionResults[1];
+            var collector = Collector();
+
+            collector.Collect(execution.Result);
+
+            Assert.That(healing.RequestedHealing, Is.EqualTo(200L));
+            Assert.That(healing.AppliedHealing, Is.EqualTo(50L));
+            Assert.That(collector.CumulativeAppliedBossHealing,
+                Is.EqualTo(50L));
+            Assert.That(collector.DamageScore, Is.Zero);
+        }
+
+        [Test]
+        public void CollectAppliedAction_DeduplicatesDamageAndHealingByActionId()
+        {
+            BossBattleState boss = Boss(1000L);
+            CharacterBattleState character = Character();
+            var party = new PartyBattleState(new[] { character });
+            TestExecution execution = Execute(
+                boss,
+                new CombatAction[]
+                {
+                    Damage(1L, 5d, character, party, boss),
+                    new BossHealAction(2L, boss, 0.20d)
+                },
+                party);
+            var collector = Collector();
+
+            Assert.That(collector.CollectAppliedAction(
+                execution.Result.ActionResults[0]), Is.EqualTo(500L));
+            Assert.That(collector.CollectAppliedAction(
+                execution.Result.ActionResults[1]), Is.Zero);
+            Assert.That(collector.DamageScore, Is.EqualTo(300L));
+
+            Assert.That(collector.CollectAppliedAction(
+                execution.Result.ActionResults[0]), Is.Zero);
+            Assert.That(collector.CollectAppliedAction(
+                execution.Result.ActionResults[1]), Is.Zero);
+            Assert.That(collector.Collect(execution.Result), Is.Zero);
+            Assert.That(collector.CumulativeAppliedDamage,
+                Is.EqualTo(500L));
+            Assert.That(collector.CumulativeAppliedBossHealing,
+                Is.EqualTo(200L));
+            Assert.That(collector.DamageScore, Is.EqualTo(300L));
+        }
+
         private static BattleDamageScoreCollector Collector()
         {
             return new BattleDamageScoreCollector(

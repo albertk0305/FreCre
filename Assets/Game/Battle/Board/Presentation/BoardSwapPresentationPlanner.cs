@@ -181,7 +181,8 @@ namespace ValorChronicle.Battle.Board.Presentation
 
             return expected.RuntimeId == actual.RuntimeId
                 && expected.BlockType == actual.BlockType
-                && expected.Element == actual.Element;
+                && expected.Element == actual.Element
+                && expected.Durability == actual.Durability;
         }
     }
 }

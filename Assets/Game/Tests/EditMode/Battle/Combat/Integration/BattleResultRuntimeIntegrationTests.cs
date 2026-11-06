@@ -402,6 +402,44 @@ namespace ValorChronicle.Tests.EditMode.Battle.Combat.Integration
         }
 
         [Test]
+        public void BossHealingNetDamageFlowsIntoFinalResult()
+        {
+            RuntimeBattle battle = CreateBattle(
+                bossHp: 1000L,
+                turnLimit: 1,
+                matchProvider: new DelegateMatchEventActionProvider(context =>
+                    new CombatAction[]
+                    {
+                        Damage(context, 5d)
+                    }),
+                bossProvider: new DelegateBossCombatActionProvider(context =>
+                    new CombatAction[]
+                    {
+                        new BossHealAction(
+                            context.ActionIds.Next(),
+                            context.Boss,
+                            0.20d)
+                    }));
+
+            BeginSingleMatch(battle.Coordinator);
+            Assert.That(battle.Coordinator.TryBeginNextMatchEvent(
+                out MatchEventExecution execution), Is.True);
+            Assert.That(battle.Bridge.ResolveMatchEvent(execution), Is.True);
+            Assert.That(battle.Bridge.DamageScore, Is.EqualTo(500L));
+
+            Assert.That(battle.Bridge.ResolveBossAction(1), Is.True);
+
+            Assert.That(battle.Bridge.DamageScore, Is.EqualTo(300L));
+            Assert.That(battle.Bridge.LastFinalResult, Is.Not.Null);
+            Assert.That(battle.Bridge.LastFinalResult.EndReason,
+                Is.EqualTo(BattleResultKind.TurnLimitReached));
+            Assert.That(battle.Bridge.LastFinalResult.DamageScore,
+                Is.EqualTo(300L));
+            Assert.That(battle.Bridge.LastFinalResult.RemainingTurnBonus,
+                Is.Zero);
+        }
+
+        [Test]
         public void AbortedDoesNotFinalizeAndNewBattleStartsEmpty()
         {
             RuntimeBattle aborted = CreateBattle(bossHp: 1000L);

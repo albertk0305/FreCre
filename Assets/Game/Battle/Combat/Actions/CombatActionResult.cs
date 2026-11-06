@@ -69,6 +69,25 @@ namespace ValorChronicle.Battle.Combat.Actions
             ApplicationResult.BecameIncapacitated;
     }
 
+    public sealed class BossHealActionResult : CombatActionResult
+    {
+        internal BossHealActionResult(
+            BossHealAction action,
+            int executionOrder,
+            BossHealingApplicationResult applicationResult)
+            : base(action, executionOrder)
+        {
+            ApplicationResult = applicationResult;
+        }
+
+        public BossHealingApplicationResult ApplicationResult { get; }
+        public double MaxHpHealingCoefficient =>
+            ApplicationResult.MaxHpHealingCoefficient;
+        public long RequestedHealing => ApplicationResult.RequestedHealing;
+        public long AppliedHealing => ApplicationResult.AppliedHealing;
+        public long HpAfter => ApplicationResult.HpAfter;
+    }
+
     public sealed class PartyHpCostActionResult : CombatActionResult
     {
         internal PartyHpCostActionResult(

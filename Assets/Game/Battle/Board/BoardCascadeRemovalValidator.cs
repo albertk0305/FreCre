@@ -74,13 +74,20 @@ namespace ValorChronicle.Battle.Board
                 }
 
                 BoardBlock block = pair.Value.Block;
-                if (block.BlockType != BoardBlockType.Rock
-                    || block.Element.HasValue
-                    || !IsAdjacentToAny(pair.Key, matchedPositions))
+                bool isValidRock = block.BlockType == BoardBlockType.Rock
+                    && !block.Element.HasValue
+                    && IsAdjacentToAny(pair.Key, matchedPositions);
+                bool isValidDestroyedRoot =
+                    block.BlockType == BoardBlockType.Root
+                    && !block.Element.HasValue
+                    && BoardRootImpactResolver.CountAdjacentGroups(
+                        pair.Key,
+                        matches) >= block.Durability;
+                if (!isValidRock && !isValidDestroyedRoot)
                 {
                     throw new InvalidOperationException(
-                        $"Additional removal at {pair.Key} must be an "
-                            + "elementless Rock adjacent to a matched cell.");
+                        $"Additional removal at {pair.Key} must be a valid "
+                            + "matched-cell obstacle removal.");
                 }
             }
         }

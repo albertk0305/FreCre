@@ -11,6 +11,7 @@ namespace ValorChronicle.Battle.Board
     }
 
     public sealed class BoardRockMutationResult
+        : IBattleBoardMutationResult
     {
         private readonly ReadOnlyCollection<BoardRockPlacement> placements;
 

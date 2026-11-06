@@ -19,6 +19,10 @@ namespace ValorChronicle.Battle.Combat.Integration
         }
 
         public long DamageScore => accumulator.DamageScore;
+        public long CumulativeAppliedDamage =>
+            accumulator.CumulativeAppliedDamage;
+        public long CumulativeAppliedBossHealing =>
+            accumulator.CumulativeAppliedBossHealing;
 
         public long CollectAppliedAction(CombatActionResult actionResult)
         {
@@ -43,9 +47,13 @@ namespace ValorChronicle.Battle.Combat.Integration
             long appliedDamage = actionResult is DamageActionResult damage
                 ? damage.AppliedDamage
                 : 0L;
+            long appliedBossHealing =
+                actionResult is BossHealActionResult healing
+                    ? healing.AppliedHealing
+                    : 0L;
             try
             {
-                accumulator.Add(appliedDamage);
+                accumulator.Apply(appliedDamage, appliedBossHealing);
             }
             catch
             {
@@ -66,6 +74,7 @@ namespace ValorChronicle.Battle.Combat.Integration
             var actionIdsInResult = new HashSet<long>();
             var newActionIds = new List<long>();
             long appliedDamage = 0L;
+            long appliedBossHealing = 0L;
             IReadOnlyList<CombatActionResult> results =
                 executionResult.ActionResults;
             for (int index = 0; index < results.Count; index++)
@@ -98,9 +107,15 @@ namespace ValorChronicle.Battle.Combat.Integration
                     appliedDamage = checked(
                         appliedDamage + damageResult.AppliedDamage);
                 }
+                else if (result is BossHealActionResult healingResult)
+                {
+                    appliedBossHealing = checked(
+                        appliedBossHealing
+                            + healingResult.AppliedHealing);
+                }
             }
 
-            accumulator.Add(appliedDamage);
+            accumulator.Apply(appliedDamage, appliedBossHealing);
             for (int index = 0; index < newActionIds.Count; index++)
             {
                 collectedActionIds.Add(newActionIds[index]);

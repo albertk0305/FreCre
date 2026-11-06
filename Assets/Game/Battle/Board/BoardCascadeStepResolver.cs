@@ -47,12 +47,34 @@ namespace ValorChronicle.Battle.Board
 
             List<BoardPosition> positionsToRemove =
                 CollectRemovalPositions(board, matches);
+            BoardRootImpactResult rootImpact =
+                BoardRootImpactResolver.Resolve(board, matches);
+            BoardState boardWithRootChanges = board.Clone();
+            for (int index = 0; index < rootImpact.Changes.Count; index++)
+            {
+                BoardBlockStateChange change = rootImpact.Changes[index];
+                boardWithRootChanges.Set(
+                    change.Position,
+                    change.CurrentBlock);
+            }
+
+            for (int index = 0;
+                index < rootImpact.DestroyedPositions.Count;
+                index++)
+            {
+                positionsToRemove.Add(rootImpact.DestroyedPositions[index]);
+            }
+
             BoardCollapseResult collapse = BoardCollapseResolver.Resolve(
-                board,
+                boardWithRootChanges,
                 positionsToRemove);
             BoardRefillResult refill = refiller.Refill(collapse.Board);
 
-            step = new BoardCascadeStep(matches, collapse, refill);
+            step = new BoardCascadeStep(
+                matches,
+                rootImpact.Changes,
+                collapse,
+                refill);
             return true;
         }
 

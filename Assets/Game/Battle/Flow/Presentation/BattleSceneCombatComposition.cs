@@ -702,6 +702,24 @@ namespace ValorChronicle.Battle.Flow.Presentation
             BossRuntime.ActionProvider as KragmorBossCombatActionProvider;
         public IBossVisualStateSource BossVisualStateSource =>
             BossRuntime.VisualStateSource;
+
+        public bool TryBindBossBoardStateSource(
+            IBattleBoardStateSource boardStateSource)
+        {
+            if (boardStateSource == null)
+            {
+                throw new ArgumentNullException(nameof(boardStateSource));
+            }
+
+            if (!(BossRuntime.ActionProvider
+                is IBossBoardStateConsumer consumer))
+            {
+                return false;
+            }
+
+            consumer.BindBoardStateSource(boardStateSource);
+            return true;
+        }
         public IReadOnlyList<ActiveAbilityBinding> ActiveBindings =>
             activeBindings;
         public IReadOnlyList<ICharacterCombatStatusSource>

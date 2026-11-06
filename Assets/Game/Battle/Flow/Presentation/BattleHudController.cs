@@ -104,6 +104,7 @@ namespace ValorChronicle.Battle.Flow.Presentation
         private BattleFlowCoordinator subscribedCoordinator;
         private BattleFlowCombatBridge subscribedBridge;
         private BattleFlowController subscribedFlowController;
+        private BattleBoardController subscribedBoardController;
         private UnityAction[] activeButtonListeners =
             Array.Empty<UnityAction>();
         private bool safeDisplayInitialized;
@@ -423,9 +424,18 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 HandlePresentationMatchQueueChanged;
             battleFlowController.ActivePresentationStateChanged +=
                 HandleActivePresentationStateChanged;
+            BattleBoardController boardController =
+                battleFlowController.BoardMutationSink
+                    as BattleBoardController;
+            if (boardController != null)
+            {
+                boardController.StableBoardChanged +=
+                    HandleStableBoardChanged;
+            }
             subscribedCoordinator = coordinator;
             subscribedBridge = bridge;
             subscribedFlowController = battleFlowController;
+            subscribedBoardController = boardController;
             resultHudFrozen = IsNormalTerminalResult(
                 battleFlowController.Context.Result);
             subscribedFlowController
@@ -470,9 +480,16 @@ namespace ValorChronicle.Battle.Flow.Presentation
                     HandleActivePresentationStateChanged;
             }
 
+            if (subscribedBoardController != null)
+            {
+                subscribedBoardController.StableBoardChanged -=
+                    HandleStableBoardChanged;
+            }
+
             subscribedCoordinator = null;
             subscribedBridge = null;
             subscribedFlowController = null;
+            subscribedBoardController = null;
         }
 
         private void AttachActiveButtonListeners()
@@ -741,6 +758,14 @@ namespace ValorChronicle.Battle.Flow.Presentation
 
             RefreshActiveAvailability();
             RefreshStatusSnapshot();
+        }
+
+        private void HandleStableBoardChanged()
+        {
+            if (!resultHudFrozen)
+            {
+                RefreshBossIntent();
+            }
         }
 
         private void HandlePresentationMatchQueueChanged()
@@ -1459,21 +1484,25 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 battleSceneCombatBootstrap?.DefinitionDatabase;
             IBossVisualStateSource visualStateSource =
                 battleSceneCombatBootstrap?.BossVisualStateSource;
-            if (composition != null
-                && ReferenceEquals(composition.Bridge, subscribedBridge)
-                && visualStateSource != null
-                && database != null
-                && database.IsInitialized
-                && database.TryGetBossPresentation(
-                    subscribedBridge.Boss.BossId,
-                    out BossPresentationDefinition presentation))
+            if (subscribedBridge != null
+                && composition != null
+                && ReferenceEquals(composition.Bridge, subscribedBridge))
             {
-                if (!presentation.TryGetStateSprite(
-                    visualStateSource.CurrentVisualStateId,
-                    out targetSprite))
+                targetSprite = null;
+                if (database != null
+                    && database.IsInitialized
+                    && database.TryGetBossPresentation(
+                        subscribedBridge.Boss.BossId,
+                        out BossPresentationDefinition presentation))
                 {
-                    targetSprite = presentation.DefaultSprite
-                        ?? defaultBossSprite;
+                    targetSprite = presentation.DefaultSprite;
+                    if (visualStateSource != null
+                        && presentation.TryGetStateSprite(
+                            visualStateSource.CurrentVisualStateId,
+                            out Sprite stateSprite))
+                    {
+                        targetSprite = stateSprite;
+                    }
                 }
             }
 

@@ -643,7 +643,8 @@ namespace ValorChronicle.Battle.Board.Presentation
 
             return expected.RuntimeId == actual.RuntimeId
                 && expected.BlockType == actual.BlockType
-                && expected.Element == actual.Element;
+                && expected.Element == actual.Element
+                && expected.Durability == actual.Durability;
         }
 
         private void CollectRenderItems(BoardState board)
@@ -1611,6 +1612,8 @@ namespace ValorChronicle.Battle.Board.Presentation
                 yield break;
             }
 
+            ApplyStateChangeSprites(plan);
+
             if (plan.Removals.Count > 0 && step.Matches.Count > 0)
             {
                 MatchGroupsRemovalStarted?.Invoke(stepIndex, step);
@@ -1686,6 +1689,19 @@ namespace ValorChronicle.Battle.Board.Presentation
             ValidateCurrentViewLayout(
                 plan.Board,
                 $"{contextPrefix}.RefillComplete");
+        }
+
+        private void ApplyStateChangeSprites(
+            BoardCascadeStepPresentationPlan plan)
+        {
+            for (int index = 0; index < plan.StateChanges.Count; index++)
+            {
+                BoardBlockStateChange change = plan.StateChanges[index];
+                BlockView view = GetRequiredView(
+                    change.RuntimeId,
+                    "state change");
+                view.SetSprite(spriteSet.GetSprite(change.CurrentBlock));
+            }
         }
 
         private void UpdateRemovalScales(float progress)
@@ -2199,7 +2215,11 @@ namespace ValorChronicle.Battle.Board.Presentation
                 && ((block.BlockType == BoardBlockType.Normal
                         && block.Element.HasValue)
                     || (block.BlockType == BoardBlockType.Rock
-                        && !block.Element.HasValue));
+                        && !block.Element.HasValue)
+                    || (block.BlockType == BoardBlockType.Root
+                        && !block.Element.HasValue
+                        && block.Durability >= 1
+                        && block.Durability <= 2));
         }
 
         private void CompleteCascadeStep()

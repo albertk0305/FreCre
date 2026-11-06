@@ -243,11 +243,6 @@ namespace ValorChronicle.Battle.Flow.Presentation
                     bootstrapper.RandomSource,
                     selectedResultBalance.CreateBalance(),
                     saveService);
-                battleFlowController.Initialize(
-                    composition.FlowSetup,
-                    coordinator => composition.CreateBridge(
-                        coordinator,
-                        battleFlowController.BoardMutationSink));
                 var boardController =
                     battleFlowController.BoardMutationSink
                         as BattleBoardController;
@@ -257,6 +252,12 @@ namespace ValorChronicle.Battle.Flow.Presentation
                         "BattleBoardController is not available.");
                 }
 
+                composition.TryBindBossBoardStateSource(boardController);
+                battleFlowController.Initialize(
+                    composition.FlowSetup,
+                    coordinator => composition.CreateBridge(
+                        coordinator,
+                        battleFlowController.BoardMutationSink));
                 sfxPresenter = new BattleSfxPresenter(
                     bootstrapper.AudioService);
                 sfxPresenter.Initialize(

@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8704623fd3644afa43c6afb0c6ce7ce, type: 3}
+  m_Name: orver_combat_config
+  m_EditorClassIdentifier: ValorChronicle.Game::ValorChronicle.Bosses.Orver.OrverCombatConfig
+  ancientTimberStrikeCoefficient: 0.75
+  ancientWrathCoefficient: 1.8
+  twistedRootLashCoefficient: 1.05
+  conditionalBaseDamageCoefficient: 0.55
+  damageCoefficientPerRoot: 0.9
+  healingCoefficientPerRoot: 0.01
+  maximumRootCount: 2
