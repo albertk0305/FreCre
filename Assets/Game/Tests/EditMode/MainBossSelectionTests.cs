@@ -153,6 +153,11 @@ namespace ValorChronicle.Tests.EditMode
         [Test]
         public void Builder_MissingPromptKey_UsesEnglishFallback()
         {
+            DefinitionDatabase canonical = LoadCanonicalDatabase();
+            Assert.That(canonical.TryGetBoss(
+                "kragmor",
+                out BossDefinition kragmor), Is.True);
+            DefinitionDatabase database = CreateDatabase(kragmor);
             LocalizationService localization = new LocalizationService(
                 new[]
                 {
@@ -166,7 +171,7 @@ namespace ValorChronicle.Tests.EditMode
                     "Localization is missing.*Using the English fallback"));
 
             BossSelectionItem item = Build(
-                LoadCanonicalDatabase(),
+                database,
                 profile: null,
                 localization: localization)[0];
 

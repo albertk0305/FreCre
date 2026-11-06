@@ -25,7 +25,9 @@ namespace ValorChronicle.Battle.Combat.Effects
             AttackTypeMask attackTypeMask = AttackTypeMask.None,
             AttackTag requiredAttackTags = AttackTag.None,
             string modifierGroupId = null,
-            double? modifierGroupCap = null)
+            double? modifierGroupCap = null,
+            EffectStackMagnitudeMode stackMagnitudeMode =
+                EffectStackMagnitudeMode.MultiplyByStackCount)
         {
             if (runtimeId <= 0)
             {
@@ -40,6 +42,7 @@ namespace ValorChronicle.Battle.Combat.Effects
             ValidateEnum(category, nameof(category));
             ValidateEnum(modifierType, nameof(modifierType));
             ValidateEnum(stackPolicy, nameof(stackPolicy));
+            ValidateEnum(stackMagnitudeMode, nameof(stackMagnitudeMode));
             if (double.IsNaN(magnitude)
                 || double.IsInfinity(magnitude)
                 || magnitude < 0d)
@@ -70,7 +73,8 @@ namespace ValorChronicle.Battle.Combat.Effects
             ValidateStackValues(
                 stackPolicy,
                 stackCount,
-                maxStackCount);
+                maxStackCount,
+                stackMagnitudeMode);
             ValidateNextBossHitDamageReduction(
                 modifierType,
                 stackPolicy,
@@ -91,6 +95,7 @@ namespace ValorChronicle.Battle.Combat.Effects
             Category = category;
             ModifierType = modifierType;
             StackPolicy = stackPolicy;
+            StackMagnitudeMode = stackMagnitudeMode;
             Magnitude = magnitude;
             RemainingTurns = remainingTurns;
             StackCount = stackCount;
@@ -109,6 +114,7 @@ namespace ValorChronicle.Battle.Combat.Effects
         public EffectCategory Category { get; }
         public EffectModifierType ModifierType { get; }
         public EffectStackPolicy StackPolicy { get; }
+        public EffectStackMagnitudeMode StackMagnitudeMode { get; }
         public double Magnitude { get; private set; }
         public int? RemainingTurns { get; private set; }
         public int StackCount { get; private set; }
@@ -121,7 +127,10 @@ namespace ValorChronicle.Battle.Combat.Effects
         public double? ModifierGroupCap { get; }
         public bool IsExpired =>
             RemainingTurns.HasValue && RemainingTurns.Value == 0;
-        public double EffectiveMagnitude => Magnitude * StackCount;
+        public double EffectiveMagnitude =>
+            StackMagnitudeMode == EffectStackMagnitudeMode.Fixed
+                ? Magnitude
+                : Magnitude * StackCount;
 
         internal void RegisterWithCollection()
         {
@@ -164,12 +173,28 @@ namespace ValorChronicle.Battle.Combat.Effects
             Magnitude = combined;
         }
 
-        internal void IncrementStackCount()
+        internal void AddStackCount(int amount)
         {
-            if (StackCount < MaxStackCount)
+            if (amount <= 0)
             {
-                StackCount++;
+                throw new ArgumentOutOfRangeException(nameof(amount));
             }
+
+            StackCount = Math.Min(
+                checked(StackCount + amount),
+                MaxStackCount);
+        }
+
+        internal int ConsumeStackCount(int amount)
+        {
+            if (amount <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(amount));
+            }
+
+            int consumed = Math.Min(StackCount, amount);
+            StackCount -= consumed;
+            return consumed;
         }
 
         internal void ProcessTurnEnd()
@@ -193,7 +218,8 @@ namespace ValorChronicle.Battle.Combat.Effects
         private static void ValidateStackValues(
             EffectStackPolicy stackPolicy,
             int stackCount,
-            int maxStackCount)
+            int maxStackCount,
+            EffectStackMagnitudeMode stackMagnitudeMode)
         {
             if (stackCount <= 0 || maxStackCount <= 0
                 || stackCount > maxStackCount)
@@ -206,14 +232,6 @@ namespace ValorChronicle.Battle.Combat.Effects
 
             if (stackPolicy == EffectStackPolicy.StackCount)
             {
-                if (stackCount != 1)
-                {
-                    throw new ArgumentOutOfRangeException(
-                        nameof(stackCount),
-                        stackCount,
-                        "A new stack-count effect must start at one stack.");
-                }
-
                 return;
             }
 
@@ -221,6 +239,15 @@ namespace ValorChronicle.Battle.Combat.Effects
             {
                 throw new ArgumentException(
                     "Only StackCount effects can configure stack counts.");
+            }
+
+            if (stackMagnitudeMode !=
+                EffectStackMagnitudeMode.MultiplyByStackCount)
+            {
+                throw new ArgumentException(
+                    "Only StackCount effects can configure stack magnitude "
+                        + "behavior.",
+                    nameof(stackMagnitudeMode));
             }
         }
 

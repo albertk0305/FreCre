@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ValorChronicle.Bosses.Kragmor;
+using ValorChronicle.Bosses.Thalassion;
 using ValorChronicle.Core.IDs;
 
 namespace ValorChronicle.Battle.Combat.Integration
@@ -18,6 +19,7 @@ namespace ValorChronicle.Battle.Combat.Integration
         {
             var catalog = new BossCombatRuntimeFactoryCatalog();
             catalog.Register(new KragmorBossCombatRuntimeFactory());
+            catalog.Register(new ThalassionBossCombatRuntimeFactory());
             return catalog;
         }
 

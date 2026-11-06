@@ -77,14 +77,41 @@ namespace ValorChronicle.Tests.EditMode.Battle.Combat.Effects
         {
             EffectInstance valid = Effect(
                 stackPolicy: EffectStackPolicy.StackCount,
+                stackCount: 2,
                 maxStackCount: 3);
 
-            Assert.That(valid.StackCount, Is.EqualTo(1));
+            Assert.That(valid.StackCount, Is.EqualTo(2));
             Assert.That(valid.MaxStackCount, Is.EqualTo(3));
+            Assert.That(
+                valid.StackMagnitudeMode,
+                Is.EqualTo(
+                    EffectStackMagnitudeMode.MultiplyByStackCount));
+            Assert.That(valid.EffectiveMagnitude, Is.EqualTo(0.2d));
+
+            EffectInstance fixedMagnitude = Effect(
+                magnitude: 0.8d,
+                stackPolicy: EffectStackPolicy.StackCount,
+                stackCount: 10,
+                maxStackCount: 10,
+                stackMagnitudeMode: EffectStackMagnitudeMode.Fixed);
+
+            Assert.That(fixedMagnitude.StackCount, Is.EqualTo(10));
+            Assert.That(fixedMagnitude.EffectiveMagnitude, Is.EqualTo(0.8d));
+
             Assert.Throws<ArgumentOutOfRangeException>(() =>
                 Effect(
                     stackPolicy: EffectStackPolicy.StackCount,
-                    stackCount: 2,
+                    stackCount: 0,
+                    maxStackCount: 3));
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                Effect(
+                    stackPolicy: EffectStackPolicy.StackCount,
+                    stackCount: -1,
+                    maxStackCount: 3));
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                Effect(
+                    stackPolicy: EffectStackPolicy.StackCount,
+                    stackCount: 4,
                     maxStackCount: 3));
             Assert.Throws<ArgumentOutOfRangeException>(() =>
                 Effect(
@@ -242,7 +269,9 @@ namespace ValorChronicle.Tests.EditMode.Battle.Combat.Effects
             AttackTypeMask attackTypeMask = AttackTypeMask.None,
             AttackTag requiredAttackTags = AttackTag.None,
             string modifierGroupId = null,
-            double? modifierGroupCap = null)
+            double? modifierGroupCap = null,
+            EffectStackMagnitudeMode stackMagnitudeMode =
+                EffectStackMagnitudeMode.MultiplyByStackCount)
         {
             return new EffectInstance(
                 runtimeId,
@@ -260,7 +289,8 @@ namespace ValorChronicle.Tests.EditMode.Battle.Combat.Effects
                 attackTypeMask,
                 requiredAttackTags,
                 modifierGroupId,
-                modifierGroupCap);
+                modifierGroupCap,
+                stackMagnitudeMode);
         }
     }
 }

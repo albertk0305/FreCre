@@ -83,7 +83,7 @@ namespace ValorChronicle.Battle.Combat.Effects
                             "StackCount requires matching magnitude.");
                     }
 
-                    existing.IncrementStackCount();
+                    existing.AddStackCount(effect.StackCount);
                     existing.RefreshDuration(effect.RemainingTurns);
                     return existing;
 
@@ -107,6 +107,63 @@ namespace ValorChronicle.Battle.Combat.Effects
             }
 
             return false;
+        }
+
+        public EffectStackConsumeResult ConsumeStacks(
+            long runtimeId,
+            int amount)
+        {
+            if (runtimeId <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(runtimeId));
+            }
+
+            if (amount <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(amount));
+            }
+
+            for (int index = 0; index < activeEffects.Count; index++)
+            {
+                EffectInstance effect = activeEffects[index];
+                if (effect.RuntimeId != runtimeId)
+                {
+                    continue;
+                }
+
+                if (effect.StackPolicy != EffectStackPolicy.StackCount)
+                {
+                    throw new InvalidOperationException(
+                        "Only StackCount effects can consume stacks.");
+                }
+
+                int before = effect.StackCount;
+                int consumed = effect.ConsumeStackCount(amount);
+                int after = effect.StackCount;
+                bool wasRemoved = after == 0;
+                if (wasRemoved)
+                {
+                    activeEffects.RemoveAt(index);
+                }
+
+                return new EffectStackConsumeResult(
+                    runtimeId,
+                    true,
+                    amount,
+                    consumed,
+                    before,
+                    after,
+                    wasRemoved);
+            }
+
+            return new EffectStackConsumeResult(
+                runtimeId,
+                false,
+                amount,
+                0,
+                0,
+                0,
+                false);
         }
 
         public IReadOnlyList<EffectInstance> GetActiveEffects()
@@ -234,6 +291,8 @@ namespace ValorChronicle.Battle.Combat.Effects
             if (existing.Category != incoming.Category
                 || existing.ModifierType != incoming.ModifierType
                 || existing.StackPolicy != incoming.StackPolicy
+                || existing.StackMagnitudeMode
+                    != incoming.StackMagnitudeMode
                 || existing.ElementFilter != incoming.ElementFilter
                 || existing.AttackTypeMask != incoming.AttackTypeMask
                 || existing.RequiredAttackTags

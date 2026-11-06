@@ -667,6 +667,7 @@ namespace ValorChronicle.Battle.Flow.Presentation
         {
             RefreshScore();
             RefreshCombatState();
+            RefreshBossIntent();
             RefreshActiveAvailability();
             RefreshStatusSnapshot();
         }
@@ -678,6 +679,7 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 stepResult.ActionStep.Result);
             RefreshScore();
             RefreshCombatState();
+            RefreshBossIntent();
             RefreshActiveAvailability();
             RefreshStatusSnapshot();
         }
@@ -689,6 +691,7 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 stepResult.Result);
             RefreshScore();
             RefreshCombatState();
+            RefreshBossIntent();
             RefreshActiveAvailability();
             RefreshStatusSnapshot();
         }
@@ -700,6 +703,7 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 stepResult.ActionStep.Result);
             RefreshScore();
             RefreshCombatState();
+            RefreshBossIntent();
             RefreshActiveAvailability();
             RefreshStatusSnapshot();
         }
@@ -711,6 +715,7 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 stepResult.ActionStep.Result);
             RefreshScore();
             RefreshCombatState();
+            RefreshBossIntent();
             RefreshActiveAvailability();
             RefreshStatusSnapshot();
         }
@@ -722,6 +727,7 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 stepResult.ActionStep.Result);
             RefreshScore();
             RefreshCombatState();
+            RefreshBossIntent();
             RefreshActiveAvailability();
             RefreshStatusSnapshot();
         }

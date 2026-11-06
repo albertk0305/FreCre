@@ -217,6 +217,17 @@ namespace ValorChronicle.Battle.Flow.Presentation
             var registeredCooldownReductionHandles = new HashSet<
                 ActiveAbilityCooldownReductionHandle>();
             var triggerRules = new List<ICombatTriggerRule>();
+            IReadOnlyList<ICombatTriggerRule> bossTriggerRules =
+                BossRuntime.TriggerRules;
+            for (int ruleIndex = 0;
+                ruleIndex < bossTriggerRules.Count;
+                ruleIndex++)
+            {
+                triggerRules.Add(
+                    bossTriggerRules[ruleIndex]
+                    ?? throw new InvalidOperationException(
+                        "Boss runtime returned a null trigger rule."));
+            }
             var resourceRequirements =
                 new List<CombatResourceRequirement>();
             var statusSources =

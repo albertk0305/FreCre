@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a546cdac0a61432eaffc549a8f1f79a4, type: 3}
+  m_Name: boss_thalassion
+  m_EditorClassIdentifier: ValorChronicle.Game::ValorChronicle.Data.Definitions.BossDefinition
+  id: thalassion
+  displayNameKey: thalassion
+  element: 1
+  turnLimit: 25
+  actionOrSkillIds:
+  - boss_action_thalassion_tidal_strike
+  - boss_action_thalassion_abyssal_aegis
+  - boss_action_thalassion_raging_fist
+  - boss_action_thalassion_pressure_burst
+  - boss_action_thalassion_fading_wave
+  difficultyStats:
+  - difficultyId: difficulty_intro
+    maxHp: 33000
+    attack: 500
+  - difficultyId: difficulty_normal
+    maxHp: 66000
+    attack: 850
+  - difficultyId: difficulty_advanced
+    maxHp: 99000
+    attack: 1200
+  - difficultyId: difficulty_hard
+    maxHp: 138000
+    attack: 1550
+  - difficultyId: difficulty_challenge
+    maxHp: 198000
+    attack: 2100
+  combatConfig: {fileID: 11400000, guid: d6cdfeca15bc43ed9b9edf0e886019a9, type: 2}

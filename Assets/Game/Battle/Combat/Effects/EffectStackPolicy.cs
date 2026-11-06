@@ -1,5 +1,11 @@
 namespace ValorChronicle.Battle.Combat.Effects
 {
+    public enum EffectStackMagnitudeMode
+    {
+        MultiplyByStackCount = 0,
+        Fixed = 1
+    }
+
     public enum EffectStackPolicy
     {
         RefreshDuration = 0,

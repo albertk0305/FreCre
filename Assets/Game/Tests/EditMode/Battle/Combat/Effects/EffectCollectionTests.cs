@@ -236,6 +236,42 @@ namespace ValorChronicle.Tests.EditMode.Battle.Combat.Effects
         }
 
         [Test]
+        public void FixedStackMagnitudeStaysConstantAndConsumptionRemovesAtZero()
+        {
+            var effects = new EffectCollection();
+            var shield = new EffectInstance(
+                10,
+                "fixed_shield",
+                "boss",
+                EffectCategory.Buff,
+                EffectModifierType.TargetTakenDamageReduction,
+                0.8d,
+                remainingTurns: null,
+                creationOrder: 10,
+                stackPolicy: EffectStackPolicy.StackCount,
+                stackCount: 10,
+                maxStackCount: 10,
+                stackMagnitudeMode: EffectStackMagnitudeMode.Fixed);
+            effects.ApplyEffect(shield);
+
+            EffectStackConsumeResult first = effects.ConsumeStacks(10, 1);
+
+            Assert.That(first.EffectFound, Is.True);
+            Assert.That(first.StackCountBefore, Is.EqualTo(10));
+            Assert.That(first.StackCountAfter, Is.EqualTo(9));
+            Assert.That(shield.EffectiveMagnitude, Is.EqualTo(0.8d));
+
+            EffectStackConsumeResult last = effects.ConsumeStacks(10, 9);
+            Assert.That(last.StackCountAfter, Is.Zero);
+            Assert.That(last.WasRemoved, Is.True);
+            Assert.That(effects.GetActiveEffects(), Is.Empty);
+
+            EffectStackConsumeResult duplicate = effects.ConsumeStacks(10, 1);
+            Assert.That(duplicate.EffectFound, Is.False);
+            Assert.That(duplicate.ConsumedAmount, Is.Zero);
+        }
+
+        [Test]
         public void ProcessTurnEnd_DecrementsThenRemovesExpiredEffect()
         {
             var effects = new EffectCollection();

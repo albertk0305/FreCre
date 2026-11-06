@@ -1,4 +1,17 @@
 key	en	ko
 kragmor	Kragmor	크라그모르
+thalassion	Thalassion	탈라시온
+boss_action.thalassion.tidal_strike.name	Tidal Strike	해류 강타
+boss_action.thalassion.tidal_strike.description	Strikes the entire party with a powerful current.	강한 해류로 파티 전체를 공격합니다.
+boss_action.thalassion.abyssal_aegis.name	Abyssal Aegis	심해의 수호
+boss_action.thalassion.abyssal_aegis.description	Creates a 10-stack elemental shield that reduces incoming damage by 80%.	받는 피해를 80% 감소시키는 10스택 원소 방패를 생성합니다.
+boss_action.thalassion.raging_fist.name	Raging Current Fist	격류의 철완
+boss_action.thalassion.raging_fist.description	Strikes the entire party while maintaining the elemental shield.	원소 방패를 유지하며 파티 전체를 공격합니다.
+boss_action.thalassion.pressure_burst.name	Abyssal Pressure Burst	심연의 수압 폭발
+boss_action.thalassion.pressure_burst.description	Releases the remaining shield energy in a powerful attack.	남은 원소 방패 에너지를 방출해 강력하게 공격합니다.
+boss_action.thalassion.fading_wave.name	Fading Wave	약화된 파동
+boss_action.thalassion.fading_wave.description	Releases a weakened wave after the elemental shield is broken.	원소 방패가 파괴된 뒤 약화된 파동을 방출합니다.
+effect.thalassion.elemental_shield.name	Elemental Shield	원소 방패
+effect.thalassion.elemental_shield.description	Reduces incoming damage by 80%. Each valid attack consumes one stack.	받는 피해가 80% 감소하며 유효 공격마다 1스택을 소모합니다.
 main.boss_selection.master_challenge_prompt	Try Master Mode	마스터 모드 도전
 main.party.empty_required	At least one character is required in your party.	파티에 캐릭터가 한 명 이상 필요합니다.

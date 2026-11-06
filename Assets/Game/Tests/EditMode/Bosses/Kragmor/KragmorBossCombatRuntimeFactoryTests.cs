@@ -17,7 +17,7 @@ namespace ValorChronicle.Tests.EditMode.Bosses.Kragmor
             BossCombatRuntimeFactoryCatalog catalog =
                 BossCombatRuntimeFactoryCatalog.CreateDefault();
 
-            Assert.That(catalog.Count, Is.EqualTo(1));
+            Assert.That(catalog.Count, Is.EqualTo(2));
             Assert.That(catalog.TryGetFactory(
                 KragmorRules.BossId,
                 out IBossCombatRuntimeFactory factory), Is.True);
