@@ -19,12 +19,18 @@ namespace ValorChronicle.Data.Definitions
         private Sprite faceSprite;
 
         [SerializeField]
+        [Tooltip("Allows this presentation to be registered before its "
+            + "sprites are assigned in the Inspector.")]
+        private bool allowMissingSprites;
+
+        [SerializeField]
         private BossVisualStateEntry[] stateVisuals =
             Array.Empty<BossVisualStateEntry>();
 
         public string BossId => bossId;
         public Sprite DefaultSprite => defaultSprite;
         public Sprite FaceSprite => faceSprite;
+        public bool AllowMissingSprites => allowMissingSprites;
         public IReadOnlyList<BossVisualStateEntry> StateVisuals =>
             Array.AsReadOnly(
                 stateVisuals ?? Array.Empty<BossVisualStateEntry>());

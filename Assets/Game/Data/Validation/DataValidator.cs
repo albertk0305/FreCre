@@ -1130,7 +1130,8 @@ namespace ValorChronicle.Data.Validation
                     }
                 }
 
-                if (presentation.DefaultSprite == null)
+                if (presentation.DefaultSprite == null
+                    && !presentation.AllowMissingSprites)
                 {
                     report.Add(
                         ValidationSeverity.Error,
@@ -1191,7 +1192,8 @@ namespace ValorChronicle.Data.Validation
                         presentation);
                 }
 
-                if (entry.Sprite == null)
+                if (entry.Sprite == null
+                    && !presentation.AllowMissingSprites)
                 {
                     report.Add(
                         ValidationSeverity.Error,

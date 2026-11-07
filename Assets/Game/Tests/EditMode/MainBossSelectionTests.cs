@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
@@ -88,7 +89,9 @@ namespace ValorChronicle.Tests.EditMode
         {
             DefinitionDatabase database = LoadCanonicalDatabase();
 
-            BossSelectionItem item = Build(database, null)[0];
+            BossSelectionItem item = FindBossItem(
+                Build(database, null),
+                "kragmor");
 
             Assert.That(item.DisplayName, Is.EqualTo("Kragmor"));
             Assert.That(item.FaceSprite, Is.Not.Null);
@@ -120,9 +123,9 @@ namespace ValorChronicle.Tests.EditMode
                 });
             }
 
-            BossSelectionItem item = Build(
-                LoadCanonicalDatabase(),
-                profile)[0];
+            BossSelectionItem item = FindBossItem(
+                Build(LoadCanonicalDatabase(), profile),
+                "kragmor");
 
             Assert.That(item.BestScoreText,
                 Is.EqualTo(BossSelectionListBuilder.MasterChallengePrompt));
@@ -140,10 +143,12 @@ namespace ValorChronicle.Tests.EditMode
             LocalizationService localization = catalog.CreateService();
             localization.SetLocale(locale);
 
-            BossSelectionItem item = Build(
-                LoadCanonicalDatabase(),
-                profile: null,
-                localization: localization)[0];
+            BossSelectionItem item = FindBossItem(
+                Build(
+                    LoadCanonicalDatabase(),
+                    profile: null,
+                    localization: localization),
+                "kragmor");
 
             Assert.That(item.BestScoreText,
                 Is.EqualTo(expected));
@@ -198,12 +203,14 @@ namespace ValorChronicle.Tests.EditMode
             Sprite expectedGrade = AssetDatabase.LoadAssetAtPath<Sprite>(
                 "Assets/Sprites/UI/Battle/B.png");
 
-            BossSelectionItem item = Build(
-                LoadCanonicalDatabase(),
-                profile,
-                gradeId => gradeId == BattleGradeIds.B
-                    ? expectedGrade
-                    : null)[0];
+            BossSelectionItem item = FindBossItem(
+                Build(
+                    LoadCanonicalDatabase(),
+                    profile,
+                    gradeId => gradeId == BattleGradeIds.B
+                        ? expectedGrade
+                        : null),
+                "kragmor");
 
             Assert.That(item.BestScoreText, Is.EqualTo("1,234,567"));
             Assert.That(item.BestGradeSprite, Is.SameAs(expectedGrade));
@@ -222,9 +229,9 @@ namespace ValorChronicle.Tests.EditMode
                 HighestGradeId = string.Empty
             });
 
-            BossSelectionItem item = Build(
-                LoadCanonicalDatabase(),
-                profile)[0];
+            BossSelectionItem item = FindBossItem(
+                Build(LoadCanonicalDatabase(), profile),
+                "kragmor");
 
             Assert.That(item.BestScoreText, Is.EqualTo("4,321"));
             Assert.That(item.BestGradeSprite, Is.Null);
@@ -243,9 +250,9 @@ namespace ValorChronicle.Tests.EditMode
                 HighestGradeId = BattleGradeIds.SSS
             });
 
-            BossSelectionItem item = Build(
-                LoadCanonicalDatabase(),
-                profile)[0];
+            BossSelectionItem item = FindBossItem(
+                Build(LoadCanonicalDatabase(), profile),
+                "kragmor");
 
             Assert.That(item.BestScoreText,
                 Is.EqualTo(BossSelectionListBuilder.MasterChallengePrompt));
@@ -643,6 +650,16 @@ namespace ValorChronicle.Tests.EditMode
             }
 
             return ids;
+        }
+
+        private static BossSelectionItem FindBossItem(
+            IReadOnlyList<BossSelectionItem> items,
+            string bossId)
+        {
+            return items.Single(item => string.Equals(
+                item.BossId,
+                bossId,
+                StringComparison.Ordinal));
         }
 
         private static string[] GetBoundIds(BossSelectionListView view)

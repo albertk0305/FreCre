@@ -28,6 +28,9 @@ namespace ValorChronicle.Battle.Board.Presentation
         private Sprite rock;
 
         [SerializeField]
+        private Sprite fallingStone;
+
+        [SerializeField]
         private Sprite rootIntact;
 
         [SerializeField]
@@ -56,6 +59,12 @@ namespace ValorChronicle.Battle.Board.Presentation
                 }
 
                 return rock;
+            }
+
+            if (block.BlockType == BoardBlockType.FallingStone
+                && !block.Element.HasValue)
+            {
+                return fallingStone;
             }
 
             if (block.BlockType == BoardBlockType.Root
@@ -140,6 +149,7 @@ namespace ValorChronicle.Battle.Board.Presentation
                 lightSprite,
                 darkSprite,
                 rockSprite,
+                fallingStoneSprite: null,
                 rootIntactSprite: null,
                 rootDamagedSprite: null);
         }
@@ -154,12 +164,36 @@ namespace ValorChronicle.Battle.Board.Presentation
             Sprite rootIntactSprite,
             Sprite rootDamagedSprite)
         {
+            Configure(
+                fireSprite,
+                waterSprite,
+                grassSprite,
+                lightSprite,
+                darkSprite,
+                rockSprite,
+                fallingStoneSprite: null,
+                rootIntactSprite,
+                rootDamagedSprite);
+        }
+
+        public void Configure(
+            Sprite fireSprite,
+            Sprite waterSprite,
+            Sprite grassSprite,
+            Sprite lightSprite,
+            Sprite darkSprite,
+            Sprite rockSprite,
+            Sprite fallingStoneSprite,
+            Sprite rootIntactSprite,
+            Sprite rootDamagedSprite)
+        {
             fire = fireSprite;
             water = waterSprite;
             grass = grassSprite;
             light = lightSprite;
             dark = darkSprite;
             rock = rockSprite;
+            fallingStone = fallingStoneSprite;
             rootIntact = rootIntactSprite;
             rootDamaged = rootDamagedSprite;
         }

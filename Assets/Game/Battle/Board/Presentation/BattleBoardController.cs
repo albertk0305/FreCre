@@ -61,6 +61,8 @@ namespace ValorChronicle.Battle.Board.Presentation
         private BoardShuffler boardShuffler;
         private BoardRockMutationResolver rockMutationResolver;
         private BoardRootMutationResolver rootMutationResolver;
+        private BoardFallingStoneMutationResolver
+            fallingStoneMutationResolver;
         private BoardElementConversionResolver elementConversionResolver;
         private BoardShuffleElementConversionResolver
             shuffleElementConversionResolver;
@@ -93,6 +95,11 @@ namespace ValorChronicle.Battle.Board.Presentation
             private set;
         }
         public BoardRootMutationResult LastRootMutationResult
+        {
+            get;
+            private set;
+        }
+        public BoardFallingStoneMutationResult LastFallingStoneMutationResult
         {
             get;
             private set;
@@ -148,6 +155,7 @@ namespace ValorChronicle.Battle.Board.Presentation
             && boardShuffler != null
             && rockMutationResolver != null
             && rootMutationResolver != null
+            && fallingStoneMutationResolver != null
             && elementConversionResolver != null
             && shuffleElementConversionResolver != null
             && swapActionResolver != null
@@ -280,6 +288,11 @@ namespace ValorChronicle.Battle.Board.Presentation
                 sharedIdGenerator,
                 moveAnalyzer,
                 shuffler);
+            var fallingStoneResolver =
+                new BoardFallingStoneMutationResolver(
+                    sharedRandomSource,
+                    sharedIdGenerator,
+                    moveAnalyzer);
             var conversionResolver = new BoardElementConversionResolver(
                 sharedRandomSource,
                 moveAnalyzer);
@@ -315,6 +328,7 @@ namespace ValorChronicle.Battle.Board.Presentation
             boardShuffler = shuffler;
             rockMutationResolver = rockResolver;
             rootMutationResolver = rootResolver;
+            fallingStoneMutationResolver = fallingStoneResolver;
             elementConversionResolver = conversionResolver;
             shuffleElementConversionResolver = shuffleConversionResolver;
             swapActionResolver = actionResolver;
@@ -593,7 +607,8 @@ namespace ValorChronicle.Battle.Board.Presentation
                 || boardView == null
                 || boardView.IsAnimating
                 || rockMutationResolver == null
-                || rootMutationResolver == null)
+                || rootMutationResolver == null
+                || fallingStoneMutationResolver == null)
             {
                 return false;
             }
@@ -616,6 +631,14 @@ namespace ValorChronicle.Battle.Board.Presentation
                             command.RequestedCount,
                             command.MaximumCount);
                         result = LastRootMutationResult;
+                        break;
+                    case BattleBoardMutationKind.CreateFallingStone:
+                        LastFallingStoneMutationResult =
+                            fallingStoneMutationResolver.Resolve(
+                                CurrentBoard,
+                                command.RequestedCount,
+                                command.MaximumCount);
+                        result = LastFallingStoneMutationResult;
                         break;
                     default:
                         throw new NotSupportedException(

@@ -19,6 +19,7 @@ namespace ValorChronicle.Battle.Board
             }
 
             if ((blockType == BoardBlockType.Rock
+                    || blockType == BoardBlockType.FallingStone
                     || blockType == BoardBlockType.Root)
                 && element.HasValue)
             {

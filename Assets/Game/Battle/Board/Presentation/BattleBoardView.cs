@@ -1495,19 +1495,45 @@ namespace ValorChronicle.Battle.Board.Presentation
             moveViewItems.Clear();
             spawnViewItems.Clear();
 
-            for (int index = 0; index < plan.Removals.Count; index++)
+            PrepareRemovalAndMoveViews(
+                plan.Removals,
+                plan.Moves,
+                "removal",
+                "collapse");
+        }
+
+        private void PrepareSettlementViews(
+            BoardFallingStoneSettlementPresentationPhase phase)
+        {
+            removalViewItems.Clear();
+            moveViewItems.Clear();
+            PrepareRemovalAndMoveViews(
+                phase.Removals,
+                phase.Moves,
+                "FallingStone settlement removal",
+                "FallingStone settlement collapse");
+        }
+
+        private void PrepareRemovalAndMoveViews(
+            IReadOnlyList<BoardBlockRemoval> removals,
+            IReadOnlyList<BoardBlockMove> moves,
+            string removalPhase,
+            string movePhase)
+        {
+
+            for (int index = 0; index < removals.Count; index++)
             {
-                BoardBlockRemoval removal = plan.Removals[index];
+                BoardBlockRemoval removal = removals[index];
                 BlockView view = GetRequiredView(
                     removal.RuntimeId,
-                    "removal");
+                    removalPhase);
                 removalViewItems.Add(new RemovalViewItem(view));
             }
 
-            for (int index = 0; index < plan.Moves.Count; index++)
+            for (int index = 0; index < moves.Count; index++)
             {
-                BoardBlockMove move = plan.Moves[index];
-                BlockView view = GetRequiredView(move.RuntimeId, "collapse");
+                BoardBlockMove move = moves[index];
+                BlockView view = GetRequiredView(move.RuntimeId, movePhase);
                 moveViewItems.Add(new MoveViewItem(
                     view,
                     move.To,
@@ -1663,6 +1689,62 @@ namespace ValorChronicle.Battle.Board.Presentation
             ValidateCurrentViewLayout(
                 plan.CollapseBoard,
                 $"{contextPrefix}.CollapseComplete");
+            for (int phaseIndex = 0;
+                phaseIndex < plan.SettlementPhases.Count;
+                phaseIndex++)
+            {
+                BoardFallingStoneSettlementPresentationPhase phase =
+                    plan.SettlementPhases[phaseIndex];
+                PrepareSettlementViews(phase);
+
+                if (removalDuration > 0f)
+                {
+                    float elapsed = 0f;
+                    while (elapsed < removalDuration
+                        && IsAnimationCurrent(version, animation))
+                    {
+                        UpdateRemovalScales(elapsed / removalDuration);
+                        yield return null;
+                        elapsed += GetBlockAnimationDeltaTime();
+                    }
+                }
+
+                if (!IsAnimationCurrent(version, animation))
+                {
+                    yield break;
+                }
+
+                ReleaseRemovedViews(
+                    phase.Removals,
+                    "FallingStone settlement removal");
+                ValidateViewDictionaryIntegrity(
+                    phase.Board,
+                    $"{contextPrefix}.Settlement{phaseIndex}.RemovalComplete",
+                    true);
+
+                if (collapseDuration > 0f)
+                {
+                    float elapsed = 0f;
+                    while (elapsed < collapseDuration
+                        && IsAnimationCurrent(version, animation))
+                    {
+                        UpdateMovePositions(elapsed / collapseDuration);
+                        yield return null;
+                        elapsed += GetBlockAnimationDeltaTime();
+                    }
+                }
+
+                if (!IsAnimationCurrent(version, animation))
+                {
+                    yield break;
+                }
+
+                SnapMoveViews();
+                ValidateCurrentViewLayout(
+                    phase.Board,
+                    $"{contextPrefix}.Settlement{phaseIndex}.Complete");
+            }
+
             AcquireSpawnViews(plan);
             ValidateViewDictionaryIntegrity(
                 plan.Board,
@@ -1735,12 +1817,19 @@ namespace ValorChronicle.Battle.Board.Presentation
         private void ReleaseRemovedViews(
             BoardCascadeStepPresentationPlan plan)
         {
-            for (int index = 0; index < plan.Removals.Count; index++)
+            ReleaseRemovedViews(plan.Removals, "removal");
+        }
+
+        private void ReleaseRemovedViews(
+            IReadOnlyList<BoardBlockRemoval> removals,
+            string phase)
+        {
+            for (int index = 0; index < removals.Count; index++)
             {
-                BoardBlockRemoval removal = plan.Removals[index];
+                BoardBlockRemoval removal = removals[index];
                 BlockView view = GetRequiredView(
                     removal.RuntimeId,
-                    "removal");
+                    phase);
                 viewsByRuntimeId.Remove(removal.RuntimeId);
                 RemoveInputState(view);
                 pool.Release(view);
@@ -2219,7 +2308,9 @@ namespace ValorChronicle.Battle.Board.Presentation
                     || (block.BlockType == BoardBlockType.Root
                         && !block.Element.HasValue
                         && block.Durability >= 1
-                        && block.Durability <= 2));
+                        && block.Durability <= 2)
+                    || (block.BlockType == BoardBlockType.FallingStone
+                        && !block.Element.HasValue));
         }
 
         private void CompleteCascadeStep()

@@ -4,7 +4,11 @@ using UnityEditor;
 using UnityEngine;
 using ValorChronicle.Battle.Combat.Integration;
 using ValorChronicle.Battle.Combat.State;
+using ValorChronicle.Bosses.Fenrir;
 using ValorChronicle.Bosses.Kragmor;
+using ValorChronicle.Bosses.Lumenar;
+using ValorChronicle.Bosses.Orver;
+using ValorChronicle.Bosses.Thalassion;
 using ValorChronicle.Data.Definitions;
 
 namespace ValorChronicle.Tests.EditMode.Bosses.Kragmor
@@ -17,12 +21,21 @@ namespace ValorChronicle.Tests.EditMode.Bosses.Kragmor
             BossCombatRuntimeFactoryCatalog catalog =
                 BossCombatRuntimeFactoryCatalog.CreateDefault();
 
-            Assert.That(catalog.Count, Is.EqualTo(3));
-            Assert.That(catalog.TryGetFactory(
-                KragmorRules.BossId,
-                out IBossCombatRuntimeFactory factory), Is.True);
-            Assert.That(factory,
-                Is.TypeOf<KragmorBossCombatRuntimeFactory>());
+            AssertRegisteredFactory<KragmorBossCombatRuntimeFactory>(
+                catalog,
+                KragmorRules.BossId);
+            AssertRegisteredFactory<ThalassionBossCombatRuntimeFactory>(
+                catalog,
+                ThalassionRules.BossId);
+            AssertRegisteredFactory<OrverBossCombatRuntimeFactory>(
+                catalog,
+                OrverRules.BossId);
+            AssertRegisteredFactory<LumenarBossCombatRuntimeFactory>(
+                catalog,
+                LumenarRules.BossId);
+            AssertRegisteredFactory<FenrirBossCombatRuntimeFactory>(
+                catalog,
+                FenrirRules.BossId);
             Assert.That(catalog.TryGetFactory(
                 "missing_boss",
                 out IBossCombatRuntimeFactory missing), Is.False);
@@ -36,6 +49,17 @@ namespace ValorChronicle.Tests.EditMode.Bosses.Kragmor
                 catalog.Register(null));
             Assert.Throws<ArgumentException>(() =>
                 catalog.Register(new InvalidIdFactory()));
+        }
+
+        private static void AssertRegisteredFactory<TFactory>(
+            BossCombatRuntimeFactoryCatalog catalog,
+            string bossId)
+            where TFactory : IBossCombatRuntimeFactory
+        {
+            Assert.That(catalog.TryGetFactory(
+                bossId,
+                out IBossCombatRuntimeFactory factory), Is.True);
+            Assert.That(factory, Is.TypeOf<TFactory>());
         }
 
         [Test]

@@ -6,6 +6,7 @@ namespace ValorChronicle.Battle.Board
         Rock = 1,
         Special = 2,
         Locked = 3,
-        Root = 4
+        Root = 4,
+        FallingStone = 5
     }
 }

@@ -37,6 +37,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c9740748b1c32254788603fedb0a224b, type: 2}
   - {fileID: 11400000, guid: 27935e788d124a3a9427be270070eef5, type: 2}
   - {fileID: 11400000, guid: 85531da2682744afbd7301907b7437d6, type: 2}
+  - {fileID: 11400000, guid: b1000000000000000000000000000001, type: 2}
+  - {fileID: 11400000, guid: 70f6d430d4c2459e80745c88813b8012, type: 2}
   skills:
   - {fileID: 11400000, guid: b985a44b8f5f49ac87c550dab32d212d, type: 2}
   - {fileID: 11400000, guid: 49477266962e4603a9b4b61852a30129, type: 2}
@@ -159,6 +161,12 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 0b6945880eb648a7864b0f87810dd778, type: 2}
   - {fileID: 11400000, guid: 35cf852c7371440e97afa4827d216634, type: 2}
   - {fileID: 11400000, guid: 6aa9d439fd734f78a32006b390e157e2, type: 2}
+  - {fileID: 11400000, guid: b3000000000000000000000000000001, type: 2}
+  - {fileID: 11400000, guid: b3000000000000000000000000000002, type: 2}
+  - {fileID: 11400000, guid: b3000000000000000000000000000003, type: 2}
+  - {fileID: 11400000, guid: b3000000000000000000000000000004, type: 2}
+  - {fileID: 11400000, guid: 6a067c649315439f8dbd1da361805107, type: 2}
+  - {fileID: 11400000, guid: 39c6a08d1ac245e986701b910156aaf0, type: 2}
   effects:
   - {fileID: 11400000, guid: 575d814cdc84482cb91219cdea43fb56, type: 2}
   - {fileID: 11400000, guid: d67e292ae6ba40e7b51fc9a9a54dca91, type: 2}
@@ -199,6 +207,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 2a2fe81180fd45a9b8679371cda41b0b, type: 2}
   - {fileID: 11400000, guid: b0c14a5428124246a0a7a2a5c8331c0c, type: 2}
   - {fileID: 11400000, guid: bae92aae7d1e4aa6a41f175e9e5037c8, type: 2}
+  - {fileID: 11400000, guid: b4000000000000000000000000000001, type: 2}
+  - {fileID: 11400000, guid: b4000000000000000000000000000002, type: 2}
+  - {fileID: 11400000, guid: 4e5777f5819c404e97d1e9d5c5e16055, type: 2}
+  - {fileID: 11400000, guid: 2c05fb1e769f454aa41ff4d003e17d88, type: 2}
+  - {fileID: 11400000, guid: b7527bd508164b278b771e0e57431989, type: 2}
   resources:
   - {fileID: 11400000, guid: 6b76300afa0442b7ac50b60cbb9736b7, type: 2}
   relics:
@@ -215,4 +228,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 36bf445134a546f1b77d55bda4a0bd01, type: 2}
   - {fileID: 11400000, guid: 10b95b39730a4a26b2e4a6ba4d6775e3, type: 2}
   - {fileID: 11400000, guid: adb5471bfa8343ef9753d64dad0c881d, type: 2}
+  - {fileID: 11400000, guid: b5000000000000000000000000000001, type: 2}
+  - {fileID: 11400000, guid: 800be0004f01475496216ffce4294d09, type: 2}
   battleResultBalance: {fileID: 11400000, guid: a84b72d3f7c54a2a9568239d23b9ee21, type: 2}

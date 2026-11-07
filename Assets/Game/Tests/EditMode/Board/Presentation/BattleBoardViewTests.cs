@@ -119,7 +119,7 @@ namespace ValorChronicle.Tests.EditMode.Board.Presentation
         }
 
         [Test]
-        public void CanonicalSpriteSet_MapsRootDurabilityWithoutChangingBaseSprites()
+        public void CanonicalSpriteSet_MapsSpecialBlocksWithoutSharingRockSprite()
         {
             const string spriteSetPath =
                 "Assets/Game/Battle/Board/Presentation/Settings/"
@@ -137,6 +137,10 @@ namespace ValorChronicle.Tests.EditMode.Board.Presentation
                 202,
                 BoardBlockType.Rock,
                 element: null);
+            var fallingStoneBlock = new BoardBlock(
+                203,
+                BoardBlockType.FallingStone,
+                element: null);
 
             Assert.That(canonical, Is.Not.Null);
             Assert.That(AssetDatabase.GetAssetPath(
@@ -149,6 +153,11 @@ namespace ValorChronicle.Tests.EditMode.Board.Presentation
             Assert.That(AssetDatabase.GetAssetPath(
                 canonical.GetSprite(rockBlock)),
                 Is.EqualTo("Assets/Sprites/UI/Blocks/RockBlock.png"));
+            Assert.That(AssetDatabase.GetAssetPath(
+                canonical.GetSprite(fallingStoneBlock)),
+                Is.EqualTo("Assets/Sprites/UI/Blocks/DarkStoneBlock.png"));
+            Assert.That(canonical.GetSprite(fallingStoneBlock),
+                Is.Not.SameAs(canonical.GetSprite(rockBlock)));
             Assert.That(AssetDatabase.GetAssetPath(
                 canonical.GetSprite(ElementType.Fire)),
                 Is.EqualTo("Assets/Sprites/UI/Blocks/FireBlock.png"));

@@ -9,6 +9,8 @@ namespace ValorChronicle.Battle.Board
         private readonly ReadOnlyCollection<BoardMatch> matches;
         private readonly ReadOnlyCollection<BoardBlockStateChange>
             stateChanges;
+        private readonly ReadOnlyCollection<BoardFallingStoneSettlementPhase>
+            settlementPhases;
 
         internal BoardCascadeStep(
             IReadOnlyList<BoardMatch> matches,
@@ -18,6 +20,7 @@ namespace ValorChronicle.Battle.Board
                 matches,
                 Array.Empty<BoardBlockStateChange>(),
                 collapse,
+                Array.Empty<BoardFallingStoneSettlementPhase>(),
                 refill)
         {
         }
@@ -26,6 +29,22 @@ namespace ValorChronicle.Battle.Board
             IReadOnlyList<BoardMatch> matches,
             IReadOnlyList<BoardBlockStateChange> stateChanges,
             BoardCollapseResult collapse,
+            BoardRefillResult refill)
+            : this(
+                matches,
+                stateChanges,
+                collapse,
+                Array.Empty<BoardFallingStoneSettlementPhase>(),
+                refill)
+        {
+        }
+
+        internal BoardCascadeStep(
+            IReadOnlyList<BoardMatch> matches,
+            IReadOnlyList<BoardBlockStateChange> stateChanges,
+            BoardCollapseResult collapse,
+            IReadOnlyList<BoardFallingStoneSettlementPhase>
+                settlementPhases,
             BoardRefillResult refill)
         {
             if (matches == null)
@@ -40,6 +59,11 @@ namespace ValorChronicle.Battle.Board
             if (stateChanges == null)
             {
                 throw new ArgumentNullException(nameof(stateChanges));
+            }
+
+            if (settlementPhases == null)
+            {
+                throw new ArgumentNullException(nameof(settlementPhases));
             }
 
             var copiedMatches = new BoardMatch[matches.Count];
@@ -68,15 +92,42 @@ namespace ValorChronicle.Battle.Board
             }
 
             this.stateChanges = Array.AsReadOnly(copiedChanges);
+
+            var copiedPhases = new BoardFallingStoneSettlementPhase[
+                settlementPhases.Count];
+            for (int index = 0; index < copiedPhases.Length; index++)
+            {
+                copiedPhases[index] = settlementPhases[index]
+                    ?? throw new ArgumentException(
+                        "Settlement phases cannot contain null.",
+                        nameof(settlementPhases));
+            }
+
+            this.settlementPhases = Array.AsReadOnly(copiedPhases);
         }
 
         public IReadOnlyList<BoardMatch> Matches => matches;
         public IReadOnlyList<BoardBlockStateChange> StateChanges =>
             stateChanges;
         public BoardCollapseResult Collapse { get; }
+        public IReadOnlyList<BoardFallingStoneSettlementPhase>
+            SettlementPhases => settlementPhases;
         public BoardRefillResult Refill { get; }
         public BoardState Board => Refill.Board;
         public int MatchEventCount => matches.Count;
-        public int RemovedBlockCount => Collapse.Removals.Count;
+        public int RemovedBlockCount
+        {
+            get
+            {
+                int count = Collapse.Removals.Count;
+                for (int index = 0; index < settlementPhases.Count; index++)
+                {
+                    count += settlementPhases[index]
+                        .Collapse.Removals.Count;
+                }
+
+                return count;
+            }
+        }
     }
 }

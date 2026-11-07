@@ -45,6 +45,13 @@ namespace ValorChronicle.Battle.Board
                 totalRemovedBlockCount += step.RemovedBlockCount;
                 totalSpawnedBlockCount += step.Refill.Spawns.Count;
                 totalMoveCount += step.Collapse.Moves.Count;
+                for (int phaseIndex = 0;
+                    phaseIndex < step.SettlementPhases.Count;
+                    phaseIndex++)
+                {
+                    totalMoveCount += step.SettlementPhases[phaseIndex]
+                        .Collapse.Moves.Count;
+                }
             }
 
             this.steps = Array.AsReadOnly(copiedSteps);

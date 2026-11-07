@@ -109,6 +109,61 @@ namespace ValorChronicle.Battle.Combat.Effects
             return false;
         }
 
+        public EffectInstance ReplaceEffect(
+            long existingRuntimeId,
+            EffectInstance replacement)
+        {
+            if (existingRuntimeId <= 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(existingRuntimeId));
+            }
+
+            if (replacement == null)
+            {
+                throw new ArgumentNullException(nameof(replacement));
+            }
+
+            EffectInstance existing = null;
+            for (int index = 0; index < activeEffects.Count; index++)
+            {
+                if (activeEffects[index].RuntimeId == existingRuntimeId)
+                {
+                    existing = activeEffects[index];
+                    break;
+                }
+            }
+
+            if (existing == null)
+            {
+                throw new InvalidOperationException(
+                    $"Effect runtime ID {existingRuntimeId} is not active.");
+            }
+
+            for (int index = 0; index < activeEffects.Count; index++)
+            {
+                EffectInstance other = activeEffects[index];
+                if (!ReferenceEquals(other, existing)
+                    && string.Equals(
+                        other.EffectId,
+                        replacement.EffectId,
+                        StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException(
+                        "Atomic replacement cannot merge with another "
+                            + $"active '{replacement.EffectId}' effect.");
+                }
+            }
+
+            ValidateUniqueRuntimeValues(replacement, existing);
+            replacement.RegisterWithCollection();
+            int existingIndex = activeEffects.IndexOf(existing);
+            activeEffects[existingIndex] = replacement;
+            activeEffects.Sort((left, right) =>
+                left.CreationOrder.CompareTo(right.CreationOrder));
+            return existing;
+        }
+
         public EffectStackConsumeResult ConsumeStacks(
             long runtimeId,
             int amount)

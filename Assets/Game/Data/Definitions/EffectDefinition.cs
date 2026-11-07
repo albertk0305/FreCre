@@ -16,8 +16,14 @@ namespace ValorChronicle.Data.Definitions
         [SerializeField]
         private Sprite icon;
 
+        [SerializeField]
+        [Tooltip("Hides this effect from combat status slots while keeping "
+            + "its gameplay modifier active.")]
+        private bool hideInHud;
+
         public string DisplayNameKey => displayNameKey;
         public string DescriptionKey => descriptionKey;
         public Sprite Icon => icon;
+        public bool HideInHud => hideInHud;
     }
 }

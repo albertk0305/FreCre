@@ -140,6 +140,13 @@ namespace ValorChronicle.Battle.Combat.Actions
                     executionOrder);
             }
 
+            if (action is ReplaceEffectAction replaceEffectAction)
+            {
+                return ExecuteReplaceEffect(
+                    replaceEffectAction,
+                    executionOrder);
+            }
+
             if (action is ConsumeEffectStackAction consumeEffectStackAction)
             {
                 return ExecuteConsumeEffectStack(
@@ -322,6 +329,20 @@ namespace ValorChronicle.Battle.Combat.Actions
                 wasRemoved);
         }
 
+        private ReplaceEffectActionResult ExecuteReplaceEffect(
+            ReplaceEffectAction action,
+            int executionOrder)
+        {
+            ValidateEffectTarget(action);
+            EffectInstance removedEffect = action.TargetEffects.ReplaceEffect(
+                action.ExistingEffectRuntimeId,
+                action.Replacement);
+            return new ReplaceEffectActionResult(
+                action,
+                executionOrder,
+                removedEffect);
+        }
+
         private ConsumeEffectStackActionResult ExecuteConsumeEffectStack(
             ConsumeEffectStackAction action,
             int executionOrder)
@@ -398,6 +419,27 @@ namespace ValorChronicle.Battle.Combat.Actions
         }
 
         private void ValidateEffectTarget(RemoveEffectAction action)
+        {
+            switch (action.TargetType)
+            {
+                case CombatEffectTargetType.Character:
+                    ValidatePartyCharacter(action.TargetCharacter);
+                    break;
+                case CombatEffectTargetType.Party:
+                    ValidatePartyReference(action.TargetParty);
+                    break;
+                case CombatEffectTargetType.Boss:
+                    ValidateBossReference(action.TargetBoss);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(
+                        nameof(action),
+                        action.TargetType,
+                        "Effect target type must be defined.");
+            }
+        }
+
+        private void ValidateEffectTarget(ReplaceEffectAction action)
         {
             switch (action.TargetType)
             {

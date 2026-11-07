@@ -1,4 +1,17 @@
 key	en	ko
+lumenar	Lumenar	루메나르
+boss_action.lumenar.radiant_strike.name	Radiant Strike	광휘의 일격
+boss_action.lumenar.radiant_strike.description	Strikes the entire party with radiant force.	광휘의 힘으로 파티 전체를 공격합니다.
+boss_action.lumenar.celestial_judgment.name	Celestial Judgment	천상의 심판
+boss_action.lumenar.celestial_judgment.description	Judges the entire party with concentrated light.	응축된 빛으로 파티 전체를 심판합니다.
+boss_action.lumenar.stone_strike.name	Stone Strike	석상의 강타
+boss_action.lumenar.stone_strike.description	Strikes the entire party while in Stone form.	Stone 상태에서 파티 전체를 공격합니다.
+boss_action.lumenar.stonefall_curse.name	Stonefall Curse	암석의 저주
+boss_action.lumenar.stonefall_curse.description	Strikes the party and attempts to create one Falling Stone.	파티를 공격하고 낙하석 하나의 생성을 시도합니다.
+effect.lumenar.luminous_form.name	Luminous Form	빛 상태
+effect.lumenar.luminous_form.description	Increases damage dealt by the boss by 25%.	보스가 주는 피해가 25% 증가합니다.
+effect.lumenar.stone_form.name	Stone Form	Stone 상태
+effect.lumenar.stone_form.description	Reduces damage taken by the boss by 20%.	보스가 받는 피해가 20% 감소합니다.
 kragmor	Kragmor	크라그모르
 thalassion	Thalassion	탈라시온
 orver	Orver	오르베르
@@ -27,5 +40,16 @@ boss_action.thalassion.fading_wave.name	Fading Wave	약화된 파동
 boss_action.thalassion.fading_wave.description	Releases a weakened wave after the elemental shield is broken.	원소 방패가 파괴된 뒤 약화된 파동을 방출합니다.
 effect.thalassion.elemental_shield.name	Elemental Shield	원소 방패
 effect.thalassion.elemental_shield.description	Reduces incoming damage by 80%. Each valid attack consumes one stack.	받는 피해가 80% 감소하며 유효 공격마다 1스택을 소모합니다.
+fenrir	Fenrir	펜리르
+boss_action.fenrir.savage_rend.name	Savage Rend	야수의 할퀴기
+boss_action.fenrir.savage_rend.description	Strikes the entire party and builds Wound while not Frenzied.	파티 전체를 공격하고 광분 상태가 아닐 때 상처를 누적합니다.
+boss_action.fenrir.rampaging_claw.name	Rampaging Claw	광기의 습격
+boss_action.fenrir.rampaging_claw.description	Strikes the entire party with increased attack power while Frenzied.	광분 상태에서 증가한 공격력으로 파티 전체를 공격합니다.
+effect.fenrir.wound.name	Wound	상처
+effect.fenrir.wound.description	At three stacks, all Wound is consumed and Fenrir enters Frenzy.	3스택이 되면 상처를 모두 소모하고 펜리르가 광분에 진입합니다.
+effect.fenrir.frenzy.name	Frenzy	광분
+effect.fenrir.frenzy.description	Reduces damage taken by 20%. Each valid critical hit removes one remaining count.	받는 피해가 20% 감소하며 유효한 치명타마다 잔여 횟수가 1 감소합니다.
+effect.fenrir.frenzy_attack.name	Frenzy Attack Increase	광분 공격력 증가
+effect.fenrir.frenzy_attack.description	Increases Fenrir's attack by 60% while Frenzied.	광분 중 펜리르의 공격력이 60% 증가합니다.
 main.boss_selection.master_challenge_prompt	Try Master Mode	마스터 모드 도전
 main.party.empty_required	At least one character is required in your party.	파티에 캐릭터가 한 명 이상 필요합니다.

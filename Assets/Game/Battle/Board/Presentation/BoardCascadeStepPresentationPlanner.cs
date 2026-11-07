@@ -32,17 +32,22 @@ namespace ValorChronicle.Battle.Board.Presentation
                 removedIds);
             ValidateCollapseBoard(
                 boardAfterStateChanges,
-                step,
+                step.Collapse,
                 removedIds);
-            ValidateSpawns(beforePositions, step);
-            ValidateFinalBoard(step);
+            BoardState settledBoard = ValidateSettlementPhases(
+                step.Collapse.Board,
+                step.SettlementPhases);
+            ValidateSpawns(beforePositions, settledBoard, step);
+            ValidateFinalBoard(settledBoard, step);
 
             return new BoardCascadeStepPresentationPlan(
                 step.StateChanges,
                 step.Collapse.Removals,
                 step.Collapse.Moves,
+                step.SettlementPhases,
                 step.Refill.Spawns,
                 step.Collapse.Board,
+                settledBoard,
                 step.Board);
         }
 
@@ -185,13 +190,13 @@ namespace ValorChronicle.Battle.Board.Presentation
 
         private static void ValidateCollapseBoard(
             BoardState beforeBoard,
-            BoardCascadeStep step,
+            BoardCollapseResult collapse,
             HashSet<long> removedIds)
         {
             var moveTargets = new Dictionary<long, BoardPosition>();
-            for (int index = 0; index < step.Collapse.Moves.Count; index++)
+            for (int index = 0; index < collapse.Moves.Count; index++)
             {
-                BoardBlockMove move = step.Collapse.Moves[index];
+                BoardBlockMove move = collapse.Moves[index];
                 moveTargets.Add(move.RuntimeId, move.To);
             }
 
@@ -228,7 +233,7 @@ namespace ValorChronicle.Battle.Board.Presentation
                 {
                     var position = new BoardPosition(x, y);
                     expected.TryGetValue(position, out BoardBlock block);
-                    if (!BlocksMatch(block, step.Collapse.Board.Get(position)))
+                    if (!BlocksMatch(block, collapse.Board.Get(position)))
                     {
                         throw new InvalidOperationException(
                             "Collapse.Board does not match removals and moves " +
@@ -238,8 +243,72 @@ namespace ValorChronicle.Battle.Board.Presentation
             }
         }
 
+        private static BoardState ValidateSettlementPhases(
+            BoardState initialBoard,
+            IReadOnlyList<BoardFallingStoneSettlementPhase> phases)
+        {
+            BoardState current = initialBoard;
+            for (int phaseIndex = 0; phaseIndex < phases.Count; phaseIndex++)
+            {
+                BoardFallingStoneSettlementPhase phase = phases[phaseIndex]
+                    ?? throw new InvalidOperationException(
+                        "A FallingStone settlement phase cannot be null.");
+                var removedIds = new HashSet<long>();
+                var positions = new HashSet<BoardPosition>();
+                for (int index = 0;
+                    index < phase.Collapse.Removals.Count;
+                    index++)
+                {
+                    BoardBlockRemoval removal =
+                        phase.Collapse.Removals[index];
+                    BoardBlock source = current.Get(removal.Position);
+                    if (removal.Position.Y != 0
+                        || removal.Block.BlockType
+                            != BoardBlockType.FallingStone
+                        || !positions.Add(removal.Position)
+                        || !removedIds.Add(removal.RuntimeId)
+                        || !BlocksMatch(source, removal.Block))
+                    {
+                        throw new InvalidOperationException(
+                            $"Invalid FallingStone settlement removal in "
+                                + $"phase {phaseIndex}.");
+                    }
+                }
+
+                if (removedIds.Count == 0)
+                {
+                    throw new InvalidOperationException(
+                        "A FallingStone settlement phase must remove at "
+                            + "least one bottom-row stone.");
+                }
+
+                ValidateMoves(
+                    current,
+                    phase.Board,
+                    phase.Collapse.Moves,
+                    removedIds);
+                ValidateCollapseBoard(current, phase.Collapse, removedIds);
+                current = phase.Board;
+            }
+
+            for (int x = 0; x < BoardConstants.Width; x++)
+            {
+                BoardBlock bottom = current.Get(new BoardPosition(x, 0));
+                if (bottom != null
+                    && bottom.BlockType == BoardBlockType.FallingStone)
+                {
+                    throw new InvalidOperationException(
+                        "Settlement cannot leave a FallingStone on the "
+                            + "bottom row.");
+                }
+            }
+
+            return current;
+        }
+
         private static void ValidateSpawns(
             Dictionary<long, BoardPosition> beforePositions,
+            BoardState settledBoard,
             BoardCascadeStep step)
         {
             var runtimeIds = new HashSet<long>();
@@ -268,7 +337,7 @@ namespace ValorChronicle.Battle.Board.Presentation
                         "A refill source must be above the board.");
                 }
 
-                if (step.Collapse.Board.IsOccupied(spawn.Target))
+                if (settledBoard.IsOccupied(spawn.Target))
                 {
                     throw new InvalidOperationException(
                         $"A refill target {spawn.Target} must be empty.");
@@ -283,7 +352,9 @@ namespace ValorChronicle.Battle.Board.Presentation
             }
         }
 
-        private static void ValidateFinalBoard(BoardCascadeStep step)
+        private static void ValidateFinalBoard(
+            BoardState settledBoard,
+            BoardCascadeStep step)
         {
             Dictionary<long, BoardPosition> finalPositions =
                 CollectRuntimeIds(step.Board, true, "step.Board");
@@ -304,7 +375,7 @@ namespace ValorChronicle.Battle.Board.Presentation
                 for (int y = 0; y < BoardConstants.Height; y++)
                 {
                     var position = new BoardPosition(x, y);
-                    BoardBlock collapseBlock = step.Collapse.Board.Get(position);
+                    BoardBlock collapseBlock = settledBoard.Get(position);
                     BoardBlock finalBlock = step.Board.Get(position);
                     if (collapseBlock != null
                         && !BlocksMatch(collapseBlock, finalBlock))
@@ -371,15 +442,22 @@ namespace ValorChronicle.Battle.Board.Presentation
             bool isSupportedRock = block != null
                 && block.BlockType == BoardBlockType.Rock
                 && !block.Element.HasValue;
+            bool isSupportedFallingStone = block != null
+                && block.BlockType == BoardBlockType.FallingStone
+                && !block.Element.HasValue;
             bool isSupportedRoot = block != null
                 && block.BlockType == BoardBlockType.Root
                 && !block.Element.HasValue
                 && block.Durability >= 1
                 && block.Durability <= 2;
-            if (!isSupportedNormal && !isSupportedRock && !isSupportedRoot)
+            if (!isSupportedNormal
+                && !isSupportedRock
+                && !isSupportedRoot
+                && !isSupportedFallingStone)
             {
                 throw new NotSupportedException(
-                    $"Only supported Normal, Rock, and Root blocks are "
+                    $"Only supported Normal, Rock, Root, and FallingStone "
+                        + "blocks are "
                         + $"allowed in {context}.");
             }
         }

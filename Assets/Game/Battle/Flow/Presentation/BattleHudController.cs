@@ -1187,10 +1187,19 @@ namespace ValorChronicle.Battle.Flow.Presentation
             IReadOnlyList<EffectInstance> effects =
                 subscribedBridge.Boss.Effects.GetActiveEffects();
             int slotCount = bossStatusSlots?.Length ?? 0;
-            int renderedCount = Math.Min(effects.Count, slotCount);
-            for (int index = 0; index < renderedCount; index++)
+            int renderedCount = 0;
+            for (int index = 0;
+                index < effects.Count && renderedCount < slotCount;
+                index++)
             {
-                RenderEffect(bossStatusSlots[index], effects[index]);
+                EffectInstance effect = effects[index];
+                if (IsEffectHiddenInHud(effect?.EffectId))
+                {
+                    continue;
+                }
+
+                RenderEffect(bossStatusSlots[renderedCount], effect);
+                renderedCount++;
             }
 
             IReadOnlyList<ResourceState> resources =
@@ -1246,7 +1255,7 @@ namespace ValorChronicle.Battle.Flow.Presentation
                     0,
                     slot.StatusSlotCount - reservedStatusCount);
                 IReadOnlyList<BattleHudEffectProjection> projections =
-                    effectProjector.Project(effects);
+                    ProjectVisibleEffects(effects);
                 int renderedCount = Math.Min(
                     projections.Count,
                     effectSlotCount);
@@ -1362,7 +1371,7 @@ namespace ValorChronicle.Battle.Flow.Presentation
         {
             int slotCount = slots?.Length ?? 0;
             IReadOnlyList<BattleHudEffectProjection> projections =
-                effectProjector.Project(effects);
+                ProjectVisibleEffects(effects);
             int renderedCount = Math.Min(slotCount, projections.Count);
             for (int index = 0; index < renderedCount; index++)
             {
@@ -1370,6 +1379,40 @@ namespace ValorChronicle.Battle.Flow.Presentation
             }
 
             HideStatusSlotsFrom(slots, renderedCount);
+        }
+
+        private IReadOnlyList<BattleHudEffectProjection>
+            ProjectVisibleEffects(IReadOnlyList<EffectInstance> effects)
+        {
+            if (effects == null || effects.Count == 0)
+            {
+                return Array.Empty<BattleHudEffectProjection>();
+            }
+
+            var visibleEffects = new List<EffectInstance>(effects.Count);
+            for (int index = 0; index < effects.Count; index++)
+            {
+                EffectInstance effect = effects[index];
+                if (effect != null
+                    && !IsEffectHiddenInHud(effect.EffectId))
+                {
+                    visibleEffects.Add(effect);
+                }
+            }
+
+            return effectProjector.Project(visibleEffects);
+        }
+
+        private bool IsEffectHiddenInHud(string effectId)
+        {
+            DefinitionDatabase database =
+                battleSceneCombatBootstrap?.DefinitionDatabase;
+            return database != null
+                && database.IsInitialized
+                && database.TryGetEffect(
+                    effectId,
+                    out EffectDefinition definition)
+                && definition.HideInHud;
         }
 
         private void RenderEffect(

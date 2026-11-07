@@ -7,6 +7,8 @@ namespace ValorChronicle.Battle.Board
     {
         private readonly Func<BoardState, IReadOnlyList<BoardMatch>> matchFinder;
         private readonly BoardRefiller refiller;
+        private readonly BoardFallingStoneSettlementResolver
+            fallingStoneSettlementResolver;
 
         public BoardCascadeStepResolver(BoardRefiller refiller)
             : this(BoardMatchFinder.FindMatches, refiller)
@@ -21,6 +23,8 @@ namespace ValorChronicle.Battle.Board
                 ?? throw new ArgumentNullException(nameof(matchFinder));
             this.refiller = refiller
                 ?? throw new ArgumentNullException(nameof(refiller));
+            fallingStoneSettlementResolver =
+                new BoardFallingStoneSettlementResolver();
         }
 
         public bool TryResolve(
@@ -68,12 +72,15 @@ namespace ValorChronicle.Battle.Board
             BoardCollapseResult collapse = BoardCollapseResolver.Resolve(
                 boardWithRootChanges,
                 positionsToRemove);
-            BoardRefillResult refill = refiller.Refill(collapse.Board);
+            BoardFallingStoneSettlementResult settlement =
+                fallingStoneSettlementResolver.Resolve(collapse.Board);
+            BoardRefillResult refill = refiller.Refill(settlement.Board);
 
             step = new BoardCascadeStep(
                 matches,
                 rootImpact.Changes,
                 collapse,
+                settlement.Phases,
                 refill);
             return true;
         }

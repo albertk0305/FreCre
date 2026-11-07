@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using ValorChronicle.Bosses.Fenrir;
 using ValorChronicle.Bosses.Kragmor;
+using ValorChronicle.Bosses.Lumenar;
 using ValorChronicle.Bosses.Orver;
 using ValorChronicle.Bosses.Thalassion;
 using ValorChronicle.Core.IDs;
@@ -22,6 +24,8 @@ namespace ValorChronicle.Battle.Combat.Integration
             catalog.Register(new KragmorBossCombatRuntimeFactory());
             catalog.Register(new ThalassionBossCombatRuntimeFactory());
             catalog.Register(new OrverBossCombatRuntimeFactory());
+            catalog.Register(new LumenarBossCombatRuntimeFactory());
+            catalog.Register(new FenrirBossCombatRuntimeFactory());
             return catalog;
         }
 

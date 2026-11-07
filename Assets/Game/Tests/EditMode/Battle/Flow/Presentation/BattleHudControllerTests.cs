@@ -1356,6 +1356,45 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
         }
 
         [Test]
+        public void HiddenEffectSkipsStatusSlotWhileVisibleEffectStillRenders()
+        {
+            const string hiddenEffectId = "effect_hidden_from_hud";
+            EffectDefinition hiddenDefinition = CreateEffectDefinition(
+                hiddenEffectId,
+                darkSprite,
+                hideInHud: true);
+            var definitions = new List<EffectDefinition>(
+                presentationDatabase.Effects)
+            {
+                hiddenDefinition
+            };
+            SetField(
+                presentationDatabase,
+                "effects",
+                definitions.ToArray());
+            presentationDatabase.Initialize();
+            InvokePrivate(hudController, "OnEnable");
+            InitializeCombat();
+            bridge.Boss.Effects.ApplyEffect(CreateEffect(
+                105,
+                hiddenEffectId,
+                remainingTurns: null,
+                EffectStackPolicy.Unique));
+            bridge.Boss.Effects.ApplyEffect(CreateEffect(
+                106,
+                "effect_visible_after_hidden",
+                remainingTurns: 2,
+                EffectStackPolicy.RefreshDuration));
+
+            InvokePrivate(hudController, "Start");
+
+            Assert.That(bossStatusSlots[0].Root.activeSelf, Is.True);
+            Assert.That(bossStatusSlots[0].ValueText.text, Is.EqualTo("2"));
+            Assert.That(bossStatusSlots[1].Root.activeSelf, Is.False);
+            Assert.That(bridge.Boss.Effects.Count, Is.EqualTo(2));
+        }
+
+        [Test]
         public void FioraPartyEffectsGroupOnlyBlessingAndUseNullFallback()
         {
             InvokePrivate(hudController, "OnEnable");
@@ -4172,13 +4211,15 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
 
         private EffectDefinition CreateEffectDefinition(
             string id,
-            Sprite icon)
+            Sprite icon,
+            bool hideInHud = false)
         {
             EffectDefinition definition =
                 ScriptableObject.CreateInstance<EffectDefinition>();
             createdObjects.Add(definition);
             SetField(definition, "id", id);
             SetField(definition, "icon", icon);
+            SetField(definition, "hideInHud", hideInHud);
             return definition;
         }
 

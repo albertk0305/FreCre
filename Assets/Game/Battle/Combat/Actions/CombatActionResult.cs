@@ -177,6 +177,22 @@ namespace ValorChronicle.Battle.Combat.Actions
         public bool WasRemoved { get; }
     }
 
+    public sealed class ReplaceEffectActionResult : CombatActionResult
+    {
+        internal ReplaceEffectActionResult(
+            ReplaceEffectAction action,
+            int executionOrder,
+            EffectInstance removedEffect)
+            : base(action, executionOrder)
+        {
+            RemovedEffect = removedEffect;
+            AppliedEffect = action.Replacement;
+        }
+
+        public EffectInstance RemovedEffect { get; }
+        public EffectInstance AppliedEffect { get; }
+    }
+
     public sealed class ConsumeEffectStackActionResult : CombatActionResult
     {
         internal ConsumeEffectStackActionResult(
