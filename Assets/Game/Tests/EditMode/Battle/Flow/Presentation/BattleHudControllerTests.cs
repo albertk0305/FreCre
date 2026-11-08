@@ -11,6 +11,7 @@ using UnityEngine.UI;
 using ValorChronicle.Battle.Board;
 using ValorChronicle.Battle.Board.Presentation;
 using ValorChronicle.Battle.Combat.Actions;
+using ValorChronicle.Battle.Combat.Attacks;
 using ValorChronicle.Battle.Combat.Effects;
 using ValorChronicle.Battle.Combat.Healing;
 using ValorChronicle.Battle.Combat.Damage;
@@ -1510,6 +1511,90 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
         }
 
         [Test]
+        public void LingeringSurgePairUsesOneCharacterStatusSlot()
+        {
+            InvokePrivate(hudController, "OnEnable");
+            InitializeCombat();
+            Assert.That(flowController.Coordinator.StartBattle(), Is.True);
+            InvokePrivate(hudController, "Start");
+            CharacterBattleState marea = bridge.Party.Characters[0];
+            ApplyLingeringSurgePair(marea);
+
+            hudController.RefreshInitialSnapshot();
+            hudController.RefreshInitialSnapshot();
+
+            BattleStatusIconView status = occupiedSlot.GetStatusSlot(0);
+            Assert.That(status.Root.activeSelf, Is.True);
+            Assert.That(status.IconImage.sprite, Is.SameAs(waterSprite));
+            Assert.That(status.ValueText.gameObject.activeSelf, Is.False);
+            Assert.That(occupiedSlot.GetStatusSlot(1).Root.activeSelf,
+                Is.False);
+            Assert.That(marea.Effects.Count, Is.EqualTo(2));
+
+            Assert.That(marea.Effects.RemoveEffect(601), Is.True);
+            Assert.That(marea.Effects.RemoveEffect(602), Is.True);
+            hudController.RefreshInitialSnapshot();
+
+            Assert.That(status.Root.activeSelf, Is.False);
+        }
+
+        [Test]
+        public void LingeringSurgeWithoutDisplaySpriteUsesNoStatusSlot()
+        {
+            Assert.That(presentationDatabase.TryGetEffect(
+                    MareaBluefangRules.LingeringSurgeHudEffectId,
+                    out EffectDefinition definition),
+                Is.True);
+            SetField(definition, "icon", null);
+            InvokePrivate(hudController, "OnEnable");
+            InitializeCombat();
+            Assert.That(flowController.Coordinator.StartBattle(), Is.True);
+            InvokePrivate(hudController, "Start");
+            CharacterBattleState marea = bridge.Party.Characters[0];
+            ApplyLingeringSurgePair(marea);
+
+            hudController.RefreshInitialSnapshot();
+
+            Assert.That(occupiedSlot.GetStatusSlot(0).Root.activeSelf,
+                Is.False);
+            Assert.That(marea.Effects.Count, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void LingeringSurgeDisplaysAlongsideMareaActiveEffect()
+        {
+            InvokePrivate(hudController, "OnEnable");
+            InitializeCombat();
+            Assert.That(flowController.Coordinator.StartBattle(), Is.True);
+            InvokePrivate(hudController, "Start");
+            CharacterBattleState marea = bridge.Party.Characters[0];
+            marea.Effects.ApplyEffect(new EffectInstance(
+                601,
+                MareaBluefangRules.ActiveEffectId,
+                MareaBluefangRules.CharacterId,
+                EffectCategory.Buff,
+                EffectModifierType.ElementDamageIncrease,
+                0.25d,
+                remainingTurns: 3,
+                creationOrder: 601,
+                EffectStackPolicy.RefreshDuration,
+                elementFilter: ElementType.Water));
+            ApplyLingeringSurgePair(marea, firstRuntimeId: 602);
+
+            hudController.RefreshInitialSnapshot();
+
+            BattleStatusIconView active = occupiedSlot.GetStatusSlot(0);
+            BattleStatusIconView lingering = occupiedSlot.GetStatusSlot(1);
+            Assert.That(active.IconImage.sprite, Is.SameAs(darkSprite));
+            Assert.That(active.ValueText.text, Is.EqualTo("3"));
+            Assert.That(lingering.IconImage.sprite, Is.SameAs(waterSprite));
+            Assert.That(lingering.ValueText.gameObject.activeSelf, Is.False);
+            Assert.That(occupiedSlot.GetStatusSlot(2).Root.activeSelf,
+                Is.False);
+            Assert.That(marea.Effects.Count, Is.EqualTo(3));
+        }
+
+        [Test]
         public void CombatStatusWithoutBadgeVisibilityKeepsNumericBadge()
         {
             InvokePrivate(hudController, "OnEnable");
@@ -2335,6 +2420,61 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
 
             Assert.That(water.CurrentAmount, Is.Zero);
             Assert.That(bossStatusSlots[0].Root.activeSelf, Is.False);
+        }
+
+        [Test]
+        public void AwakeningSixMaxDevourShowsOneLingeringSurgeStatus()
+        {
+            var mareaProvider = new MareaBluefangMatchActionProvider(
+                MareaBluefangTestConfig.Create(),
+                awakening: 6);
+            InvokePrivate(hudController, "OnEnable");
+            InitializeCombat(
+                bossMaxHp: 100000,
+                matchActions: context =>
+                    mareaProvider.CreateRootActions(context));
+            bridge.Boss.Resources.Get(WaterElementResource.Id).Add(5);
+            Assert.That(flowController.Coordinator.StartBattle(), Is.True);
+            InvokePrivate(hudController, "Start");
+
+            MatchEventExecution execution = BeginSingleWaterMatch(5);
+            Assert.That(bridge.ResolveMatchEvent(execution), Is.True);
+
+            CharacterBattleState marea = bridge.Party.Characters[0];
+            Assert.That(marea.Effects.Count, Is.EqualTo(2));
+            Assert.That(occupiedSlot.GetStatusSlot(0).Root.activeSelf,
+                Is.True);
+            Assert.That(occupiedSlot.GetStatusSlot(0).IconImage.sprite,
+                Is.SameAs(waterSprite));
+            Assert.That(occupiedSlot.GetStatusSlot(1).Root.activeSelf,
+                Is.False);
+        }
+
+        [TestCase(6, 4)]
+        [TestCase(5, 5)]
+        public void NonQualifyingDevourShowsNoLingeringSurgeStatus(
+            int awakening,
+            int waterAmount)
+        {
+            var mareaProvider = new MareaBluefangMatchActionProvider(
+                MareaBluefangTestConfig.Create(),
+                awakening);
+            InvokePrivate(hudController, "OnEnable");
+            InitializeCombat(
+                bossMaxHp: 100000,
+                matchActions: context =>
+                    mareaProvider.CreateRootActions(context));
+            bridge.Boss.Resources.Get(WaterElementResource.Id).Add(
+                waterAmount);
+            Assert.That(flowController.Coordinator.StartBattle(), Is.True);
+            InvokePrivate(hudController, "Start");
+
+            MatchEventExecution execution = BeginSingleWaterMatch(5);
+            Assert.That(bridge.ResolveMatchEvent(execution), Is.True);
+
+            Assert.That(bridge.Party.Characters[0].Effects.Count, Is.Zero);
+            Assert.That(occupiedSlot.GetStatusSlot(0).Root.activeSelf,
+                Is.False);
         }
 
         [Test]
@@ -4127,6 +4267,9 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
             EffectDefinition mareaEffect = CreateEffectDefinition(
                 MareaBluefangRules.ActiveEffectId,
                 includeIcons ? darkSprite : null);
+            EffectDefinition mareaLingeringSurge = CreateEffectDefinition(
+                MareaBluefangRules.LingeringSurgeHudEffectId,
+                includeIcons ? waterSprite : null);
             EffectDefinition serenaEffect = CreateEffectDefinition(
                 SerenaCoralspearRules.ActiveEffectId,
                 includeIcons ? darkSprite : null);
@@ -4181,6 +4324,7 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
                 new[]
                 {
                     mareaEffect,
+                    mareaLingeringSurge,
                     serenaEffect,
                     fioraBlessing,
                     fioraMatch4,
@@ -4221,6 +4365,39 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
             SetField(definition, "icon", icon);
             SetField(definition, "hideInHud", hideInHud);
             return definition;
+        }
+
+        private static void ApplyLingeringSurgePair(
+            CharacterBattleState character,
+            long firstRuntimeId = 601)
+        {
+            character.Effects.ApplyEffect(CreateLingeringSurgeEffect(
+                firstRuntimeId,
+                MareaBluefangRules.LingeringSurgeMatch3EffectId,
+                AttackTag.Match3));
+            character.Effects.ApplyEffect(CreateLingeringSurgeEffect(
+                firstRuntimeId + 1,
+                MareaBluefangRules.LingeringSurgeMatch4EffectId,
+                AttackTag.Match4));
+        }
+
+        private static EffectInstance CreateLingeringSurgeEffect(
+            long runtimeId,
+            string effectId,
+            AttackTag requiredAttackTag)
+        {
+            return new EffectInstance(
+                runtimeId,
+                effectId,
+                MareaBluefangRules.CharacterId,
+                EffectCategory.Buff,
+                EffectModifierType.AttackTypeDamageIncrease,
+                0.30d,
+                remainingTurns: null,
+                creationOrder: runtimeId,
+                EffectStackPolicy.Unique,
+                attackTypeMask: AttackTypeMask.Match,
+                requiredAttackTags: requiredAttackTag);
         }
 
         private ResourceDefinition CreateResourceDefinition(

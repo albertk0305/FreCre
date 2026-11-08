@@ -1400,7 +1400,39 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 }
             }
 
-            return effectProjector.Project(visibleEffects);
+            IReadOnlyList<BattleHudEffectProjection> projections =
+                effectProjector.Project(visibleEffects);
+            List<BattleHudEffectProjection> displayableProjections = null;
+            for (int index = 0; index < projections.Count; index++)
+            {
+                BattleHudEffectProjection projection = projections[index];
+                bool displayable = projection != null
+                    && (!projection.HideWhenIconMissing
+                        || ResolveEffectIcon(projection.EffectId) != null);
+                if (displayable && displayableProjections == null)
+                {
+                    continue;
+                }
+
+                if (displayableProjections == null)
+                {
+                    displayableProjections = new List<
+                        BattleHudEffectProjection>(projections.Count);
+                    for (int copyIndex = 0;
+                        copyIndex < index;
+                        copyIndex++)
+                    {
+                        displayableProjections.Add(projections[copyIndex]);
+                    }
+                }
+
+                if (displayable)
+                {
+                    displayableProjections.Add(projection);
+                }
+            }
+
+            return displayableProjections ?? projections;
         }
 
         private bool IsEffectHiddenInHud(string effectId)

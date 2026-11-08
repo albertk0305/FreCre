@@ -150,6 +150,25 @@ namespace ValorChronicle.Tests.EditMode.Characters.Build
         }
 
         [Test]
+        public void Resolve_MaxHpIncreaseAndReductionUseOneFinalMultiplier()
+        {
+            var bonuses = new RelicStatBonusSummary(
+                maxHpIncreaseRateSum: 0.20d,
+                maxHpReductionRateSum: 0.05d,
+                attackIncreaseRateSum: 0d,
+                attackReductionRateSum: 0d);
+
+            ResolvedCharacterBuild result = resolver.Resolve(
+                definition,
+                1,
+                0,
+                bonuses);
+
+            Assert.That(result.MaxHp, Is.EqualTo(1035L));
+            Assert.That(result.Attack, Is.EqualTo(180L));
+        }
+
+        [Test]
         public void Resolve_AwakeningMultiplierUsesAwayFromZeroRounding()
         {
             SetField(

@@ -4,6 +4,7 @@ using ValorChronicle.Battle.Combat.Attacks;
 using ValorChronicle.Battle.Combat.Effects;
 using ValorChronicle.Battle.Combat.State;
 using ValorChronicle.Data.Definitions;
+using ValorChronicle.Relics.Stats;
 
 namespace ValorChronicle.Battle.Combat.Modifiers
 {
@@ -73,8 +74,21 @@ namespace ValorChronicle.Battle.Combat.Modifiers
             ValidateAttackTags(attackTags);
             var values = new AllyModifierValues
             {
-                AttackIncrease = attacker.PermanentAttackIncreaseRate
+                AttackIncrease = attacker.PermanentAttackIncreaseRate,
+                AttackReduction = attacker.PermanentAttackReductionRate,
+                CriticalChanceIncrease =
+                    attacker.PermanentCriticalChanceIncreaseRate,
+                CriticalDamageIncrease =
+                    attacker.PermanentCriticalDamageIncreaseRate
             };
+            CollectPermanentRelicEffects(
+                attacker.PermanentRelicEffects,
+                party,
+                attackElement,
+                attackType,
+                attackTags,
+                collectAttackTypeModifiers,
+                values);
             CollectAllySource(
                 attacker.Effects.GetActiveEffects(),
                 attackElement,
@@ -121,7 +135,11 @@ namespace ValorChronicle.Battle.Combat.Modifiers
                 throw new ArgumentNullException(nameof(party));
             }
 
-            var values = new BossModifierValues();
+            var values = new BossModifierValues
+            {
+                PartyDamageReduction =
+                    party.PermanentPartyDamageReductionRate
+            };
             IReadOnlyList<EffectInstance> bossEffects =
                 boss.Effects.GetActiveEffects();
             for (int index = 0; index < bossEffects.Count; index++)
@@ -309,6 +327,113 @@ namespace ValorChronicle.Battle.Combat.Modifiers
                             effect);
                         break;
                 }
+            }
+        }
+
+        private static void CollectPermanentRelicEffects(
+            IReadOnlyList<RelicStatBonusSource> effects,
+            PartyBattleState party,
+            ElementType attackElement,
+            AttackType attackType,
+            AttackTag attackTags,
+            bool hasAttackTypeContext,
+            AllyModifierValues values)
+        {
+            for (int index = 0; index < effects.Count; index++)
+            {
+                RelicStatBonusSource effect = effects[index];
+                if (effect == null
+                    || !MatchesPermanentRelicFilters(
+                        effect,
+                        party,
+                        attackElement,
+                        attackType,
+                        attackTags,
+                        hasAttackTypeContext))
+                {
+                    continue;
+                }
+
+                switch (effect.EffectType)
+                {
+                    case RelicEffectType.ElementDamageIncrease:
+                        values.ElementDamageIncrease = AddMagnitude(
+                            values.ElementDamageIncrease,
+                            effect.Rate);
+                        break;
+                    case RelicEffectType.AttackTypeDamageIncrease:
+                        values.AttackTypeDamageIncrease = AddMagnitude(
+                            values.AttackTypeDamageIncrease,
+                            effect.Rate);
+                        break;
+                    case RelicEffectType.DealtDamageIncrease:
+                        values.DealtDamageIncrease = AddMagnitude(
+                            values.DealtDamageIncrease,
+                            effect.Rate);
+                        break;
+                }
+            }
+        }
+
+        private static bool MatchesPermanentRelicFilters(
+            RelicStatBonusSource effect,
+            PartyBattleState party,
+            ElementType attackElement,
+            AttackType attackType,
+            AttackTag attackTags,
+            bool hasAttackTypeContext)
+        {
+            if (!MatchesPermanentRelicCondition(effect, party))
+            {
+                return false;
+            }
+
+            if (effect.HasElementFilter
+                && effect.ElementFilter != attackElement)
+            {
+                return false;
+            }
+
+            bool hasAttackFilter =
+                effect.AttackTypeMask != AttackTypeMask.None
+                || effect.RequiredAttackTags != AttackTag.None
+                || effect.ExcludedAttackTags != AttackTag.None;
+            if (!hasAttackFilter)
+            {
+                return true;
+            }
+
+            if (!hasAttackTypeContext)
+            {
+                return false;
+            }
+
+            AttackTypeMask currentType = ToMask(attackType);
+            bool matchesType = effect.AttackTypeMask
+                    == AttackTypeMask.None
+                || (effect.AttackTypeMask & currentType) != 0;
+            bool hasRequiredTags =
+                (attackTags & effect.RequiredAttackTags)
+                    == effect.RequiredAttackTags;
+            bool hasExcludedTag =
+                (attackTags & effect.ExcludedAttackTags) != 0;
+            return matchesType && hasRequiredTags && !hasExcludedTag;
+        }
+
+        private static bool MatchesPermanentRelicCondition(
+            RelicStatBonusSource effect,
+            PartyBattleState party)
+        {
+            switch (effect.ConditionType)
+            {
+                case RelicEffectConditionType.None:
+                    return true;
+                case RelicEffectConditionType.PartyHpAtOrBelow:
+                    decimal thresholdHp = party.MaxHp
+                        * (decimal)effect.ConditionThreshold;
+                    return party.CurrentHp <= thresholdHp;
+                default:
+                    return false;
             }
         }
 

@@ -38,7 +38,7 @@ namespace ValorChronicle.Save.Services
             return new SaveService(
                 new SaveRepository(new SavePaths(persistentDataPath)),
                 new NewtonsoftJsonSaveSerializer(),
-                new NewProfileFactory(),
+                NewProfileFactory.CreateGameDefaults(),
                 cloner,
                 new SaveMigrationRunner(
                     cloner,

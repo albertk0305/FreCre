@@ -111,7 +111,7 @@ namespace ValorChronicle.Characters.Build
             long maxHp = CharacterStatCalculator.RoundFinalStat(
                 baseStats.MaxHp
                     * multipliers.MaxHpMultiplier
-                    * (1d + relicBonuses.MaxHpIncreaseRateSum));
+                    * relicBonuses.MaxHpMultiplier);
             // Attack relic application belongs to the 11-11 damage step.
             long attack = CharacterStatCalculator.RoundFinalStat(
                 baseStats.Attack * multipliers.AttackMultiplier);

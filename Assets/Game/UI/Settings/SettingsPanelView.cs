@@ -27,8 +27,20 @@ namespace ValorChronicle.UI.Settings
         [SerializeField] private GameObject redeemResultOverlay;
         [SerializeField] private Button redeemResultDismissButton;
         [SerializeField] private TMP_Text redeemResultText;
+        [SerializeField] private Button helpButton;
+        [SerializeField] private Button creditsButton;
+        [SerializeField] private SettingsTextPanel textPanel;
 
         private bool subscribed;
+        private TextPanelContentKind visibleTextContent;
+
+        private enum TextPanelContentKind
+        {
+            None,
+            Help,
+            Credits,
+            Other
+        }
 
         public event Action<int> MasterVolumeChanged;
         public event Action<int> BgmVolumeChanged;
@@ -37,6 +49,8 @@ namespace ValorChronicle.UI.Settings
         public event Action<int> BattleSpeedChanged;
         public event Action<string> RedeemCodeRequested;
         public event Action RedeemResultDismissed;
+        public event Action HelpRequested;
+        public event Action CreditsRequested;
         public event Action CloseRequested;
         public event Action Hidden;
 
@@ -65,6 +79,14 @@ namespace ValorChronicle.UI.Settings
         public Button RedeemConfirmButton => redeemConfirmButton;
         public GameObject RedeemResultOverlay => redeemResultOverlay;
         public TMP_Text RedeemResultText => redeemResultText;
+        public SettingsTextPanel TextPanel => textPanel;
+        public bool IsHelpVisible => visibleTextContent == TextPanelContentKind.Help
+            && textPanel != null
+            && textPanel.IsOpen;
+        public bool IsCreditsVisible =>
+            visibleTextContent == TextPanelContentKind.Credits
+            && textPanel != null
+            && textPanel.IsOpen;
 
         private void Awake()
         {
@@ -80,6 +102,9 @@ namespace ValorChronicle.UI.Settings
         {
             Unsubscribe();
             ResetRedeemUi();
+            if (textPanel != null)
+                textPanel.Close();
+            visibleTextContent = TextPanelContentKind.None;
             Hidden?.Invoke();
         }
 
@@ -153,6 +178,31 @@ namespace ValorChronicle.UI.Settings
                 Subscribe();
         }
 
+        public void ConfigureHelp(
+            Button configuredHelpButton,
+            SettingsTextPanel configuredTextPanel)
+        {
+            Unsubscribe();
+            helpButton = configuredHelpButton
+                ?? throw new ArgumentNullException(nameof(configuredHelpButton));
+            textPanel = configuredTextPanel
+                ?? throw new ArgumentNullException(nameof(configuredTextPanel));
+
+            textPanel.Close();
+            visibleTextContent = TextPanelContentKind.None;
+            if (isActiveAndEnabled)
+                Subscribe();
+        }
+
+        public void ConfigureCredits(Button configuredCreditsButton)
+        {
+            Unsubscribe();
+            creditsButton = configuredCreditsButton
+                ?? throw new ArgumentNullException(nameof(configuredCreditsButton));
+            if (isActiveAndEnabled)
+                Subscribe();
+        }
+
         public void Display(GameSettingsData settings)
         {
             if (settings == null)
@@ -188,6 +238,33 @@ namespace ValorChronicle.UI.Settings
         {
             if (redeemCodeInputField?.placeholder is TMP_Text placeholder)
                 placeholder.text = text ?? string.Empty;
+        }
+
+        public void ShowHelp(string content)
+        {
+            if (textPanel == null)
+                return;
+
+            visibleTextContent = TextPanelContentKind.Help;
+            textPanel.Show(string.Empty, content, false);
+        }
+
+        public void ShowCredits(string content)
+        {
+            if (textPanel == null)
+                return;
+
+            visibleTextContent = TextPanelContentKind.Credits;
+            textPanel.Show(string.Empty, content, false);
+        }
+
+        public void ShowText(string title, string content)
+        {
+            if (textPanel == null)
+                return;
+
+            visibleTextContent = TextPanelContentKind.Other;
+            textPanel.Show(title, content);
         }
 
         public void SetRedeemBusy(bool busy)
@@ -270,6 +347,10 @@ namespace ValorChronicle.UI.Settings
                 redeemResultDismissButton.onClick.AddListener(
                     HandleRedeemResultDismissed);
             }
+            if (helpButton != null && textPanel != null)
+                helpButton.onClick.AddListener(HandleHelpRequested);
+            if (creditsButton != null && textPanel != null)
+                creditsButton.onClick.AddListener(HandleCreditsRequested);
             subscribed = true;
         }
 
@@ -297,6 +378,10 @@ namespace ValorChronicle.UI.Settings
                 redeemResultDismissButton.onClick.RemoveListener(
                     HandleRedeemResultDismissed);
             }
+            if (helpButton != null)
+                helpButton.onClick.RemoveListener(HandleHelpRequested);
+            if (creditsButton != null)
+                creditsButton.onClick.RemoveListener(HandleCreditsRequested);
             subscribed = false;
         }
 
@@ -370,6 +455,16 @@ namespace ValorChronicle.UI.Settings
         {
             HideRedeemResult();
             RedeemResultDismissed?.Invoke();
+        }
+
+        private void HandleHelpRequested()
+        {
+            HelpRequested?.Invoke();
+        }
+
+        private void HandleCreditsRequested()
+        {
+            CreditsRequested?.Invoke();
         }
     }
 }

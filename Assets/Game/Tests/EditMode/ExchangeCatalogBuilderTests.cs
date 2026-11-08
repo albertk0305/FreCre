@@ -16,6 +16,30 @@ namespace ValorChronicle.Tests.EditMode
 {
     public sealed class ExchangeCatalogBuilderTests
     {
+        private static readonly string[] ExpectedRelicIds =
+        {
+            "relic_victors_broken_sword",
+            "relic_world_tree_bark",
+            "relic_clairvoyants_monocle",
+            "relic_executioners_bloodstone",
+            "relic_twin_stars_destiny_stone",
+            "relic_ember_lords_crown",
+            "relic_deep_sea_kings_blue_pearl",
+            "relic_primordial_trees_life_seed",
+            "relic_morning_stars_radiance",
+            "relic_eclipses_obsidian",
+            "relic_saintess_silver_chalice",
+            "relic_titans_carapace",
+            "relic_pioneers_emblem",
+            "relic_bloodied_gladiators_contract",
+            "relic_silent_giants_heart",
+            "relic_perfect_bond_seal",
+            "relic_trackers_chain",
+            "relic_overlords_seal",
+            "relic_last_ember",
+            "relic_indomitable_guardian_crest",
+        };
+
         private readonly List<UnityEngine.Object> createdObjects =
             new List<UnityEngine.Object>();
 
@@ -307,6 +331,24 @@ namespace ValorChronicle.Tests.EditMode
                     registeredCharacterIds[index]);
             }
 
+            string[] registeredRelicIds = database.ExchangeCatalog
+                .RelicIds
+                .ToArray();
+            Assert.That(registeredRelicIds,
+                Is.EqualTo(ExpectedRelicIds));
+            Assert.That(registeredRelicIds.Distinct().Count(),
+                Is.EqualTo(registeredRelicIds.Length));
+            for (int index = 0;
+                index < registeredRelicIds.Length;
+                index++)
+            {
+                Assert.That(database.TryGetRelic(
+                        registeredRelicIds[index],
+                        out _),
+                    Is.True,
+                    registeredRelicIds[index]);
+            }
+
             ExchangeCatalogData result = ExchangeCatalogBuilder.Build(
                 database,
                 database.ExchangeCatalog,
@@ -318,14 +360,8 @@ namespace ValorChronicle.Tests.EditMode
                     StringComparer.Ordinal)));
 
             Assert.That(
-                database.ExchangeCatalog.RelicIds.OrderBy(
-                    id => id,
-                    StringComparer.Ordinal),
-                Is.EqualTo(database.Relics.Select(item => item.Id)
-                    .OrderBy(id => id, StringComparer.Ordinal)));
-            Assert.That(
                 result.Relics.Select(item => item.RelicId),
-                Is.EqualTo(database.ExchangeCatalog.RelicIds.OrderBy(
+                Is.EqualTo(registeredRelicIds.OrderBy(
                     id => id,
                     StringComparer.Ordinal)));
         }

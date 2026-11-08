@@ -96,7 +96,9 @@ namespace ValorChronicle.Relics.Presentation
             }
 
             previewIconImage.sprite = model.Icon;
-            previewIconImage.color = visibleIconColor;
+            previewIconImage.color = WithAlpha(
+                visibleIconColor,
+                model.Icon == null ? 0f : visibleIconColor.a);
             previewEmptyBackground.SetActive(false);
             previewAwakeningText.text = model.Awakening.ToString(
                 CultureInfo.InvariantCulture);

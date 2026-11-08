@@ -15,11 +15,20 @@ MonoBehaviour:
   id: relic_world_tree_bark
   displayNameKey: relic.world_tree_bark.name
   descriptionKey: relic.world_tree_bark.description
-  effectType: 2
-  effectRates:
-  - 0.05
-  - 0.06
-  - 0.07
-  - 0.08
-  - 0.09
-  - 0.1
+  effects:
+  - effectType: 2
+    effectRates:
+    - 0.05
+    - 0.06
+    - 0.07
+    - 0.08
+    - 0.09
+    - 0.1
+    descriptionValueKey: rate
+    hasElementFilter: 0
+    elementFilter: 0
+    attackTypeMask: 0
+    requiredAttackTags: 0
+    excludedAttackTags: 0
+    conditionType: 0
+    conditionThreshold: 0

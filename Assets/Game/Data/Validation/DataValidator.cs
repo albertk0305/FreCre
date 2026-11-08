@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ValorChronicle.Battle.Combat.Attacks;
 using ValorChronicle.Battle.Results;
 using ValorChronicle.Core.IDs;
 using ValorChronicle.Core.Logging;
@@ -552,47 +553,238 @@ namespace ValorChronicle.Data.Validation
                     definition,
                     report);
 
-                if (!Enum.IsDefined(
-                        typeof(RelicEffectType),
-                        definition.EffectType)
-                    || definition.EffectType == RelicEffectType.None)
+                IReadOnlyList<RelicEffectEntry> effects =
+                    definition.Effects;
+                if (effects.Count == 0)
                 {
                     AddError(
                         report,
                         definition,
-                        $"Effect type is invalid: "
-                            + $"{definition.EffectType}");
-                }
-
-                IReadOnlyList<double> effectRates =
-                    definition.EffectRates;
-                if (effectRates.Count
-                    != RelicDefinition.AwakeningValueCount)
-                {
-                    AddError(
-                        report,
-                        definition,
-                        $"Awakening effect rate count must be exactly "
-                            + $"{RelicDefinition.AwakeningValueCount}");
+                        "At least one relic effect is required");
                     continue;
                 }
 
-                for (int awakening = 0;
-                    awakening < effectRates.Count;
-                    awakening++)
+                var descriptionKeys = new HashSet<string>(
+                    StringComparer.Ordinal);
+                var effectScopes = new HashSet<string>(
+                    StringComparer.Ordinal);
+                bool hasAttackIncrease = false;
+                bool hasAttackReduction = false;
+                bool hasMaxHpIncrease = false;
+                bool hasMaxHpReduction = false;
+                for (int effectIndex = 0;
+                    effectIndex < effects.Count;
+                    effectIndex++)
                 {
-                    double rate = effectRates[awakening];
-                    if (double.IsNaN(rate)
-                        || double.IsInfinity(rate)
-                        || rate < 0d)
+                    RelicEffectEntry effect = effects[effectIndex];
+                    if (effect == null)
                     {
                         AddError(
                             report,
                             definition,
-                            $"Awakening {awakening} effect rate must be "
-                                + "finite and non-negative");
+                            $"Effect entry {effectIndex} is missing");
+                        continue;
                     }
+
+                    if (!Enum.IsDefined(
+                            typeof(RelicEffectType),
+                            effect.EffectType)
+                        || effect.EffectType == RelicEffectType.None)
+                    {
+                        AddError(
+                            report,
+                            definition,
+                            $"Effect entry {effectIndex} type is invalid: "
+                                + effect.EffectType);
+                    }
+
+                    ValidateRelicEffectRates(
+                        definition,
+                        effect,
+                        effectIndex,
+                        report);
+                    ValidateRelicEffectFilters(
+                        definition,
+                        effect,
+                        effectIndex,
+                        report);
+
+                    if (string.IsNullOrWhiteSpace(
+                            effect.DescriptionValueKey)
+                        || !descriptionKeys.Add(
+                            effect.DescriptionValueKey))
+                    {
+                        AddError(
+                            report,
+                            definition,
+                            $"Effect entry {effectIndex} description "
+                                + "value key is missing or duplicated");
+                    }
+
+                    string scope = string.Join(
+                        "|",
+                        (int)effect.EffectType,
+                        effect.HasElementFilter,
+                        (int)effect.ElementFilter,
+                        (int)effect.AttackTypeMask,
+                        (int)effect.RequiredAttackTags,
+                        (int)effect.ExcludedAttackTags,
+                        (int)effect.ConditionType,
+                        effect.ConditionThreshold);
+                    if (!effectScopes.Add(scope))
+                    {
+                        AddError(
+                            report,
+                            definition,
+                            $"Effect entry {effectIndex} duplicates an "
+                                + "existing effect scope");
+                    }
+
+                    hasAttackIncrease |= effect.EffectType
+                        == RelicEffectType.AttackIncrease;
+                    hasAttackReduction |= effect.EffectType
+                        == RelicEffectType.AttackReduction;
+                    hasMaxHpIncrease |= effect.EffectType
+                        == RelicEffectType.MaxHpIncrease;
+                    hasMaxHpReduction |= effect.EffectType
+                        == RelicEffectType.MaxHpReduction;
                 }
+
+                if (hasAttackIncrease && hasAttackReduction)
+                {
+                    AddError(
+                        report,
+                        definition,
+                        "Attack increase and reduction effects conflict");
+                }
+
+                if (hasMaxHpIncrease && hasMaxHpReduction)
+                {
+                    AddError(
+                        report,
+                        definition,
+                        "Maximum HP increase and reduction effects conflict");
+                }
+            }
+        }
+
+        private static void ValidateRelicEffectRates(
+            RelicDefinition definition,
+            RelicEffectEntry effect,
+            int effectIndex,
+            ValidationReport report)
+        {
+            IReadOnlyList<double> rates = effect.EffectRates;
+            if (rates.Count != RelicDefinition.AwakeningValueCount)
+            {
+                AddError(
+                    report,
+                    definition,
+                    $"Effect entry {effectIndex} awakening rate count "
+                        + $"must be {RelicDefinition.AwakeningValueCount}");
+                return;
+            }
+
+            for (int awakening = 0; awakening < rates.Count; awakening++)
+            {
+                double rate = rates[awakening];
+                bool boundedByOne = effect.EffectType
+                        == RelicEffectType.CriticalChanceIncrease
+                    || effect.EffectType
+                        == RelicEffectType.PartyDamageReduction;
+                bool reductionMustLeavePositive = effect.EffectType
+                        == RelicEffectType.AttackReduction
+                    || effect.EffectType
+                        == RelicEffectType.MaxHpReduction;
+                if (double.IsNaN(rate)
+                    || double.IsInfinity(rate)
+                    || rate < 0d
+                    || (boundedByOne && rate > 1d)
+                    || (reductionMustLeavePositive && rate >= 1d))
+                {
+                    AddError(
+                        report,
+                        definition,
+                        $"Effect entry {effectIndex} awakening "
+                            + $"{awakening} rate is outside its valid range");
+                }
+            }
+        }
+
+        private static void ValidateRelicEffectFilters(
+            RelicDefinition definition,
+            RelicEffectEntry effect,
+            int effectIndex,
+            ValidationReport report)
+        {
+            const AttackTag allTags = AttackTag.Match3
+                | AttackTag.Match4
+                | AttackTag.Match5Plus
+                | AttackTag.Heavy
+                | AttackTag.MultiHit
+                | AttackTag.Elemental
+                | AttackTag.FixedDamage
+                | AttackTag.MaxHpRatio;
+            bool isElementEffect = effect.EffectType
+                == RelicEffectType.ElementDamageIncrease;
+            bool supportsAttackFilter = effect.EffectType
+                    == RelicEffectType.AttackTypeDamageIncrease
+                || effect.EffectType
+                    == RelicEffectType.DealtDamageIncrease;
+            bool hasAttackFilter = effect.AttackTypeMask
+                    != AttackTypeMask.None
+                || effect.RequiredAttackTags != AttackTag.None
+                || effect.ExcludedAttackTags != AttackTag.None;
+
+            if (effect.HasElementFilter != isElementEffect
+                || (effect.HasElementFilter
+                    && !Enum.IsDefined(
+                        typeof(ElementType),
+                        effect.ElementFilter)))
+            {
+                AddError(
+                    report,
+                    definition,
+                    $"Effect entry {effectIndex} has an invalid element "
+                        + "filter");
+            }
+
+            if ((effect.AttackTypeMask & ~AttackTypeMask.All) != 0
+                || (effect.RequiredAttackTags & ~allTags) != 0
+                || (effect.ExcludedAttackTags & ~allTags) != 0
+                || (effect.RequiredAttackTags
+                    & effect.ExcludedAttackTags) != 0
+                || (hasAttackFilter && !supportsAttackFilter)
+                || (effect.EffectType
+                        == RelicEffectType.AttackTypeDamageIncrease
+                    && effect.AttackTypeMask == AttackTypeMask.None))
+            {
+                AddError(
+                    report,
+                    definition,
+                    $"Effect entry {effectIndex} has an invalid attack "
+                        + "type or tag filter");
+            }
+
+            if (!Enum.IsDefined(
+                    typeof(RelicEffectConditionType),
+                    effect.ConditionType)
+                || (effect.ConditionType
+                        == RelicEffectConditionType.None
+                    && effect.ConditionThreshold != 0d)
+                || (effect.ConditionType
+                        == RelicEffectConditionType.PartyHpAtOrBelow
+                    && (effect.EffectType
+                            != RelicEffectType.DealtDamageIncrease
+                        || effect.ConditionThreshold <= 0d
+                        || effect.ConditionThreshold > 1d
+                        || double.IsNaN(effect.ConditionThreshold)
+                        || double.IsInfinity(effect.ConditionThreshold))))
+            {
+                AddError(
+                    report,
+                    definition,
+                    $"Effect entry {effectIndex} has an invalid condition");
             }
         }
 
@@ -931,7 +1123,7 @@ namespace ValorChronicle.Data.Validation
                 if (presentation.Icon == null)
                 {
                     report.Add(
-                        ValidationSeverity.Error,
+                        ValidationSeverity.Warning,
                         "[DataValidator] Relic presentation icon is "
                             + $"missing: {relicId}",
                         relicId,

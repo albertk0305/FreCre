@@ -4,6 +4,7 @@ using System.Reflection;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using ValorChronicle.Battle.Combat.Attacks;
 using ValorChronicle.Data.Database;
 using ValorChronicle.Data.Definitions;
 using ValorChronicle.Data.Validation;
@@ -582,14 +583,17 @@ namespace ValorChronicle.Tests.EditMode
         public void Validate_RelicAwakeningRateCountMustBeExactlySix()
         {
             RelicDefinition relic = CreateValidRelic("relic_test");
-            SetDoubleArray(
-                relic,
+            SetPrivateField(
+                relic.Effects[0],
                 "effectRates",
+                new[]
+                {
                 0.05d,
                 0.06d,
                 0.07d,
                 0.08d,
-                0.09d);
+                0.09d
+                });
             RelicPresentationDefinition presentation =
                 CreateRelicPresentation(relic.Id, CreateSprite());
 
@@ -601,7 +605,7 @@ namespace ValorChronicle.Tests.EditMode
             Assert.That(report.HasErrors, Is.True);
             Assert.That(report.Issues.Any(issue =>
                 issue.Message.Contains(
-                    "Awakening effect rate count must be exactly 6")),
+                    "awakening rate count must be 6")),
                 Is.True);
         }
 
@@ -609,15 +613,18 @@ namespace ValorChronicle.Tests.EditMode
         public void Validate_RelicAwakeningRatesCannotBeNegative()
         {
             RelicDefinition relic = CreateValidRelic("relic_test");
-            SetDoubleArray(
-                relic,
+            SetPrivateField(
+                relic.Effects[0],
                 "effectRates",
+                new[]
+                {
                 0.05d,
                 -0.01d,
                 0.07d,
                 0.08d,
                 0.09d,
-                0.10d);
+                0.10d
+                });
             RelicPresentationDefinition presentation =
                 CreateRelicPresentation(relic.Id, CreateSprite());
 
@@ -629,7 +636,7 @@ namespace ValorChronicle.Tests.EditMode
             Assert.That(report.HasErrors, Is.True);
             Assert.That(report.Issues.Any(issue =>
                 issue.Message.Contains(
-                    "effect rate must be finite and non-negative")),
+                    "rate is outside its valid range")),
                 Is.True);
         }
 
@@ -637,7 +644,10 @@ namespace ValorChronicle.Tests.EditMode
         public void Validate_RelicEffectTypeMustBeSupported()
         {
             RelicDefinition relic = CreateValidRelic("relic_test");
-            SetInt(relic, "effectType", 999);
+            SetPrivateField(
+                relic.Effects[0],
+                "effectType",
+                (RelicEffectType)999);
             RelicPresentationDefinition presentation =
                 CreateRelicPresentation(relic.Id, CreateSprite());
 
@@ -648,7 +658,76 @@ namespace ValorChronicle.Tests.EditMode
 
             Assert.That(report.HasErrors, Is.True);
             Assert.That(report.Issues.Any(issue =>
-                issue.Message.Contains("Effect type is invalid")), Is.True);
+                issue.Message.Contains("type is invalid")), Is.True);
+        }
+
+        [Test]
+        public void Validate_RelicPresentationMissingIcon_IsWarningOnly()
+        {
+            RelicDefinition relic = CreateValidRelic("relic_test");
+            RelicPresentationDefinition presentation =
+                CreateRelicPresentation(relic.Id, null);
+
+            ValidationReport report = DataValidator.Validate(
+                CreateDatabase(
+                    relics: new[] { relic },
+                    relicPresentations: new[] { presentation }));
+
+            Assert.That(report.HasErrors, Is.False);
+            Assert.That(report.Issues.Any(issue =>
+                issue.Severity == ValidationSeverity.Warning
+                && issue.Message.Contains(
+                    "Relic presentation icon is missing")), Is.True);
+        }
+
+        [Test]
+        public void Validate_RelicRejectsUnsupportedFiltersAndCondition()
+        {
+            RelicDefinition relic = CreateValidRelic("relic_test");
+            RelicEffectEntry effect = relic.Effects[0];
+            SetPrivateField(
+                effect,
+                "attackTypeMask",
+                AttackTypeMask.Match);
+            SetPrivateField(
+                effect,
+                "conditionType",
+                RelicEffectConditionType.PartyHpAtOrBelow);
+            SetPrivateField(effect, "conditionThreshold", 0.5d);
+            RelicPresentationDefinition presentation =
+                CreateRelicPresentation(relic.Id, CreateSprite());
+
+            ValidationReport report = DataValidator.Validate(
+                CreateDatabase(
+                    relics: new[] { relic },
+                    relicPresentations: new[] { presentation }));
+
+            Assert.That(report.HasErrors, Is.True);
+            Assert.That(report.Issues.Any(issue =>
+                issue.Message.Contains("invalid attack type or tag")),
+                Is.True);
+            Assert.That(report.Issues.Any(issue =>
+                issue.Message.Contains("invalid condition")), Is.True);
+        }
+
+        [Test]
+        public void Validate_RelicRejectsDuplicateEffectScope()
+        {
+            RelicDefinition relic = CreateValidRelic("relic_test");
+            RelicEffectEntry effect = relic.Effects[0];
+            SetPrivateField(relic, "effects", new[] { effect, effect });
+            RelicPresentationDefinition presentation =
+                CreateRelicPresentation(relic.Id, CreateSprite());
+
+            ValidationReport report = DataValidator.Validate(
+                CreateDatabase(
+                    relics: new[] { relic },
+                    relicPresentations: new[] { presentation }));
+
+            Assert.That(report.HasErrors, Is.True);
+            Assert.That(report.Issues.Any(issue =>
+                issue.Message.Contains("duplicates an existing effect")),
+                Is.True);
         }
 
         private CharacterDefinition CreateValidCharacter(string id)
@@ -689,19 +768,25 @@ namespace ValorChronicle.Tests.EditMode
                 definition,
                 "descriptionKey",
                 "relic.test.description");
-            SetInt(
-                definition,
+            var effect = new RelicEffectEntry();
+            SetPrivateField(
+                effect,
                 "effectType",
-                (int)RelicEffectType.AttackIncrease);
-            SetDoubleArray(
-                definition,
+                RelicEffectType.AttackIncrease);
+            SetPrivateField(
+                effect,
                 "effectRates",
-                0.05d,
-                0.06d,
-                0.07d,
-                0.08d,
-                0.09d,
-                0.10d);
+                new[]
+                {
+                    0.05d,
+                    0.06d,
+                    0.07d,
+                    0.08d,
+                    0.09d,
+                    0.10d
+                });
+            SetPrivateField(effect, "descriptionValueKey", "rate");
+            SetPrivateField(definition, "effects", new[] { effect });
             return definition;
         }
 

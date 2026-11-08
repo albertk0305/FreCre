@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using ValorChronicle.Battle.Combat.Effects;
 using ValorChronicle.Battle.Combat.State;
+using ValorChronicle.Data.Definitions;
+using ValorChronicle.Relics.Stats;
 
 namespace ValorChronicle.Battle.Combat.Modifiers
 {
@@ -22,6 +24,9 @@ namespace ValorChronicle.Battle.Combat.Modifiers
             }
 
             var values = new SupportModifierValues();
+            CollectPermanentRelicEffects(
+                source.PermanentRelicEffects,
+                values);
             CollectSource(source.Effects.GetActiveEffects(), values);
             CollectSource(party.Effects.GetActiveEffects(), values);
             return new SupportModifierSnapshot(
@@ -47,6 +52,34 @@ namespace ValorChronicle.Battle.Combat.Modifiers
                         values.ShieldAmountIncrease = Add(
                             values.ShieldAmountIncrease,
                             effect.EffectiveMagnitude);
+                        break;
+                }
+            }
+        }
+
+        private static void CollectPermanentRelicEffects(
+            IReadOnlyList<RelicStatBonusSource> effects,
+            SupportModifierValues values)
+        {
+            for (int index = 0; index < effects.Count; index++)
+            {
+                RelicStatBonusSource effect = effects[index];
+                if (effect == null)
+                {
+                    continue;
+                }
+
+                switch (effect.EffectType)
+                {
+                    case RelicEffectType.HealingIncrease:
+                        values.HealingIncrease = Add(
+                            values.HealingIncrease,
+                            effect.Rate);
+                        break;
+                    case RelicEffectType.ShieldAmountIncrease:
+                        values.ShieldAmountIncrease = Add(
+                            values.ShieldAmountIncrease,
+                            effect.Rate);
                         break;
                 }
             }

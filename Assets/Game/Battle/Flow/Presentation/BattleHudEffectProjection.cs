@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using ValorChronicle.Battle.Combat.Effects;
 using ValorChronicle.Characters.Fiora;
+using ValorChronicle.Characters.Marea;
 
 namespace ValorChronicle.Battle.Flow.Presentation
 {
@@ -12,7 +13,8 @@ namespace ValorChronicle.Battle.Flow.Presentation
         public BattleHudEffectProjection(
             string effectId,
             string badgeText,
-            bool badgeVisible)
+            bool badgeVisible,
+            bool hideWhenIconMissing = false)
         {
             if (string.IsNullOrWhiteSpace(effectId))
             {
@@ -24,11 +26,13 @@ namespace ValorChronicle.Battle.Flow.Presentation
             EffectId = effectId;
             BadgeText = badgeText ?? string.Empty;
             BadgeVisible = badgeVisible;
+            HideWhenIconMissing = hideWhenIconMissing;
         }
 
         public string EffectId { get; }
         public string BadgeText { get; }
         public bool BadgeVisible { get; }
+        public bool HideWhenIconMissing { get; }
     }
 
     /// <summary>
@@ -79,11 +83,33 @@ namespace ValorChronicle.Battle.Flow.Presentation
                 effects.Count);
             var projectedGroups = new HashSet<string>(
                 StringComparer.Ordinal);
+            bool hasLingeringSurge = ContainsEffect(
+                    effects,
+                    MareaBluefangRules.LingeringSurgeMatch3EffectId)
+                && ContainsEffect(
+                    effects,
+                    MareaBluefangRules.LingeringSurgeMatch4EffectId);
+            bool lingeringSurgeProjected = false;
             for (int index = 0; index < effects.Count; index++)
             {
                 EffectInstance effect = effects[index];
                 if (effect == null)
                 {
+                    continue;
+                }
+
+                if (IsLingeringSurgeInternalEffect(effect.EffectId))
+                {
+                    if (hasLingeringSurge && !lingeringSurgeProjected)
+                    {
+                        projections.Add(new BattleHudEffectProjection(
+                            MareaBluefangRules.LingeringSurgeHudEffectId,
+                            string.Empty,
+                            badgeVisible: false,
+                            hideWhenIconMissing: true));
+                        lingeringSurgeProjected = true;
+                    }
+
                     continue;
                 }
 
@@ -105,6 +131,38 @@ namespace ValorChronicle.Battle.Flow.Presentation
 
             return new ReadOnlyCollection<BattleHudEffectProjection>(
                 projections);
+        }
+
+        private static bool ContainsEffect(
+            IReadOnlyList<EffectInstance> effects,
+            string effectId)
+        {
+            for (int index = 0; index < effects.Count; index++)
+            {
+                EffectInstance effect = effects[index];
+                if (effect != null
+                    && string.Equals(
+                        effect.EffectId,
+                        effectId,
+                        StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool IsLingeringSurgeInternalEffect(string effectId)
+        {
+            return string.Equals(
+                    effectId,
+                    MareaBluefangRules.LingeringSurgeMatch3EffectId,
+                    StringComparison.Ordinal)
+                || string.Equals(
+                    effectId,
+                    MareaBluefangRules.LingeringSurgeMatch4EffectId,
+                    StringComparison.Ordinal);
         }
 
         private static BattleHudEffectProjection CreateDefaultProjection(

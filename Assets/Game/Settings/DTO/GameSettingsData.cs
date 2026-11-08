@@ -8,7 +8,7 @@ namespace ValorChronicle.Settings.DTO
     {
         public const int CurrentSchemaVersion = 1;
         public const int DefaultVolume = 100;
-        public const int DefaultBattleSpeed = 1;
+        public const int DefaultBattleSpeed = 2;
 
         public int SchemaVersion { get; set; } = CurrentSchemaVersion;
         public int MasterVolume { get; set; } = DefaultVolume;

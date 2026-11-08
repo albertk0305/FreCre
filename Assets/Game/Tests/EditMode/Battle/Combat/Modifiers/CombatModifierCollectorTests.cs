@@ -144,6 +144,37 @@ namespace ValorChronicle.Tests.EditMode.Battle.Combat.Modifiers
         }
 
         [Test]
+        public void CollectAllyDamage_AddsPermanentAttackReduction()
+        {
+            var attacker = new CharacterBattleState(
+                "hero",
+                0,
+                ElementType.Water,
+                1000,
+                1000d,
+                permanentAttackIncreaseRate: 0.10d,
+                permanentAttackReductionRate: 0.05d);
+            var party = new PartyBattleState(new[] { attacker });
+            var boss = new BossBattleState(
+                "boss",
+                ElementType.Fire,
+                5000,
+                500d);
+
+            AllyDamageModifierSnapshot result =
+                CombatModifierCollector.CollectAllyDamage(
+                    attacker,
+                    party,
+                    boss,
+                    ElementType.Water);
+
+            Assert.That(result.AttackIncreaseRateSum,
+                Is.EqualTo(0.10d));
+            Assert.That(result.AttackReductionRateSum,
+                Is.EqualTo(0.05d));
+        }
+
+        [Test]
         public void CollectAllyDamage_CapsOnlyConfiguredAttackIncreaseGroup()
         {
             CreateStates(

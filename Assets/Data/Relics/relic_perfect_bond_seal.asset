@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c31b07c8ad0d4e67a4b51e64b5294922, type: 3}
+  m_Name: relic_perfect_bond_seal
+  m_EditorClassIdentifier: ValorChronicle.Game::ValorChronicle.Data.Definitions.RelicDefinition
+  id: relic_perfect_bond_seal
+  displayNameKey: relic.perfect_bond_seal.name
+  descriptionKey: relic.perfect_bond_seal.description
+  effects:
+  - effectType: 8
+    effectRates:
+    - 0.06
+    - 0.07
+    - 0.08
+    - 0.09
+    - 0.1
+    - 0.12
+    descriptionValueKey: rate
+    hasElementFilter: 0
+    elementFilter: 0
+    attackTypeMask: 1
+    requiredAttackTags: 4
+    excludedAttackTags: 0
+    conditionType: 0
+    conditionThreshold: 0

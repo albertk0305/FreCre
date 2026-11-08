@@ -45,6 +45,8 @@ namespace ValorChronicle.UI.Settings
             view.BattleSpeedChanged += HandleBattleSpeedChanged;
             view.RedeemCodeRequested += HandleRedeemCodeRequested;
             view.RedeemResultDismissed += HandleRedeemResultDismissed;
+            view.HelpRequested += HandleHelpRequested;
+            view.CreditsRequested += HandleCreditsRequested;
             view.CloseRequested += HandleCloseRequested;
             settingsService.SettingsChanged += HandleSettingsChanged;
             if (localizationService != null)
@@ -89,6 +91,8 @@ namespace ValorChronicle.UI.Settings
             view.BattleSpeedChanged -= HandleBattleSpeedChanged;
             view.RedeemCodeRequested -= HandleRedeemCodeRequested;
             view.RedeemResultDismissed -= HandleRedeemResultDismissed;
+            view.HelpRequested -= HandleHelpRequested;
+            view.CreditsRequested -= HandleCreditsRequested;
             view.CloseRequested -= HandleCloseRequested;
             settingsService.SettingsChanged -= HandleSettingsChanged;
             if (localizationService != null)
@@ -177,17 +181,49 @@ namespace ValorChronicle.UI.Settings
             currentRedeemResult = null;
         }
 
+        private void HandleHelpRequested()
+        {
+            RefreshHelp();
+        }
+
+        private void HandleCreditsRequested()
+        {
+            RefreshCredits();
+        }
+
         private void HandleLocalizationChanged(string _)
         {
             if (disposed)
                 return;
 
             RefreshRedeemLocalization();
+            if (view.IsHelpVisible)
+                RefreshHelp();
+            else if (view.IsCreditsVisible)
+                RefreshCredits();
             if (currentRedeemResult != null
                 && view.IsRedeemResultVisible)
             {
                 RefreshRedeemResult();
             }
+        }
+
+        private void RefreshHelp()
+        {
+            if (localizationService == null)
+                return;
+
+            view.ShowHelp(localizationService.GetText(
+                SettingsHelpContent.LocalizationKey));
+        }
+
+        private void RefreshCredits()
+        {
+            if (localizationService == null)
+                return;
+
+            view.ShowCredits(localizationService.GetText(
+                SettingsCreditsContent.LocalizationKey));
         }
 
         private void RefreshRedeemLocalization()

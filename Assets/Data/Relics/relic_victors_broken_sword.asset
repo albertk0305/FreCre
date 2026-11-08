@@ -15,11 +15,20 @@ MonoBehaviour:
   id: relic_victors_broken_sword
   displayNameKey: relic.victors_broken_sword.name
   descriptionKey: relic.victors_broken_sword.description
-  effectType: 1
-  effectRates:
-  - 0.05
-  - 0.06
-  - 0.07
-  - 0.08
-  - 0.09
-  - 0.1
+  effects:
+  - effectType: 1
+    effectRates:
+    - 0.05
+    - 0.06
+    - 0.07
+    - 0.08
+    - 0.09
+    - 0.1
+    descriptionValueKey: rate
+    hasElementFilter: 0
+    elementFilter: 0
+    attackTypeMask: 0
+    requiredAttackTags: 0
+    excludedAttackTags: 0
+    conditionType: 0
+    conditionThreshold: 0

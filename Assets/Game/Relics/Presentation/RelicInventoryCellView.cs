@@ -95,7 +95,9 @@ namespace ValorChronicle.Relics.Presentation
             awakeningText.text = entry.Awakening.ToString(
                 CultureInfo.InvariantCulture);
             awakeningText.gameObject.SetActive(true);
-            float alpha = entry.IsDimmed ? DimmedAlpha : 1f;
+            float alpha = icon == null
+                ? 0f
+                : entry.IsDimmed ? DimmedAlpha : 1f;
             iconImage.color = WithAlpha(iconColor, alpha);
             awakeningText.color = WithAlpha(awakeningColor, alpha);
             border.SetActive(true);

@@ -1488,16 +1488,22 @@ namespace ValorChronicle.Tests.EditMode.Characters.Presentation
             var definition = ScriptableObject.CreateInstance<RelicDefinition>();
             createdObjects.Add(definition);
             SetField(definition, typeof(GameDefinition), "id", id);
+            var effect = new RelicEffectEntry();
             SetField(
-                definition,
-                typeof(RelicDefinition),
+                effect,
+                typeof(RelicEffectEntry),
                 "effectType",
                 effectType);
             SetField(
-                definition,
-                typeof(RelicDefinition),
+                effect,
+                typeof(RelicEffectEntry),
                 "effectRates",
                 new[] { 0.05d, 0.06d, 0.07d, 0.08d, 0.09d, 0.10d });
+            SetField(
+                definition,
+                typeof(RelicDefinition),
+                "effects",
+                new[] { effect });
             return definition;
         }
 
@@ -1656,7 +1662,7 @@ namespace ValorChronicle.Tests.EditMode.Characters.Presentation
         }
 
         private static void SetField(
-            UnityEngine.Object target,
+            object target,
             Type declaringType,
             string fieldName,
             object value)

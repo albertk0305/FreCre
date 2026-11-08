@@ -584,9 +584,15 @@ namespace ValorChronicle.Tests.EditMode
             createdObjects.Add(definition);
             var serialized = new SerializedObject(definition);
             serialized.FindProperty("id").stringValue = id;
-            serialized.FindProperty("effectType").enumValueIndex =
+            SerializedProperty effects = serialized.FindProperty("effects");
+            effects.arraySize = 1;
+            SerializedProperty effect = effects.GetArrayElementAtIndex(0);
+            effect.FindPropertyRelative("effectType").enumValueIndex =
                 (int)effectType;
-            SerializedProperty rates = serialized.FindProperty("effectRates");
+            effect.FindPropertyRelative("descriptionValueKey").stringValue =
+                "rate";
+            SerializedProperty rates = effect.FindPropertyRelative(
+                "effectRates");
             rates.arraySize = RelicDefinition.AwakeningValueCount;
             for (int index = 0; index < rates.arraySize; index++)
             {

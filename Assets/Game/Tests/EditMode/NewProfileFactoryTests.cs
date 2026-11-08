@@ -9,11 +9,12 @@ namespace ValorChronicle.Tests.EditMode
     public sealed class NewProfileFactoryTests
     {
         [Test]
-        public void Create_BuildsExpectedEmptyProfile()
+        public void CreateGameDefaults_BuildsExpectedInitialProfile()
         {
             const string profileId = "profile_test";
             const long timestamp = 1700000000;
-            var factory = new NewProfileFactory();
+            NewProfileFactory factory =
+                NewProfileFactory.CreateGameDefaults();
 
             ProfileSaveData profile = factory.Create(profileId, timestamp);
 
@@ -21,11 +22,26 @@ namespace ValorChronicle.Tests.EditMode
             Assert.That(profile.ProfileId, Is.EqualTo(profileId));
             Assert.That(profile.CreatedAtUtcUnixSeconds, Is.EqualTo(timestamp));
             Assert.That(profile.LastSavedAtUtcUnixSeconds, Is.EqualTo(timestamp));
-            Assert.That(profile.Currencies.GachaCurrency, Is.Zero);
+            Assert.That(profile.Currencies.GachaCurrency,
+                Is.EqualTo(NewProfileFactory.InitialGold));
             Assert.That(profile.Currencies.BattleRecords, Is.Zero);
             Assert.That(profile.Currencies.HeroTokens, Is.Zero);
             Assert.That(profile.Currencies.RelicTokens, Is.Zero);
-            Assert.That(profile.Characters, Is.Empty);
+            Assert.That(profile.Characters, Has.Count.EqualTo(5));
+            Assert.That(
+                profile.Characters.Select(character => character.CharacterId),
+                Is.EqualTo(NewProfileFactory.GameStartingCharacterIds));
+            Assert.That(profile.Characters,
+                Has.All.Matches<CharacterSaveData>(character =>
+                    character.Level == SaveRules.CharacterMinLevel
+                    && character.Awakening
+                        == SaveRules.CharacterMinAwakening
+                    && !character.IsFavorite
+                    && !character.IsNew
+                    && character.EquippedRelicInstanceIds.Count
+                        == SaveRules.RelicSlotCountPerCharacter
+                    && character.EquippedRelicInstanceIds.All(
+                        id => id == SaveRules.EmptyId)));
             Assert.That(profile.RelicInstances, Is.Empty);
             Assert.That(profile.GachaStates, Is.Empty);
             Assert.That(profile.BossRecords, Is.Empty);
@@ -34,9 +50,10 @@ namespace ValorChronicle.Tests.EditMode
         }
 
         [Test]
-        public void Create_BuildsFiveEmptyFiveSlotPartyPresets()
+        public void CreateGameDefaults_BuildsOrderedActivePartyAndEmptyReserves()
         {
-            var factory = new NewProfileFactory();
+            NewProfileFactory factory =
+                NewProfileFactory.CreateGameDefaults();
 
             ProfileSaveData profile = factory.Create("profile_test", 1);
 
@@ -55,17 +72,29 @@ namespace ValorChronicle.Tests.EditMode
                 Assert.That(
                     profile.Party.Presets[presetIndex].CharacterSlotIds,
                     Has.Count.EqualTo(SaveRules.PartySlotCount));
-                Assert.That(
-                    profile.Party.Presets[presetIndex]
-                        .CharacterSlotIds.All(value => value == string.Empty),
-                    Is.True);
+                if (presetIndex == 0)
+                {
+                    Assert.That(
+                        profile.Party.Presets[presetIndex].CharacterSlotIds,
+                        Is.EqualTo(
+                            NewProfileFactory
+                                .GameStartingPartyCharacterIds));
+                }
+                else
+                {
+                    Assert.That(
+                        profile.Party.Presets[presetIndex]
+                            .CharacterSlotIds.All(
+                                value => value == SaveRules.EmptyId),
+                        Is.True);
+                }
             }
             Assert.That(profile.Party.LastBossId, Is.Empty);
             Assert.That(profile.Party.LastDifficultyId, Is.Empty);
         }
 
         [Test]
-        public void Create_DoesNotGrantStartingContent()
+        public void EmptyFactory_RemainsAvailableForExplicitFixtures()
         {
             var factory = new NewProfileFactory();
 

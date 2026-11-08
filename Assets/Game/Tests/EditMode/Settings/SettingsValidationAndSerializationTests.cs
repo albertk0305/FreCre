@@ -19,7 +19,7 @@ namespace ValorChronicle.Tests.EditMode.Settings
             Assert.That(settings.SfxVolume, Is.EqualTo(100));
             Assert.That(settings.LocaleId,
                 Is.EqualTo(LocalizationService.EnglishLocale));
-            Assert.That(settings.BattleSpeed, Is.EqualTo(1));
+            Assert.That(settings.BattleSpeed, Is.EqualTo(2));
         }
 
         [Test]
@@ -120,7 +120,7 @@ namespace ValorChronicle.Tests.EditMode.Settings
             Assert.That(data.BgmVolume, Is.EqualTo(100));
             Assert.That(data.SfxVolume, Is.EqualTo(100));
             Assert.That(data.LocaleId, Is.EqualTo("ko"));
-            Assert.That(data.BattleSpeed, Is.EqualTo(1));
+            Assert.That(data.BattleSpeed, Is.EqualTo(2));
         }
 
         [TestCase(1)]

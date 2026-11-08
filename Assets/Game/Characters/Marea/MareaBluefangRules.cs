@@ -9,5 +9,7 @@ namespace ValorChronicle.Characters.Marea
             "effect_marea_lingering_surge_match3";
         public const string LingeringSurgeMatch4EffectId =
             "effect_marea_lingering_surge_match4";
+        public const string LingeringSurgeHudEffectId =
+            "effect_marea_lingering_surge";
     }
 }

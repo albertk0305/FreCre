@@ -95,6 +95,137 @@ namespace ValorChronicle.Tests.EditMode.Battle.Combat.Damage
         }
 
         [Test]
+        public void PermanentRelicCriticalRatesAddWithRuntimeEffects()
+        {
+            var attacker = new CharacterBattleState(
+                "attacker",
+                0,
+                ElementType.Water,
+                100,
+                1000d,
+                permanentRelicEffects: null,
+                permanentCriticalChanceIncreaseRate: 0.10d,
+                permanentCriticalDamageIncreaseRate: 0.20d);
+            var party = new PartyBattleState(new[] { attacker });
+            var boss = new BossBattleState(
+                "boss",
+                ElementType.Water,
+                100000,
+                100d);
+            attacker.Effects.ApplyEffect(Effect(
+                1,
+                "runtime_critical_chance",
+                EffectModifierType.CriticalChanceIncrease,
+                0.15d));
+            attacker.Effects.ApplyEffect(Effect(
+                2,
+                "runtime_critical_damage",
+                EffectModifierType.CriticalDamageIncrease,
+                0.05d));
+            var random = new SequenceRandomSource(0.20f);
+            var factory = new DamageContextFactory(random);
+
+            DamageContext critical = factory.Build(Request(
+                attacker,
+                party,
+                boss,
+                AttackType.Match,
+                canCritical: true));
+            DamageContext cannotCritical = factory.Build(Request(
+                attacker,
+                party,
+                boss,
+                AttackType.Match,
+                canCritical: false));
+
+            Assert.That(critical.IsCritical, Is.True);
+            Assert.That(critical.CriticalDamageMultiplier,
+                Is.EqualTo(1.75d).Within(1e-12d));
+            Assert.That(DamageCalculator.Calculate(critical).FinalDamage,
+                Is.EqualTo(1750L));
+            Assert.That(cannotCritical.IsCritical, Is.False);
+            Assert.That(
+                DamageCalculator.Calculate(cannotCritical)
+                    .CriticalMultiplier,
+                Is.EqualTo(1d));
+            Assert.That(
+                DamageCalculator.Calculate(cannotCritical).FinalDamage,
+                Is.EqualTo(1000L));
+            Assert.That(random.NextFloatCallCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void PermanentRelicCriticalChanceIsCappedAtOne()
+        {
+            var attacker = new CharacterBattleState(
+                "attacker",
+                0,
+                ElementType.Water,
+                100,
+                1000d,
+                permanentRelicEffects: null,
+                permanentCriticalChanceIncreaseRate: 1.10d);
+            var party = new PartyBattleState(new[] { attacker });
+            var boss = new BossBattleState(
+                "boss",
+                ElementType.Water,
+                100000,
+                100d);
+            var random = new SequenceRandomSource();
+
+            DamageContext context = new DamageContextFactory(random).Build(
+                Request(
+                    attacker,
+                    party,
+                    boss,
+                    AttackType.Active,
+                    canCritical: true));
+
+            Assert.That(context.IsCritical, Is.True);
+            Assert.That(random.NextFloatCallCount, Is.Zero);
+        }
+
+        [Test]
+        public void PermanentRelicCriticalRatesApplyOnlyToOwner()
+        {
+            var attacker = new CharacterBattleState(
+                "attacker",
+                0,
+                ElementType.Water,
+                100,
+                1000d);
+            var other = new CharacterBattleState(
+                "other",
+                1,
+                ElementType.Fire,
+                100,
+                1000d,
+                permanentRelicEffects: null,
+                permanentCriticalChanceIncreaseRate: 1d,
+                permanentCriticalDamageIncreaseRate: 1d);
+            var party = new PartyBattleState(new[] { attacker, other });
+            var boss = new BossBattleState(
+                "boss",
+                ElementType.Water,
+                100000,
+                100d);
+            var random = new SequenceRandomSource();
+
+            DamageContext context = new DamageContextFactory(random).Build(
+                Request(
+                    attacker,
+                    party,
+                    boss,
+                    AttackType.Match,
+                    canCritical: true));
+
+            Assert.That(context.IsCritical, Is.False);
+            Assert.That(context.CriticalDamageMultiplier,
+                Is.EqualTo(1.50d));
+            Assert.That(random.NextFloatCallCount, Is.Zero);
+        }
+
+        [Test]
         public void OneBuildRollsOnceAndSeparateFollowUpsRollSeparately()
         {
             CreateStates(

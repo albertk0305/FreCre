@@ -1,10 +1,12 @@
 using System.Collections.Generic;
 using NUnit.Framework;
+using ValorChronicle.Battle.Combat.Attacks;
 using ValorChronicle.Battle.Combat.Effects;
 using ValorChronicle.Battle.Combat.Modifiers;
 using ValorChronicle.Battle.Combat.State;
 using ValorChronicle.Battle.Flow.Presentation;
 using ValorChronicle.Characters.Fiora;
+using ValorChronicle.Characters.Marea;
 using ValorChronicle.Data.Definitions;
 
 namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
@@ -17,6 +19,120 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
         public void SetUp()
         {
             projector = BattleHudEffectProjector.CreateDefault();
+        }
+
+        [Test]
+        public void CompleteLingeringSurgePairUsesOneHudProjection()
+        {
+            EffectInstance match3 = LingeringSurge(
+                1,
+                MareaBluefangRules.LingeringSurgeMatch3EffectId,
+                AttackTag.Match3);
+            EffectInstance match4 = LingeringSurge(
+                2,
+                MareaBluefangRules.LingeringSurgeMatch4EffectId,
+                AttackTag.Match4);
+
+            IReadOnlyList<BattleHudEffectProjection> result =
+                projector.Project(new[] { match3, match4 });
+
+            Assert.That(result, Has.Count.EqualTo(1));
+            Assert.That(result[0].EffectId,
+                Is.EqualTo(MareaBluefangRules.LingeringSurgeHudEffectId));
+            Assert.That(result[0].BadgeVisible, Is.False);
+            Assert.That(result[0].BadgeText, Is.Empty);
+            Assert.That(result[0].HideWhenIconMissing, Is.True);
+            Assert.That(match3.EffectId,
+                Is.EqualTo(
+                    MareaBluefangRules.LingeringSurgeMatch3EffectId));
+            Assert.That(match4.EffectId,
+                Is.EqualTo(
+                    MareaBluefangRules.LingeringSurgeMatch4EffectId));
+        }
+
+        [TestCase(
+            MareaBluefangRules.LingeringSurgeMatch3EffectId,
+            AttackTag.Match3)]
+        [TestCase(
+            MareaBluefangRules.LingeringSurgeMatch4EffectId,
+            AttackTag.Match4)]
+        public void PartialLingeringSurgeStateIsNotProjected(
+            string effectId,
+            AttackTag attackTag)
+        {
+            IReadOnlyList<BattleHudEffectProjection> result =
+                projector.Project(new[]
+                {
+                    LingeringSurge(1, effectId, attackTag)
+                });
+
+            Assert.That(result, Is.Empty);
+        }
+
+        [Test]
+        public void MissingLingeringSurgeStateHasNoProjection()
+        {
+            Assert.That(
+                projector.Project(new EffectInstance[0]),
+                Is.Empty);
+        }
+
+        [Test]
+        public void LingeringSurgePreservesOtherEffectProjectionOrder()
+        {
+            EffectInstance other = MatchBuff(
+                3,
+                3,
+                FioraAmberwingRules.Match4AttackEffectId,
+                0.05d,
+                2);
+            var effects = new[]
+            {
+                LingeringSurge(
+                    1,
+                    MareaBluefangRules.LingeringSurgeMatch3EffectId,
+                    AttackTag.Match3),
+                LingeringSurge(
+                    2,
+                    MareaBluefangRules.LingeringSurgeMatch4EffectId,
+                    AttackTag.Match4),
+                other
+            };
+
+            IReadOnlyList<BattleHudEffectProjection> result =
+                projector.Project(effects);
+
+            Assert.That(result, Has.Count.EqualTo(2));
+            Assert.That(result[0].EffectId,
+                Is.EqualTo(MareaBluefangRules.LingeringSurgeHudEffectId));
+            Assert.That(result[1].EffectId, Is.EqualTo(other.EffectId));
+        }
+
+        [Test]
+        public void RepeatedProjectionDoesNotDuplicateOrMutateLingeringSurge()
+        {
+            var effects = new[]
+            {
+                LingeringSurge(
+                    1,
+                    MareaBluefangRules.LingeringSurgeMatch3EffectId,
+                    AttackTag.Match3),
+                LingeringSurge(
+                    2,
+                    MareaBluefangRules.LingeringSurgeMatch4EffectId,
+                    AttackTag.Match4)
+            };
+
+            IReadOnlyList<BattleHudEffectProjection> first =
+                projector.Project(effects);
+            IReadOnlyList<BattleHudEffectProjection> second =
+                projector.Project(effects);
+
+            Assert.That(first, Has.Count.EqualTo(1));
+            Assert.That(second, Has.Count.EqualTo(1));
+            Assert.That(effects, Has.Length.EqualTo(2));
+            Assert.That(effects[0].Magnitude, Is.EqualTo(0.30d));
+            Assert.That(effects[1].Magnitude, Is.EqualTo(0.30d));
         }
 
         [Test]
@@ -284,6 +400,25 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
                 turns,
                 creationOrder,
                 EffectStackPolicy.RefreshDuration);
+        }
+
+        private static EffectInstance LingeringSurge(
+            long runtimeId,
+            string effectId,
+            AttackTag attackTag)
+        {
+            return new EffectInstance(
+                runtimeId,
+                effectId,
+                MareaBluefangRules.CharacterId,
+                EffectCategory.Buff,
+                EffectModifierType.AttackTypeDamageIncrease,
+                0.30d,
+                remainingTurns: null,
+                creationOrder: runtimeId,
+                EffectStackPolicy.Unique,
+                attackTypeMask: AttackTypeMask.Match,
+                requiredAttackTags: attackTag);
         }
     }
 }

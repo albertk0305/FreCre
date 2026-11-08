@@ -87,7 +87,9 @@ namespace ValorChronicle.Relics.Presentation
             }
 
             iconImage.sprite = model.Icon;
-            iconImage.color = visibleIconColor;
+            iconImage.color = WithAlpha(
+                visibleIconColor,
+                model.Icon == null ? 0f : visibleIconColor.a);
             emptyBackground.SetActive(false);
             awakeningText.text = model.Awakening.ToString(
                 CultureInfo.InvariantCulture);

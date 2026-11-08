@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using ValorChronicle.Battle.Combat.State;
 using ValorChronicle.Data.Definitions;
+using ValorChronicle.Relics.Stats;
 
 namespace ValorChronicle.Tests.EditMode.Battle.Combat.State
 {
@@ -90,17 +91,48 @@ namespace ValorChronicle.Tests.EditMode.Battle.Combat.State
                 exposed.Add(Character("blocked", 3)));
         }
 
+        [Test]
+        public void Constructor_AggregatesPermanentRelicEffectsBySlot()
+        {
+            var reduction = new RelicStatBonusSource(
+                "relic_reduction",
+                "name",
+                "description",
+                RelicEffectType.PartyDamageReduction,
+                0,
+                0.05d);
+            var critical = new RelicStatBonusSource(
+                "relic_critical",
+                "name",
+                "description",
+                RelicEffectType.CriticalChanceIncrease,
+                0,
+                0.10d);
+            var party = new PartyBattleState(new[]
+            {
+                Character("second", 1, relicEffects: new[] { critical }),
+                Character("first", 0, relicEffects: new[] { reduction })
+            });
+
+            Assert.That(party.PermanentRelicEffects,
+                Is.EqualTo(new[] { reduction, critical }));
+            Assert.That(party.PermanentPartyDamageReductionRate,
+                Is.EqualTo(0.05d));
+        }
+
         private static CharacterBattleState Character(
             string id,
             int slot,
-            long maxHp = 100)
+            long maxHp = 100,
+            IReadOnlyList<RelicStatBonusSource> relicEffects = null)
         {
             return new CharacterBattleState(
                 id,
                 slot,
                 ElementType.Fire,
                 maxHp,
-                10d);
+                10d,
+                permanentRelicEffects: relicEffects);
         }
     }
 }

@@ -746,7 +746,7 @@ namespace ValorChronicle.Tests.EditMode.Battle.Flow.Presentation
             Assert.That(shuffleText.activeSelf, Is.False);
             Assert.That(shuffleIcon.activeSelf, Is.False);
             Assert.That(shuffleText.GetComponent<TMP_Text>().text,
-                Is.EqualTo("No Match Available\nShuffling..."));
+                Is.EqualTo("Shuffling..."));
         }
 
         private static bool IsBelowSafeArea(Transform transform)

@@ -366,13 +366,18 @@ namespace ValorChronicle.Relics.Presentation
             {
                 string displayName = localizationService.GetText(
                     definition.DisplayNameKey);
+                var arguments = new Dictionary<string, object>(
+                    StringComparer.Ordinal);
+                foreach (KeyValuePair<string, double> value in
+                    definition.GetDescriptionValues(instance.Awakening))
+                {
+                    arguments.Add(
+                        value.Key,
+                        FormatPercent(value.Value));
+                }
                 string effectDescription = localizationService.Format(
                     definition.DescriptionKey,
-                    new Dictionary<string, object>
-                    {
-                        ["rate"] = FormatPercent(
-                            definition.GetEffectRate(instance.Awakening))
-                    });
+                    arguments);
                 description = $"{displayName}\n\n{effectDescription}";
             }
             return RelicPresentationModel.Equipped(

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using ValorChronicle.Battle.Combat.Effects;
+using ValorChronicle.Data.Definitions;
+using ValorChronicle.Relics.Stats;
 
 namespace ValorChronicle.Battle.Combat.State
 {
@@ -10,6 +12,8 @@ namespace ValorChronicle.Battle.Combat.State
         public const int MaximumCharacterCount = 5;
 
         private readonly ReadOnlyCollection<CharacterBattleState> characters;
+        private readonly ReadOnlyCollection<RelicStatBonusSource>
+            permanentRelicEffects;
 
         public PartyBattleState(
             IReadOnlyList<CharacterBattleState> characters)
@@ -68,6 +72,44 @@ namespace ValorChronicle.Battle.Combat.State
                 (left, right) => left.PartySlotIndex.CompareTo(
                     right.PartySlotIndex));
             this.characters = Array.AsReadOnly(copiedCharacters);
+            var relicEffects = new List<RelicStatBonusSource>();
+            double partyDamageReductionRate = 0d;
+            for (int characterIndex = 0;
+                characterIndex < copiedCharacters.Length;
+                characterIndex++)
+            {
+                IReadOnlyList<RelicStatBonusSource> sources =
+                    copiedCharacters[characterIndex].PermanentRelicEffects;
+                for (int sourceIndex = 0;
+                    sourceIndex < sources.Count;
+                    sourceIndex++)
+                {
+                    RelicStatBonusSource source = sources[sourceIndex];
+                    if (source == null)
+                    {
+                        continue;
+                    }
+
+                    relicEffects.Add(source);
+                    if (source.EffectType
+                        == RelicEffectType.PartyDamageReduction)
+                    {
+                        partyDamageReductionRate += source.Rate;
+                        if (double.IsNaN(partyDamageReductionRate)
+                            || double.IsInfinity(
+                                partyDamageReductionRate))
+                        {
+                            throw new OverflowException(
+                                "Permanent party damage reduction must "
+                                    + "remain finite.");
+                        }
+                    }
+                }
+            }
+
+            permanentRelicEffects = relicEffects.AsReadOnly();
+            PermanentPartyDamageReductionRate =
+                partyDamageReductionRate;
             MaxHp = maximumHp;
             CurrentHp = maximumHp;
             Shields = new ShieldCollection();
@@ -75,6 +117,9 @@ namespace ValorChronicle.Battle.Combat.State
         }
 
         public IReadOnlyList<CharacterBattleState> Characters => characters;
+        public IReadOnlyList<RelicStatBonusSource>
+            PermanentRelicEffects => permanentRelicEffects;
+        public double PermanentPartyDamageReductionRate { get; }
         public long MaxHp { get; }
         public long CurrentHp { get; private set; }
         public ShieldCollection Shields { get; }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
 using ValorChronicle.Core.Random;
 using ValorChronicle.Data.Database;
@@ -14,6 +15,30 @@ namespace ValorChronicle.Tests.EditMode
 {
     public sealed class GachaCalculatorTests
     {
+        private static readonly string[] ExpectedRelicPoolIds =
+        {
+            "relic_victors_broken_sword",
+            "relic_world_tree_bark",
+            "relic_clairvoyants_monocle",
+            "relic_executioners_bloodstone",
+            "relic_twin_stars_destiny_stone",
+            "relic_ember_lords_crown",
+            "relic_deep_sea_kings_blue_pearl",
+            "relic_primordial_trees_life_seed",
+            "relic_morning_stars_radiance",
+            "relic_eclipses_obsidian",
+            "relic_saintess_silver_chalice",
+            "relic_titans_carapace",
+            "relic_pioneers_emblem",
+            "relic_bloodied_gladiators_contract",
+            "relic_silent_giants_heart",
+            "relic_perfect_bond_seal",
+            "relic_trackers_chain",
+            "relic_overlords_seal",
+            "relic_last_ember",
+            "relic_indomitable_guardian_crest",
+        };
+
         private readonly List<UnityEngine.Object> createdObjects =
             new List<UnityEngine.Object>();
 
@@ -202,6 +227,41 @@ namespace ValorChronicle.Tests.EditMode
             Assert.That(lastCharacter, Is.EqualTo("character_last"));
             Assert.That(firstRelic, Is.EqualTo("relic_first"));
             Assert.That(lastRelic, Is.EqualTo("relic_last"));
+        }
+
+        [TestCase("gacha_character_standard", 20)]
+        [TestCase("gacha_relic_standard", 5)]
+        public void CanonicalRelicPools_CanSelectEveryRegisteredRelic(
+            string gachaId,
+            int relicRewardRoll)
+        {
+            DefinitionDatabase database =
+                AssetDatabase.LoadAssetAtPath<DefinitionDatabase>(
+                    "Assets/Data/Database/DefinitionDatabase.asset");
+            Assert.That(database, Is.Not.Null);
+            database.Initialize();
+            Assert.That(database.TryGetGacha(
+                gachaId,
+                out GachaDefinition definition), Is.True);
+            Assert.That(definition.RelicPoolIds,
+                Is.EqualTo(ExpectedRelicPoolIds));
+
+            for (int index = 0;
+                index < ExpectedRelicPoolIds.Length;
+                index++)
+            {
+                var calculator = new GachaCalculator(
+                    database,
+                    new QueueRandomSource(relicRewardRoll, index));
+                GachaPullResult pull = calculator.GenerateSingle(
+                    gachaId,
+                    State(gachaId)).Pulls[0];
+
+                Assert.That(pull.RewardKind,
+                    Is.EqualTo(GachaRewardKind.RandomRelic));
+                Assert.That(pull.RewardId,
+                    Is.EqualTo(ExpectedRelicPoolIds[index]));
+            }
         }
 
         [Test]

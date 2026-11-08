@@ -32,7 +32,12 @@ using ValorChronicle.Data.Database;
 using ValorChronicle.Data.Definitions;
 using ValorChronicle.Save.DTO;
 using ValorChronicle.Save.Copying;
+using ValorChronicle.Save.Migration;
+using ValorChronicle.Save.Processing;
+using ValorChronicle.Save.Repository;
+using ValorChronicle.Save.Serialization;
 using ValorChronicle.Save.Services;
+using ValorChronicle.Save.Validation;
 using ValorChronicle.Settings.Services;
 
 namespace ValorChronicle.Tests.PlayMode
@@ -1860,6 +1865,44 @@ namespace ValorChronicle.Tests.PlayMode
             return count;
         }
 
+        private static SaveService CreateEmptyTestSaveService(
+            string root,
+            DefinitionDatabase database)
+        {
+            var cloner = new SaveDataCloner();
+            return new SaveService(
+                new SaveRepository(new SavePaths(root)),
+                new NewtonsoftJsonSaveSerializer(),
+                new NewProfileFactory(),
+                cloner,
+                new SaveMigrationRunner(
+                    cloner,
+                    new ISaveMigrationStep[]
+                    {
+                        new V1ToV2PartyMigration(),
+                        new V2ToV3RelicEquipMigration()
+                    }),
+                new SaveValidationProcessor(),
+                new DefinitionDatabaseSaveContentCatalog(database),
+                new SystemUnixTimeProvider());
+        }
+
+        private static string DescribeLoadFailure(SaveLoadResult load)
+        {
+            if (load == null)
+                return "Save load returned no result.";
+
+            IReadOnlyList<SaveValidationIssue> issues =
+                load.ValidationResult?.FinalReport?.Issues;
+            if (issues == null || issues.Count == 0)
+                return load.Message;
+
+            return $"{load.Message} " + string.Join(
+                "; ",
+                issues.Select(issue =>
+                    $"{issue.Code}@{issue.FieldPath}"));
+        }
+
         private void InstallTestBootstrapper()
         {
             string testName = TestContext.CurrentContext.Test.Name;
@@ -2130,12 +2173,12 @@ namespace ValorChronicle.Tests.PlayMode
                 Application.temporaryCachePath,
                 "ValorChronicleBattleSceneTests",
                 Guid.NewGuid().ToString("N"));
-            saveService = SaveSystemFactory.Create(
+            saveService = CreateEmptyTestSaveService(
                 saveRoot,
                 testDefinitionDatabase);
             SaveLoadResult load = saveService.LoadOrCreate(
                 "battle_scene_test");
-            Assert.That(load.IsSuccess, Is.True, load.Message);
+            Assert.That(load.IsSuccess, Is.True, DescribeLoadFailure(load));
             SaveTransactionResult partySetup =
                 saveService.ExecuteTransaction(profile =>
                 {
@@ -2201,6 +2244,7 @@ namespace ValorChronicle.Tests.PlayMode
                 gamePauseService);
             settingsService = SettingsService.CreateInMemoryDefaults();
             settingsService.LoadOrCreate();
+            Assert.That(settingsService.SetBattleSpeed(1), Is.True);
             SetAutoProperty(
                 typeof(GameBootstrapper),
                 "SettingsService",

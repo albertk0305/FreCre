@@ -35,14 +35,19 @@ namespace ValorChronicle.Characters.Stats
                     nameof(build));
             }
 
+            RelicStatBonusSummary bonuses = relicStatBonuses
+                ?? RelicStatBonusSummary.None;
             return new CharacterBattleState(
                 build.CharacterId,
                 partySlotIndex,
                 definition.Element,
                 build.MaxHp,
                 build.Attack,
-                (relicStatBonuses ?? RelicStatBonusSummary.None)
-                    .AttackIncreaseRateSum);
+                bonuses.AttackIncreaseRateSum,
+                bonuses.AttackReductionRateSum,
+                bonuses.Sources,
+                bonuses.CriticalChanceIncreaseRateSum,
+                bonuses.CriticalDamageIncreaseRateSum);
         }
     }
 }

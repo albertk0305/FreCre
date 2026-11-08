@@ -46,6 +46,13 @@ namespace ValorChronicle.Tests.EditMode.Settings
             Assert.That(File.Exists(paths.BackupPath), Is.False);
             Assert.That(File.Exists(paths.TempPath), Is.False);
             Assert.That(service.IsDirty, Is.False);
+            Assert.That(service.Current.LocaleId,
+                Is.EqualTo(ValorChronicle.Localization.LocalizationService
+                    .EnglishLocale));
+            Assert.That(service.Current.BattleSpeed, Is.EqualTo(2));
+            Assert.That(service.Current.MasterVolume, Is.EqualTo(100));
+            Assert.That(service.Current.BgmVolume, Is.EqualTo(100));
+            Assert.That(service.Current.SfxVolume, Is.EqualTo(100));
         }
 
         [Test]

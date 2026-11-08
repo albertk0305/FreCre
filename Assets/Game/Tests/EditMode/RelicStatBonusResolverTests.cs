@@ -209,6 +209,130 @@ namespace ValorChronicle.Tests.EditMode
         }
 
         [Test]
+        public void Resolve_CompositeDefinitionAggregatesEveryEffectEntry()
+        {
+            RelicEffectEntry attack = Effect(
+                RelicEffectType.AttackIncrease,
+                Rates(0.05d),
+                "attack_rate");
+            RelicEffectEntry maxHpReduction = Effect(
+                RelicEffectType.MaxHpReduction,
+                Rates(0.01d),
+                "max_hp_reduction_rate");
+            RelicDefinition composite = Definition(
+                "relic_composite",
+                attack,
+                maxHpReduction);
+            CharacterSaveData character = Character("composite_instance");
+            ProfileSaveData profile = Profile(
+                character,
+                Instance("composite_instance", composite.Id, 5));
+
+            RelicStatBonusSummary result = Resolver(composite).Resolve(
+                profile,
+                character);
+
+            Assert.That(
+                result.AttackIncreaseRateSum,
+                Is.EqualTo(0.10d).Within(1e-12d));
+            Assert.That(
+                result.MaxHpReductionRateSum,
+                Is.EqualTo(0.06d).Within(1e-12d));
+            Assert.That(result.Sources, Has.Count.EqualTo(2));
+            Assert.That(
+                composite.GetEffectRate(1, 5),
+                Is.EqualTo(0.06d).Within(1e-12d));
+            Assert.That(
+                composite.GetDescriptionValues(5)["attack_rate"],
+                Is.EqualTo(0.10d).Within(1e-12d));
+            Assert.That(
+                composite.GetDescriptionValues(5)[
+                    "max_hp_reduction_rate"],
+                Is.EqualTo(0.06d).Within(1e-12d));
+        }
+
+        [Test]
+        public void Resolve_TwoRelicsThenUnequip_RemovesOnlyClearedBonus()
+        {
+            RelicDefinition sword = Definition(
+                "relic_sword",
+                RelicEffectType.AttackIncrease,
+                Rates(0.05d));
+            RelicDefinition bark = Definition(
+                "relic_bark",
+                RelicEffectType.MaxHpIncrease,
+                Rates(0.05d));
+            CharacterSaveData character = Character("sword", "bark");
+            ProfileSaveData profile = Profile(
+                character,
+                Instance("sword", sword.Id, 5),
+                Instance("bark", bark.Id, 5));
+            RelicStatBonusResolver resolver = Resolver(sword, bark);
+
+            RelicStatBonusSummary equipped = resolver.Resolve(
+                profile,
+                character);
+            character.EquippedRelicInstanceIds[0] = string.Empty;
+            RelicStatBonusSummary cleared = resolver.Resolve(
+                profile,
+                character);
+
+            Assert.That(equipped.AttackIncreaseRateSum,
+                Is.EqualTo(0.10d));
+            Assert.That(equipped.MaxHpIncreaseRateSum,
+                Is.EqualTo(0.10d));
+            Assert.That(cleared.AttackIncreaseRateSum, Is.Zero);
+            Assert.That(cleared.MaxHpIncreaseRateSum,
+                Is.EqualTo(0.10d));
+        }
+
+        [Test]
+        public void Resolve_CriticalRelicsSumEveryEffectOnce()
+        {
+            RelicDefinition monocle = Definition(
+                "relic_clairvoyants_monocle",
+                RelicEffectType.CriticalChanceIncrease,
+                new[] { 0.04d, 0.05d, 0.06d, 0.07d, 0.08d, 0.10d });
+            RelicDefinition bloodstone = Definition(
+                "relic_executioners_bloodstone",
+                RelicEffectType.CriticalDamageIncrease,
+                new[] { 0.10d, 0.12d, 0.14d, 0.16d, 0.18d, 0.20d });
+            RelicDefinition twinStars = Definition(
+                "relic_twin_stars_destiny_stone",
+                Effect(
+                    RelicEffectType.CriticalChanceIncrease,
+                    new[] { 0.02d, 0.03d, 0.04d, 0.04d, 0.05d, 0.06d },
+                    "critical_chance"),
+                Effect(
+                    RelicEffectType.CriticalDamageIncrease,
+                    new[] { 0.06d, 0.07d, 0.08d, 0.10d, 0.11d, 0.12d },
+                    "critical_damage"));
+            CharacterSaveData character = Character(
+                "monocle",
+                "bloodstone",
+                "twin_stars",
+                "twin_stars");
+            ProfileSaveData profile = Profile(
+                character,
+                Instance("monocle", monocle.Id, 5),
+                Instance("bloodstone", bloodstone.Id, 5),
+                Instance("twin_stars", twinStars.Id, 5));
+
+            RelicStatBonusSummary result = Resolver(
+                monocle,
+                bloodstone,
+                twinStars).Resolve(profile, character);
+
+            Assert.That(result.CriticalChanceIncreaseRateSum,
+                Is.EqualTo(0.16d).Within(1e-12d));
+            Assert.That(result.CriticalDamageIncreaseRateSum,
+                Is.EqualTo(0.32d).Within(1e-12d));
+            Assert.That(result.Sources, Has.Count.EqualTo(4));
+            Assert.That(result.AttackIncreaseRateSum, Is.Zero);
+            Assert.That(result.MaxHpIncreaseRateSum, Is.Zero);
+        }
+
+        [Test]
         public void Resolve_IgnoresLegacyEquipFields()
         {
             RelicDefinition bark = Definition(
@@ -273,13 +397,47 @@ namespace ValorChronicle.Tests.EditMode
             RelicEffectType effectType,
             double[] rates)
         {
+            return Definition(id, Effect(effectType, rates, "rate"));
+        }
+
+        private RelicDefinition Definition(
+            string id,
+            params RelicEffectEntry[] effects)
+        {
             RelicDefinition definition = ScriptableObject.CreateInstance<
                 RelicDefinition>();
             createdObjects.Add(definition);
             SetField(definition, typeof(GameDefinition), "id", id);
-            SetField(definition, typeof(RelicDefinition), "effectType", effectType);
-            SetField(definition, typeof(RelicDefinition), "effectRates", rates);
+            SetField(
+                definition,
+                typeof(RelicDefinition),
+                "effects",
+                effects);
             return definition;
+        }
+
+        private static RelicEffectEntry Effect(
+            RelicEffectType effectType,
+            double[] rates,
+            string descriptionValueKey)
+        {
+            var effect = new RelicEffectEntry();
+            SetField(
+                effect,
+                typeof(RelicEffectEntry),
+                "effectType",
+                effectType);
+            SetField(
+                effect,
+                typeof(RelicEffectEntry),
+                "effectRates",
+                rates);
+            SetField(
+                effect,
+                typeof(RelicEffectEntry),
+                "descriptionValueKey",
+                descriptionValueKey);
+            return effect;
         }
 
         private static CharacterSaveData Character(params string[] slots)

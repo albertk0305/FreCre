@@ -30,7 +30,11 @@ namespace ValorChronicle.Relics.Stats
             }
 
             double maxHpIncreaseRateSum = 0d;
+            double maxHpReductionRateSum = 0d;
             double attackIncreaseRateSum = 0d;
+            double attackReductionRateSum = 0d;
+            double criticalChanceIncreaseRateSum = 0d;
+            double criticalDamageIncreaseRateSum = 0d;
             var sources = new List<RelicStatBonusSource>();
             var resolvedInstanceIds = new HashSet<string>(
                 StringComparer.Ordinal);
@@ -52,46 +56,92 @@ namespace ValorChronicle.Relics.Stats
                     || !definitionDatabase.TryGetRelic(
                         instance.RelicDefinitionId,
                         out RelicDefinition definition)
-                    || definition == null
-                    || !Enum.IsDefined(
-                        typeof(RelicEffectType),
-                        definition.EffectType)
-                    || !TryGetValidRate(
-                        definition,
-                        instance.Awakening,
-                        out double rate))
+                    || definition == null)
                 {
                     continue;
                 }
 
-                switch (definition.EffectType)
+                IReadOnlyList<RelicEffectEntry> effects =
+                    definition.Effects;
+                for (int effectIndex = 0;
+                    effectIndex < effects.Count;
+                    effectIndex++)
                 {
-                    case RelicEffectType.MaxHpIncrease:
-                        maxHpIncreaseRateSum += rate;
-                        break;
-                    case RelicEffectType.AttackIncrease:
-                        attackIncreaseRateSum += rate;
-                        break;
-                }
+                    RelicEffectEntry effect = effects[effectIndex];
+                    if (effect == null
+                        || !Enum.IsDefined(
+                            typeof(RelicEffectType),
+                            effect.EffectType)
+                        || effect.EffectType == RelicEffectType.None
+                        || !TryGetValidRate(
+                            effect,
+                            instance.Awakening,
+                            out double rate))
+                    {
+                        continue;
+                    }
 
-                sources.Add(new RelicStatBonusSource(
-                    definition.Id,
-                    definition.DisplayNameKey,
-                    definition.DescriptionKey,
-                    definition.EffectType,
-                    instance.Awakening,
-                    rate));
+                    switch (effect.EffectType)
+                    {
+                        case RelicEffectType.MaxHpIncrease:
+                            maxHpIncreaseRateSum += rate;
+                            break;
+                        case RelicEffectType.MaxHpReduction:
+                            maxHpReductionRateSum += rate;
+                            break;
+                        case RelicEffectType.AttackIncrease:
+                            attackIncreaseRateSum += rate;
+                            break;
+                        case RelicEffectType.AttackReduction:
+                            attackReductionRateSum += rate;
+                            break;
+                        case RelicEffectType.CriticalChanceIncrease:
+                            criticalChanceIncreaseRateSum += rate;
+                            break;
+                        case RelicEffectType.CriticalDamageIncrease:
+                            criticalDamageIncreaseRateSum += rate;
+                            break;
+                    }
+
+                    sources.Add(new RelicStatBonusSource(
+                        definition.Id,
+                        definition.DisplayNameKey,
+                        definition.DescriptionKey,
+                        effect.EffectType,
+                        instance.Awakening,
+                        rate,
+                        effect.DescriptionValueKey,
+                        effect.HasElementFilter,
+                        effect.ElementFilter,
+                        effect.AttackTypeMask,
+                        effect.RequiredAttackTags,
+                        effect.ExcludedAttackTags,
+                        effect.ConditionType,
+                        effect.ConditionThreshold));
+                }
             }
 
             if (!IsValidRate(maxHpIncreaseRateSum)
-                || !IsValidRate(attackIncreaseRateSum))
+                || !IsValidRate(maxHpReductionRateSum)
+                || !IsValidRate(attackIncreaseRateSum)
+                || !IsValidRate(attackReductionRateSum)
+                || !IsValidRate(criticalChanceIncreaseRateSum)
+                || !IsValidRate(criticalDamageIncreaseRateSum)
+                || 1d + maxHpIncreaseRateSum
+                    - maxHpReductionRateSum <= 0d
+                || 1d + attackIncreaseRateSum
+                    - attackReductionRateSum <= 0d)
             {
                 return RelicStatBonusSummary.None;
             }
 
             return new RelicStatBonusSummary(
                 maxHpIncreaseRateSum,
+                maxHpReductionRateSum,
                 attackIncreaseRateSum,
+                attackReductionRateSum,
+                criticalChanceIncreaseRateSum,
+                criticalDamageIncreaseRateSum,
                 sources.AsReadOnly());
         }
 
@@ -126,13 +176,13 @@ namespace ValorChronicle.Relics.Stats
         }
 
         private static bool TryGetValidRate(
-            RelicDefinition definition,
+            RelicEffectEntry effect,
             int awakening,
             out double rate)
         {
             try
             {
-                rate = definition.GetEffectRate(awakening);
+                rate = effect.GetEffectRate(awakening);
                 return IsValidRate(rate);
             }
             catch (InvalidOperationException)

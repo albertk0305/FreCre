@@ -356,6 +356,48 @@ namespace ValorChronicle.Tests.EditMode
                 Is.EqualTo(0.10d));
         }
 
+        [Test]
+        public void Resolve_CapturesCriticalRelicAsBattleStartSnapshot()
+        {
+            CharacterDefinition characterDefinition = Definition(
+                "a",
+                ElementType.Fire);
+            RelicDefinition monocle = Relic(
+                "relic_clairvoyants_monocle",
+                RelicEffectType.CriticalChanceIncrease);
+            CharacterSaveData character = Character("a", 1, 0);
+            character.EquippedRelicInstanceIds[0] = "monocle_instance";
+            var instance = new RelicInstanceSaveData
+            {
+                InstanceId = "monocle_instance",
+                RelicDefinitionId = monocle.Id,
+                Awakening = 5
+            };
+            ProfileSaveData profile = Profile(
+                0,
+                Slots("a", "", "", "", ""),
+                character);
+            profile.RelicInstances = new List<RelicInstanceSaveData>
+            {
+                instance
+            };
+
+            BattlePartyResolutionResult result = ResolverWithRelics(
+                new[] { characterDefinition },
+                monocle).Resolve(profile);
+            character.EquippedRelicInstanceIds[0] = string.Empty;
+            instance.Awakening = 0;
+
+            Assert.That(result.IsSuccess, Is.True);
+            Assert.That(
+                result.Members[0].RelicStatBonuses
+                    .CriticalChanceIncreaseRateSum,
+                Is.EqualTo(0.10d));
+            Assert.That(
+                result.Members[0].RelicStatBonuses.Sources,
+                Has.Count.EqualTo(1));
+        }
+
         private BattlePartyResolver Resolver(
             params CharacterDefinition[] definitions)
         {
@@ -388,9 +430,15 @@ namespace ValorChronicle.Tests.EditMode
             createdObjects.Add(definition);
             var serialized = new SerializedObject(definition);
             serialized.FindProperty("id").stringValue = id;
-            serialized.FindProperty("effectType").enumValueIndex =
+            SerializedProperty effects = serialized.FindProperty("effects");
+            effects.arraySize = 1;
+            SerializedProperty effect = effects.GetArrayElementAtIndex(0);
+            effect.FindPropertyRelative("effectType").enumValueIndex =
                 (int)effectType;
-            SerializedProperty rates = serialized.FindProperty("effectRates");
+            effect.FindPropertyRelative("descriptionValueKey").stringValue =
+                "rate";
+            SerializedProperty rates = effect.FindPropertyRelative(
+                "effectRates");
             rates.arraySize = RelicDefinition.AwakeningValueCount;
             for (int index = 0; index < rates.arraySize; index++)
             {

@@ -8,6 +8,7 @@ using UnityEngine.UI;
 using ValorChronicle.Characters.Presentation;
 using ValorChronicle.Data.Database;
 using ValorChronicle.Localization;
+using ValorChronicle.Relics.Inventory;
 using ValorChronicle.Relics.Persistence;
 using ValorChronicle.Relics.Presentation;
 using ValorChronicle.Save.DTO;
@@ -238,6 +239,76 @@ namespace ValorChronicle.Tests.EditMode
                 fixture.Controller.LastPersistenceResult.Status,
                 Is.EqualTo(RelicEquipPersistenceStatus.NoChange));
             Assert.That(fixture.Controller.IsSelectionOpen, Is.False);
+        }
+
+        [Test]
+        public void MissingIcon_HidesOnlyImageAndKeepsRelicInteraction()
+        {
+            Fixture fixture = CreateFixture(Profile(
+                new[] { "sword", "", "", "" }));
+            Assert.That(
+                fixture.Controller.TryPresent(CharacterId),
+                Is.True);
+            Assert.That(
+                fixture.Controller.Open(CharacterId, 1),
+                Is.True);
+            RelicInventoryEntry barkEntry = fixture.InventoryGrid.Items
+                .Single(entry => entry.InstanceId == "bark");
+            RelicInventoryCellView cell =
+                fixture.InventoryGrid.PoolCells.Single(candidate =>
+                    candidate.IsBound
+                    && candidate.InstanceId == barkEntry.InstanceId);
+
+            Assert.That(barkEntry.IsInteractable, Is.True);
+            Assert.DoesNotThrow(() => cell.Bind(barkEntry, null));
+            Assert.That(cell.IconImage.sprite, Is.Null);
+            Assert.That(cell.IconImage.color.a, Is.Zero);
+            Assert.That(cell.Button.interactable, Is.True);
+            Assert.That(barkEntry.DisplayName,
+                Is.EqualTo("World Tree Bark"));
+
+            cell.Button.onClick.Invoke();
+
+            Assert.That(
+                fixture.Controller.EditSession.PreviewInstanceId,
+                Is.EqualTo("bark"));
+            string description = fixture.Selection.DescriptionText.text;
+            Assert.That(
+                description,
+                Is.EqualTo(
+                    "World Tree Bark\n\n"
+                        + "Increases the equipped character's maximum HP "
+                        + "by 10%."));
+            var model = RelicPresentationModel.Equipped(
+                barkEntry.InstanceId,
+                null,
+                barkEntry.Awakening,
+                description);
+
+            Assert.DoesNotThrow(() => fixture.Slots[1].Render(model));
+            Assert.DoesNotThrow(() =>
+                fixture.Selection.RenderPreview(model));
+
+            Assert.That(fixture.Slots[1].IsIconVisible, Is.False);
+            Assert.That(fixture.Slots[1].EmptyBackground.activeSelf,
+                Is.False);
+            Assert.That(fixture.Slots[1].AwakeningText.text,
+                Is.EqualTo("5"));
+            Assert.That(fixture.Selection.IsIconVisible, Is.False);
+            Assert.That(fixture.Selection.PreviewEmptyBackground.activeSelf,
+                Is.False);
+            Assert.That(fixture.Selection.DescriptionText.text,
+                Is.EqualTo(description));
+            Assert.That(fixture.Selection.EquipButton.interactable,
+                Is.True);
+
+            fixture.Selection.EquipButton.onClick.Invoke();
+
+            Assert.That(
+                fixture.Controller.LastPersistenceResult.Status,
+                Is.EqualTo(
+                    RelicEquipPersistenceStatus.ChangedAndSaved));
+            Assert.That(CurrentSlot(fixture, 1), Is.EqualTo("bark"));
         }
 
         [Test]

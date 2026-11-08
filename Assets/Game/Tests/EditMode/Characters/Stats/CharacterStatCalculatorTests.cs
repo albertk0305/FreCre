@@ -105,6 +105,35 @@ namespace ValorChronicle.Tests.EditMode.Characters.Stats
             Assert.That(definition.Level100Attack, Is.EqualTo(1050));
         }
 
+        [Test]
+        public void BattleStateFactoryCopiesPermanentRelicCriticalSnapshot()
+        {
+            ResolvedCharacterBuild build =
+                CharacterBuildResolverFactory.CreateDefault().Resolve(
+                    definition,
+                    1,
+                    0);
+            var bonuses = new RelicStatBonusSummary(
+                maxHpIncreaseRateSum: 0d,
+                maxHpReductionRateSum: 0d,
+                attackIncreaseRateSum: 0d,
+                attackReductionRateSum: 0d,
+                criticalChanceIncreaseRateSum: 0.16d,
+                criticalDamageIncreaseRateSum: 0.32d);
+
+            CharacterBattleState state = CharacterBattleStateFactory.Create(
+                definition,
+                build,
+                0,
+                bonuses);
+
+            Assert.That(state.PermanentCriticalChanceIncreaseRate,
+                Is.EqualTo(0.16d));
+            Assert.That(state.PermanentCriticalDamageIncreaseRate,
+                Is.EqualTo(0.32d));
+            Assert.That(state.Effects.Count, Is.Zero);
+        }
+
         private void SetField(
             System.Type declaringType,
             string fieldName,

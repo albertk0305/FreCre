@@ -56,8 +56,6 @@ namespace ValorChronicle.Tests.EditMode.Settings
             Assert.That(view.RedeemResultOverlay.activeSelf, Is.False);
             Assert.That(view.RedeemResultOverlay.transform.parent,
                 Is.SameAs(prefab.transform));
-            Assert.That(view.RedeemResultOverlay.transform.GetSiblingIndex(),
-                Is.EqualTo(prefab.transform.childCount - 1));
 
             var overlayRect = (RectTransform)view.RedeemResultOverlay.transform;
             Assert.That(overlayRect.anchorMin, Is.EqualTo(Vector2.zero));
@@ -71,11 +69,25 @@ namespace ValorChronicle.Tests.EditMode.Settings
             Assert.That(touch.GetComponent<ButtonPressSfx>(), Is.Null);
             ButtonPressSfx[] buttonPressSfx =
                 prefab.GetComponentsInChildren<ButtonPressSfx>(true);
-            Assert.That(buttonPressSfx, Has.Length.EqualTo(4));
             Assert.That(
                 buttonPressSfx,
                 Has.All.Matches<ButtonPressSfx>(component =>
                     component.GetComponent<Button>() != null));
+            Assert.That(
+                view.RedeemConfirmButton.GetComponent<ButtonPressSfx>(),
+                Is.Not.Null);
+            Assert.That(view.TextPanel, Is.Not.Null);
+            Button textPanelCloseButton = view.TextPanel.transform
+                .Find("CloseButton")?.GetComponent<Button>();
+            Assert.That(textPanelCloseButton, Is.Not.Null);
+            Assert.That(
+                textPanelCloseButton.GetComponent<ButtonPressSfx>(),
+                Is.Not.Null);
+            foreach (ButtonPressSfx component in buttonPressSfx)
+            {
+                Assert.That(component.GetComponents<ButtonPressSfx>(),
+                    Has.Length.EqualTo(1));
+            }
             Assert.That(touch.GetComponent<Image>().raycastTarget, Is.True);
             Assert.That(view.RedeemResultOverlay.transform.Find(
                 "CodeSuccessPanel").GetComponent<Image>().raycastTarget,
@@ -96,6 +108,18 @@ namespace ValorChronicle.Tests.EditMode.Settings
             Assert.That(redeemLabel, Is.Not.Null);
             Assert.That(redeemLabel.LocalizationKey,
                 Is.EqualTo("ui.settings.redeem_code"));
+
+            var instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+            createdObjects.Add(instance);
+            SettingsPanelView instanceView =
+                instance.GetComponent<SettingsPanelView>();
+
+            instanceView.ShowRedeemResult("Result");
+
+            Assert.That(instanceView.RedeemResultOverlay.activeSelf, Is.True);
+            Assert.That(
+                instanceView.RedeemResultOverlay.transform.GetSiblingIndex(),
+                Is.EqualTo(instance.transform.childCount - 1));
         }
 
         [Test]
@@ -421,6 +445,7 @@ namespace ValorChronicle.Tests.EditMode.Settings
                 SettingsService settingsService =
                     SettingsSystemFactory.Create(settingsRoot);
                 settingsService.LoadOrCreate();
+                Assert.That(settingsService.SetBattleSpeed(1), Is.True);
                 bootstrapObject = new GameObject(
                     "BattleSettingsPanelTestBootstrap");
                 var bootstrapper =
