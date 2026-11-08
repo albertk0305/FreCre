@@ -86,7 +86,7 @@ namespace ValorChronicle.Tests.EditMode
                 Assert.That(elementFilters, Has.Length.EqualTo(5));
                 Assert.That(virtualGrids, Has.Length.EqualTo(1));
                 Assert.That(scrollRects, Has.Length.EqualTo(1));
-                Assert.That(masks, Has.Length.EqualTo(1));
+                Assert.That(masks, Has.Length.EqualTo(2));
                 Assert.That(buttons, Has.Length.EqualTo(72));
                 Assert.That(
                     buttons,
@@ -113,7 +113,11 @@ namespace ValorChronicle.Tests.EditMode
                 Assert.That(scrollRects[0].content, Is.Not.Null);
                 Assert.That(
                     scrollRects[0].viewport.GetComponent<RectMask2D>(),
-                    Is.SameAs(masks[0]));
+                    Is.Not.Null);
+                Assert.That(
+                    masks,
+                    Does.Contain(
+                        scrollRects[0].viewport.GetComponent<RectMask2D>()));
                 var gridData = new SerializedObject(virtualGrids[0]);
                 Assert.That(
                     gridData.FindProperty("scrollRect").objectReferenceValue,

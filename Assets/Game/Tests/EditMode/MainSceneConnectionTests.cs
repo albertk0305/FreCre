@@ -75,7 +75,7 @@ namespace ValorChronicle.Tests.EditMode
                 Assert.That(unvalidPartyViews, Has.Length.EqualTo(1));
                 Assert.That(slots, Has.Length.EqualTo(3));
                 Assert.That(scrollRects, Has.Length.EqualTo(1));
-                Assert.That(masks, Has.Length.EqualTo(1));
+                Assert.That(masks, Has.Length.EqualTo(2));
                 Assert.That(eventSystems, Has.Length.EqualTo(1));
                 Assert.That(raycasters, Has.Length.EqualTo(1));
 
@@ -177,7 +177,11 @@ namespace ValorChronicle.Tests.EditMode
                     Is.SameAs(scrollRect.viewport));
                 Assert.That(
                     scrollRect.viewport.GetComponent<RectMask2D>(),
-                    Is.SameAs(masks[0]));
+                    Is.Not.Null);
+                Assert.That(
+                    masks,
+                    Does.Contain(
+                        scrollRect.viewport.GetComponent<RectMask2D>()));
                 Assert.That(
                     scrollRect.viewport.GetComponent<Image>().raycastTarget,
                     Is.True);
