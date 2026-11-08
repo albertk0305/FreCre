@@ -22,13 +22,15 @@ ui.character.stats_lookup.level_attack	Level ATK: {value}	레벨 공격력: {val
 ui.character.stats_lookup.level_max_hp	Level Max HP: {value}	레벨 최대 HP: {value}
 ui.character.stats_lookup.attack	Final ATK: {value}	최종 공격력: {value}
 ui.character.stats_lookup.max_hp	Final Max HP: {value}	최종 최대 HP: {value}
-ui.character.stats_lookup.critical_chance	Critical Chance: {value}	치명타 확률: {value}
-ui.character.stats_lookup.critical_damage	Critical Damage: {value}	치명타 피해: {value}
+ui.character.stats_lookup.critical_chance	Final Critical Chance: {value}	최종 치명타 확률: {value}
+ui.character.stats_lookup.critical_damage	Final Critical Damage: {value}	최종 치명타 피해: {value}
 ui.character.stats_lookup.permanent	Permanent Effects	영구 효과
 ui.character.stats_lookup.conditional	Conditional Effects	조건부 효과
 ui.character.stats_lookup.awakening_source	Awakening	각성
 ui.character.stats_lookup.attack_increase	ATK	공격력
 ui.character.stats_lookup.max_hp_increase	Max HP	최대 HP
+ui.character.stats_lookup.critical_chance_increase	Critical Chance	치명타 확률
+ui.character.stats_lookup.critical_damage_increase	Critical Damage	치명타 피해
 ui.character.stats_lookup.permanent_source	{source}: {effect} +{value}	{source}: {effect} +{value}
 ui.character.stats_lookup.relic_source	{name} (Awakening {awakening}): {effect} +{value}	{name} (각성 {awakening}): {effect} +{value}
 ui.character.stats_lookup.source	Source: {source}	출처: {source}

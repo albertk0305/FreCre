@@ -52,10 +52,19 @@ namespace ValorChronicle.Characters.Presentation
             AppendFormat(text, "ui.character.stats_lookup.level_max_hp", "value", levelStats.MaxHp);
             AppendFormat(text, "ui.character.stats_lookup.attack", "value", model.Attack);
             AppendFormat(text, "ui.character.stats_lookup.max_hp", "value", model.MaxHp);
+            double finalCriticalChance = Math.Min(
+                1d,
+                DamageContextBuildRequest.DefaultBaseCriticalChance
+                    + model.RelicStatBonuses
+                        .CriticalChanceIncreaseRateSum);
+            double finalCriticalDamage =
+                DamageContextBuildRequest.DefaultBaseCriticalDamageMultiplier
+                + model.RelicStatBonuses
+                    .CriticalDamageIncreaseRateSum;
             AppendFormat(text, "ui.character.stats_lookup.critical_chance", "value",
-                Percent(DamageContextBuildRequest.DefaultBaseCriticalChance));
+                Percent(finalCriticalChance));
             AppendFormat(text, "ui.character.stats_lookup.critical_damage", "value",
-                Percent(DamageContextBuildRequest.DefaultBaseCriticalDamageMultiplier));
+                Percent(finalCriticalDamage));
 
             bool hasPermanent = HasIncrease(model.CharacterAttackMultiplier)
                 || HasIncrease(model.CharacterMaxHpMultiplier)
@@ -179,6 +188,12 @@ namespace ValorChronicle.Characters.Presentation
                     case RelicEffectType.MaxHpIncrease:
                         effectKey = "ui.character.stats_lookup.max_hp_increase";
                         break;
+                    case RelicEffectType.CriticalChanceIncrease:
+                        effectKey = "ui.character.stats_lookup.critical_chance_increase";
+                        break;
+                    case RelicEffectType.CriticalDamageIncrease:
+                        effectKey = "ui.character.stats_lookup.critical_damage_increase";
+                        break;
                     default:
                         continue;
                 }
@@ -270,7 +285,11 @@ namespace ValorChronicle.Characters.Presentation
                     && IsPositive(source.Rate)
                     && (source.EffectType == RelicEffectType.AttackIncrease
                         || source.EffectType
-                            == RelicEffectType.MaxHpIncrease))
+                            == RelicEffectType.MaxHpIncrease
+                        || source.EffectType
+                            == RelicEffectType.CriticalChanceIncrease
+                        || source.EffectType
+                            == RelicEffectType.CriticalDamageIncrease))
                 {
                     return true;
                 }

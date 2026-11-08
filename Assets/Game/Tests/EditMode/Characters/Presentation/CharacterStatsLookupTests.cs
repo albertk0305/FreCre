@@ -27,7 +27,7 @@ namespace ValorChronicle.Tests.EditMode.Characters.Presentation
         }
 
         [Test]
-        public void Build_UsesFinalStatsBaseCriticalsAndActualModifiers()
+        public void Build_UsesFinalStatsCriticalsAndActualModifiers()
         {
             LocalizationService localization = CreateLocalization();
             CharacterDefinition definition = GetMareaDefinition();
@@ -57,12 +57,105 @@ namespace ValorChronicle.Tests.EditMode.Characters.Presentation
             Assert.That(text, Does.Contain("Level: 50"));
             Assert.That(text, Does.Contain("Final ATK: 987"));
             Assert.That(text, Does.Contain("Final Max HP: 4321"));
-            Assert.That(text, Does.Contain("Critical Chance: 0%"));
-            Assert.That(text, Does.Contain("Critical Damage: 150%"));
+            Assert.That(text, Does.Contain("Final Critical Chance: 0%"));
+            Assert.That(text, Does.Contain("Final Critical Damage: 150%"));
             Assert.That(text, Does.Contain("Awakening: ATK +5%"));
             Assert.That(text, Does.Contain(
                 "Victor's Broken Sword (Awakening 2): ATK +12%"));
             Assert.That(text, Does.Not.Contain("Max HP +0%"));
+        }
+
+        [TestCase(0d, 0d, "0%", "150%")]
+        [TestCase(0.04d, 0d, "4%", "150%")]
+        [TestCase(0d, 0.10d, "0%", "160%")]
+        [TestCase(0.04d, 0.10d, "4%", "160%")]
+        [TestCase(0.10d, 0.20d, "10%", "170%")]
+        [TestCase(0.02d, 0.06d, "2%", "156%")]
+        [TestCase(0.06d, 0.12d, "6%", "162%")]
+        public void Build_DisplaysFinalCriticalStatsFromRelicSummary(
+            double criticalChanceIncrease,
+            double criticalDamageIncrease,
+            string expectedChance,
+            string expectedDamage)
+        {
+            var relics = new RelicStatBonusSummary(
+                0d,
+                0d,
+                0d,
+                0d,
+                criticalChanceIncrease,
+                criticalDamageIncrease);
+
+            string text = new CharacterStatsLookupTextBuilder(
+                    CreateLocalization())
+                .Build(Model(awakening: 0, relics: relics),
+                    GetMareaDefinition());
+
+            Assert.That(text, Does.Contain(
+                $"Final Critical Chance: {expectedChance}"));
+            Assert.That(text, Does.Contain(
+                $"Final Critical Damage: {expectedDamage}"));
+        }
+
+        [Test]
+        public void Build_ListsBothCriticalEffectsFromCompositeRelic()
+        {
+            var sources = new[]
+            {
+                new RelicStatBonusSource(
+                    "relic_twin_stars_destiny_stone",
+                    "relic.twin_stars_destiny_stone.name",
+                    "relic.twin_stars_destiny_stone.description",
+                    RelicEffectType.CriticalChanceIncrease,
+                    5,
+                    0.06d),
+                new RelicStatBonusSource(
+                    "relic_twin_stars_destiny_stone",
+                    "relic.twin_stars_destiny_stone.name",
+                    "relic.twin_stars_destiny_stone.description",
+                    RelicEffectType.CriticalDamageIncrease,
+                    5,
+                    0.12d)
+            };
+            var relics = new RelicStatBonusSummary(
+                0d,
+                0d,
+                0d,
+                0d,
+                0.06d,
+                0.12d,
+                sources);
+
+            string text = new CharacterStatsLookupTextBuilder(
+                    CreateLocalization())
+                .Build(Model(awakening: 0, relics: relics),
+                    GetMareaDefinition());
+
+            Assert.That(text, Does.Contain(
+                "Twin Stars' Destiny Stone (Awakening 5): "
+                    + "Critical Chance +6%"));
+            Assert.That(text, Does.Contain(
+                "Twin Stars' Destiny Stone (Awakening 5): "
+                    + "Critical Damage +12%"));
+        }
+
+        [Test]
+        public void Build_ClampsFinalCriticalChanceToOneHundredPercent()
+        {
+            var relics = new RelicStatBonusSummary(
+                0d,
+                0d,
+                0d,
+                0d,
+                1.25d,
+                0d);
+
+            string text = new CharacterStatsLookupTextBuilder(
+                    CreateLocalization())
+                .Build(Model(awakening: 0, relics: relics),
+                    GetMareaDefinition());
+
+            Assert.That(text, Does.Contain("Final Critical Chance: 100%"));
         }
 
         [Test]
@@ -82,6 +175,8 @@ namespace ValorChronicle.Tests.EditMode.Characters.Presentation
             string awakeningSix = builder.Build(
                 Model(awakening: 6),
                 definition);
+            Assert.That(awakeningSix, Does.Contain("최종 치명타 확률: 0%"));
+            Assert.That(awakeningSix, Does.Contain("최종 치명타 피해: 150%"));
             Assert.That(awakeningSix, Does.Contain("상세 능력치"));
             Assert.That(awakeningSix, Does.Contain("포식자의 본능"));
             Assert.That(awakeningSix, Does.Contain("여류 파도"));
